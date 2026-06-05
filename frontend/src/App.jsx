@@ -6,7 +6,7 @@ function App() {
 
   // useEffect запускается один раз, когда страница загрузилась
   useEffect(() => {
-    fetch('http://localhost:3000/api/health')   // стучимся на бэк
+    fetch('/api/health')   // стучимся на бэк
       .then((res) => res.json())                 // разбираем JSON-ответ
       .then((data) => setHealth(data.status))    // кладём status ("ok") в переменную
       .catch(() => setHealth('ошибка связи'));   // если бэк недоступен
