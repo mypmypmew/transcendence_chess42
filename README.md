@@ -4,11 +4,11 @@
 
 Требуется установленный Docker.
 
-\`\`\`bash
+```bash
 git clone <url-репозитория>
 cd <папка-проекта>
 docker compose up --build
-\`\`\`
+```
 
 Открыть в браузере:
 - Frontend: http://localhost:5173
