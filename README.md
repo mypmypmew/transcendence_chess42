@@ -17,3 +17,5 @@ docker compose up --build
 ## Остановка
 
 \`Ctrl+C\` в терминале, либо \`docker compose down\` из корня проекта.
+
+тест
