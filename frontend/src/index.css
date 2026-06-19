@@ -117,8 +117,7 @@
 /* ----------------------------------------------------------------
    Light theme — only overrides what changes
    ---------------------------------------------------------------- */
-@media (prefers-color-scheme: light) {
-  :root {
+html[data-theme="light"] {
     color-scheme: light;
 
     --bg-base:        #f5f2eb;
@@ -153,7 +152,6 @@
     --border:         #d4cfc4;
     --border-subtle:  #e0dbd0;
     --border-surface: #c8c2b5;
-  }
 }
 
 /* ----------------------------------------------------------------
