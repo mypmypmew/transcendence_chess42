@@ -62,4 +62,6 @@ function useTheme() {
   return context
 }
 
+// TODO: Move useTheme to a separate useTheme.js file.
+// eslint-disable-next-line react-refresh/only-export-components
 export { ThemeProvider, useTheme }
