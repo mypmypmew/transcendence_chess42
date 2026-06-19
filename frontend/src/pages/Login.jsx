@@ -80,9 +80,9 @@ function Login() {
               <i className="ti ti-crown" />
             </div>
             <p className="auth-kicker">Welcome back</p>
-            <h1 className="auth-title" id="login-title">Continue your next move.</h1>
+            <h1 className="auth-title" id="login-title">Continue your next move</h1>
             <p className="auth-subtitle">
-              Sign in to return to your games, profile, and progress.
+              Sign in to return to your games, profile, and progress
             </p>
           </header>
 
