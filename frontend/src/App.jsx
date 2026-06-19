@@ -1,44 +1,29 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
-import Register    from './pages/Register'
-// import Profile     from './pages/Profile'
-// import Leaderboard from './pages/Leaderboard'
-// import Chat        from './pages/Chat'
-
-// ----------------------------------------------------------------
-// Placeholder — remove once pages are created
-// ----------------------------------------------------------------
-// import { useState, useEffect } from 'react'
-// function App() {
-//   const [health, setHealth] = useState('loading...')
-//   useEffect(() => {
-//     fetch('/api/health')
-//       .then((res) => res.json())
-//       .then((data) => setHealth(data.status))
-//       .catch(() => setHealth('connection error'))
-//   }, [])
-//   return (
-//     <div style={{ padding: 40, fontFamily: 'sans-serif' }}>
-//       <h1>Chess Project</h1>
-//       <p>Backend status: <strong>{health}</strong></p>
-//     </div>
-//   )
-// }
-// ----------------------------------------------------------------
+import { ThemeProvider } from './context/ThemeContext.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+// import Profile from './pages/Profile.jsx'
+// import Dashboard from './pages/Dashboard.jsx'
+// import Game from './pages/Game.jsx'
+// import Leaderboard from './pages/Leaderboard.jsx'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Default route → registration */}
-        <Route path="/" element={<Navigate to="/register" replace />} />
-
-        <Route path="/register" element={<Register />} />
-        {/* <Route path="/profile" element={<Profile />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/chat" element={<Chat />} /> */}
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+		  {/* <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/game" element={<Game />} />
+          <Route path="/leaderboard" element={<Leaderboard />} /> */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
