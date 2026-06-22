@@ -12,7 +12,14 @@ const recentGames = [
 function Dashboard() {
   const actions = (
     <>
-      
+      <Link className="btn btn-ghost" to="/game">
+        <i className="ti ti-target-arrow" aria-hidden="true" />
+        Think.
+      </Link>
+      <Link className="btn btn-ghost" to="/leaderboard">
+        <i className="ti ti-trophy" aria-hidden="true" />
+        Compete.
+      </Link>
     </>
   )
 
@@ -55,19 +62,70 @@ function Dashboard() {
             </div>
             <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
               <p className="label">Weekly progress</p>
-              Here will be a chart showing your rating progress over the past week
+              <div className="flex items-end gap-2" aria-hidden="true" style={{ height: 92, marginTop: 'var(--space-3)' }}>
+                {[34, 42, 36, 52, 58, 68, 76, 88].map((height, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      height: `${height}%`,
+                      flex: 1,
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         <section className="cm-panel">
-          
+          <div className="cm-panel-header">
+            <h2 className="cm-section-title">Training</h2>
+            <span className="cm-muted">Today</span>
+          </div>
+          <div className="cm-panel-body cm-action-grid">
+            <Link className="cm-action-card" to="/game">
+              <i className="ti ti-chess-rook" aria-hidden="true" />
+              <h3>Quick Play</h3>
+              <p className="cm-muted">Instant match with default settings</p>
+            </Link>
+            <Link className="cm-action-card" to="/dashboard">
+              <i className="ti ti-puzzle" aria-hidden="true" />
+              <h3>Puzzles - Experimental</h3>
+              <p className="cm-muted">Sharpen tactics</p>
+            </Link>
+            <Link className="cm-action-card" to="/dashboard">
+              <i className="ti ti-book" aria-hidden="true" />
+              <h3>Lessons - Experimental</h3>
+              <p className="cm-muted">Learn positions</p>
+            </Link>
+            <Link className="cm-action-card" to="/dashboard">
+              <i className="ti ti-award" aria-hidden="true" />
+              <h3>Tournaments - Experimental</h3>
+              <p className="cm-muted">Join and compete</p>
+            </Link>
+          </div>
         </section>
 
         <section className="cm-panel">
           <div className="cm-panel-header">
             <h2 className="cm-section-title">Recent games</h2>
-        
+          </div>
+          <div className="cm-panel-body cm-list">
+            {recentGames.map((game) => (
+              <div className="cm-list-row" key={game.opponent}>
+                <div className="avatar avatar-md cm-avatar-photo">{game.opponent[0]}</div>
+                <div className="min-w-0">
+                  <p className="text-primary truncate">vs {game.opponent}</p>
+                  <p className="cm-muted">{game.time}</p>
+                </div>
+                <div className="text-right">
+                  <span className={`badge ${game.badge}`}>{game.result}</span>
+                  <p className="cm-muted">{game.rating}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </div>
