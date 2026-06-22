@@ -14,11 +14,11 @@ function Dashboard() {
     <>
       <Link className="btn btn-ghost" to="/game">
         <i className="ti ti-target-arrow" aria-hidden="true" />
-        Think.
+        Think
       </Link>
       <Link className="btn btn-ghost" to="/leaderboard">
         <i className="ti ti-trophy" aria-hidden="true" />
-        Compete.
+        Compete
       </Link>
     </>
   )
