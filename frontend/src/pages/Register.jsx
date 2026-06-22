@@ -31,6 +31,8 @@ function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [touched, setTouched] = useState({
     username: false,
     email: false,
@@ -199,22 +201,33 @@ function Register() {
 
             <div className="field">
               <label className="field-label" htmlFor="register-password">Password</label>
-              <input
-                className={`input ${passwordError ? 'error' : ''}`}
-                id="register-password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Create password"
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value)
-                  clearServerError()
-                }}
-                onBlur={() => handleBlur('password')}
-                aria-invalid={Boolean(passwordError)}
-                aria-describedby="register-password-policy register-password-error"
-              />
+              <div className="input-wrap">
+                <input
+                  className={`input ${passwordError ? 'error' : ''}`}
+                  id="register-password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder="Create password"
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value)
+                    clearServerError()
+                  }}
+                  onBlur={() => handleBlur('password')}
+                  aria-invalid={Boolean(passwordError)}
+                  aria-describedby="register-password-policy register-password-error"
+                />
+                <button
+                  className="input-icon-btn"
+                  type="button"
+                  onClick={() => setShowPassword((currentValue) => !currentValue)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <i className={`ti ti-${showPassword ? 'eye-off' : 'eye'}`} aria-hidden="true" />
+                </button>
+              </div>
               <div
                 className="policy-box"
                 id="register-password-policy"
@@ -250,22 +263,33 @@ function Register() {
               <label className="field-label" htmlFor="register-confirm-password">
                 Confirm Password
               </label>
-              <input
-                className={`input ${confirmPasswordError ? 'error' : ''}`}
-                id="register-confirm-password"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Repeat password"
-                value={confirmPassword}
-                onChange={(event) => {
-                  setConfirmPassword(event.target.value)
-                  clearServerError()
-                }}
-                onBlur={() => handleBlur('confirmPassword')}
-                aria-invalid={Boolean(confirmPasswordError)}
-                aria-describedby={confirmPasswordError ? 'register-confirm-password-error' : undefined}
-              />
+              <div className="input-wrap">
+                <input
+                  className={`input ${confirmPasswordError ? 'error' : ''}`}
+                  id="register-confirm-password"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder="Repeat password"
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value)
+                    clearServerError()
+                  }}
+                  onBlur={() => handleBlur('confirmPassword')}
+                  aria-invalid={Boolean(confirmPasswordError)}
+                  aria-describedby={confirmPasswordError ? 'register-confirm-password-error' : undefined}
+                />
+                <button
+                  className="input-icon-btn"
+                  type="button"
+                  onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
+                  aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
+                  title={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
+                >
+                  <i className={`ti ti-${showConfirmPassword ? 'eye-off' : 'eye'}`} aria-hidden="true" />
+                </button>
+              </div>
               <div
                 className={`field-error ${confirmPasswordError ? 'visible' : ''}`}
                 id="register-confirm-password-error"
