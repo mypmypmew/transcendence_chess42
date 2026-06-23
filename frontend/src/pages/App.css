@@ -163,12 +163,12 @@ body {
 
 .cm-main-grid {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
+  grid-template-columns: 180px minmax(0, 1fr);
   gap: var(--space-5);
 }
 
 .cm-sidebar {
-  min-height: 720px;
+  min-height: 0;
   padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: 22px;
@@ -492,7 +492,7 @@ body {
 
 .cm-profile-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(220px, 1fr) minmax(240px, 1fr) minmax(320px, 2fr);
   gap: var(--space-5);
 }
 

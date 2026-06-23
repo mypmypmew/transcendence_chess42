@@ -1,5 +1,5 @@
 import AppLayout from '../components/AppLayout'
-import './Profile.css'
+import './App.css'
 
 const userProfile = {
   username: 'DemoPlayer',
@@ -51,26 +51,28 @@ function Profile() {
 		</button>
 	  }
 	>
-	  <div className="profile-grid">
-		<section className="profile-card card profile-summary" aria-labelledby="profile-title">
-		  <div className="card-body profile-summary-body">
-			<div className="avatar avatar-xl avatar-ring profile-avatar" aria-hidden="true">
+	  <div className="cm-profile-grid">
+		<section className="cm-panel" aria-labelledby="profile-title">
+		  <div className="cm-panel-body flex flex-col items-center gap-5 text-center">
+			<div className="avatar avatar-xl avatar-ring cm-avatar-photo" aria-hidden="true">
 			  {userProfile.avatarInitial}
 			</div>
 
-			<div className="profile-heading">
+			<div>
 			  <p className="label">Player profile</p>
-			  <h2 id="profile-title">{userProfile.username}</h2>
-			  <p className="text-secondary">Your ChessMate personal account</p>
+			  <h2 className="cm-section-title" id="profile-title">{userProfile.username}</h2>
+			  <p className="cm-muted">Your ChessMate personal account</p>
 			</div>
 
-			<div className="profile-info-list" aria-label="Profile details">
-			  <div className="profile-info-row">
-				<span className="text-muted">Rating</span>
+			<div className="cm-list" aria-label="Profile details">
+			  <div className="cm-list-row">
+				<i className="ti ti-chart-bar text-accent" aria-hidden="true" />
+				<span className="cm-muted">Rating</span>
 				<strong className="text-primary">{userProfile.rating}</strong>
 			  </div>
-			  <div className="profile-info-row">
-				<span className="text-muted">Email</span>
+			  <div className="cm-list-row">
+				<i className="ti ti-mail text-accent" aria-hidden="true" />
+				<span className="cm-muted">Email</span>
 				<strong className="text-primary truncate">{userProfile.email}</strong>
 			  </div>
 			</div>
@@ -82,54 +84,53 @@ function Profile() {
 		  </div>
 		</section>
 
-		<section className="profile-card card profile-history" aria-labelledby="history-title">
-		  <div className="profile-card-header">
+		<section className="cm-panel" aria-labelledby="history-title">
+		  <div className="cm-panel-header">
 			<div>
 			  <p className="label">Games</p>
-			  <h2 id="history-title">Match history</h2>
+			  <h2 className="cm-section-title" id="history-title">Match history</h2>
 			</div>
 			<span className="badge badge-accent">Preview</span>
 		  </div>
 
-		  <div className="card-body profile-list">
+		  <div className="cm-panel-body cm-list">
 			{recentMatches.map((match) => (
-			  <article className="profile-list-row" key={match.id}>
+			  <article className="cm-list-row" key={match.id}>
+				<i className="ti ti-chess text-accent" aria-hidden="true" />
 				<div className="min-w-0">
 				  <p className="text-primary truncate">vs {match.opponent}</p>
-				  <p className="text-muted">{match.moves} moves</p>
+				  <p className="cm-muted">{match.moves} moves</p>
 				</div>
-				<div className="profile-match-meta">
+				<div className="flex items-center gap-2">
 				  <span className={getResultBadgeClass(match.result)}>{match.result}</span>
-				  <span className="text-muted">{match.ratingChange}</span>
+				  <span className="cm-muted">{match.ratingChange}</span>
 				</div>
 			  </article>
 			))}
 		  </div>
 		</section>
 
-		<section className="profile-card card profile-friends" aria-labelledby="friends-title">
-		  <div className="profile-card-header">
+		<section className="cm-panel" aria-labelledby="friends-title">
+		  <div className="cm-panel-header">
 			<div>
 			  <p className="label">Community</p>
-			  <h2 id="friends-title">Friends list</h2>
+			  <h2 className="cm-section-title" id="friends-title">Friends list</h2>
 			</div>
 			<span className="badge badge-accent">{friends.length}</span>
 		  </div>
 
-		  <div className="card-body profile-list">
+		  <div className="cm-panel-body cm-list">
 			{friends.map((friend) => (
-			  <article className="profile-list-row" key={friend.id}>
-				<div className="flex items-center gap-3 min-w-0">
-				  <div className="avatar avatar-md profile-friend-avatar" aria-hidden="true">
-					{friend.name[0]}
-				  </div>
-				  <div className="min-w-0">
-					<p className="text-primary truncate">{friend.name}</p>
-					<p className="text-muted">Rating {friend.rating}</p>
-				  </div>
+			  <article className="cm-list-row" key={friend.id}>
+				<div className="avatar avatar-md cm-avatar-photo" aria-hidden="true">
+				  {friend.name[0]}
+				</div>
+				<div className="min-w-0">
+				  <p className="text-primary truncate">{friend.name}</p>
+				  <p className="cm-muted">Rating {friend.rating}</p>
 				</div>
 
-				<div className="profile-status">
+				<div className="flex items-center gap-2 cm-muted">
 				  <span className={`status-dot ${friend.status}`} aria-hidden="true" />
 				  <span>{statusLabels[friend.status]}</span>
 				</div>
