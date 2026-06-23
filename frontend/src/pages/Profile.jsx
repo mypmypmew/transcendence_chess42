@@ -2,23 +2,23 @@ import AppLayout from '../components/AppLayout'
 import './Profile.css'
 
 const userProfile = {
-  username: 'RoyalStrategist',
-  email: 'royal.strategist@example.com',
+  username: 'DemoPlayer',
+  email: 'demo.player@test.com',
   rating: 1768,
   avatarInitial: 'R',
 }
 
 const recentMatches = [
-  { id: 1, opponent: 'Artemis', result: 'Win', ratingChange: '+12', moves: 42 },
-  { id: 2, opponent: 'KnightRider', result: 'Loss', ratingChange: '-8', moves: 35 },
-  { id: 3, opponent: 'BishopBrain', result: 'Draw', ratingChange: '+0', moves: 58 },
+  { id: 1, opponent: 'Serhii', result: 'Win', ratingChange: '+12', moves: 42 },
+  { id: 2, opponent: 'Taulant', result: 'Loss', ratingChange: '-8', moves: 35 },
+  { id: 3, opponent: 'Tatiana', result: 'Draw', ratingChange: '+0', moves: 58 },
 ]
 
 const friends = [
-  { id: 1, name: 'Artemis', rating: 1812, status: 'online' },
-  { id: 2, name: 'KnightRider', rating: 1694, status: 'playing' },
-  { id: 3, name: 'BishopBrain', rating: 1740, status: 'online' },
-  { id: 4, name: 'QueenBee', rating: 1658, status: 'offline' },
+  { id: 1, name: 'Serhii', rating: 1812, status: 'online' },
+  { id: 2, name: 'Taulant', rating: 1694, status: 'playing' },
+  { id: 3, name: 'Tatiana', rating: 1740, status: 'online' },
+  { id: 4, name: 'Alima', rating: 1658, status: 'offline' },
 ]
 
 const statusLabels = {
