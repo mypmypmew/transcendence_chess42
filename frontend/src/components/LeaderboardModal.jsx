@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react'
 import './Modal.css'
 const players = [
-  { avatar: null, nickname: 'Serhii', rating: 2864, games: 200 },
-  { avatar: null, nickname: 'Taulant', rating: 2802, games: 150 },
-  { avatar: null, nickname: 'Tatiana', rating: 2750, games: 178 },
-  { avatar: null, nickname: 'Alima', rating: 2701, games: 132 },
-  { avatar: null, nickname: 'Mira', rating: 2410, games: 98 },
-  { avatar: null, nickname: 'Niko', rating: 2284, games: 88 },
-  { avatar: null, nickname: 'Elena', rating: 2180, games: 76 },
-  { avatar: null, nickname: 'Arman', rating: 2075, games: 64 },
-  { avatar: null, nickname: 'Lina', rating: 1960, games: 52 },
-  { avatar: null, nickname: 'David', rating: 1842, games: 44 },
+  { avatar: null, nickname: 'Serhii', rating: 1812, games: 200 },
+  { avatar: null, nickname: 'Taulant', rating: 1694, games: 150 },
+  { avatar: null, nickname: 'Tatiana', rating: 1740, games: 178 },
+  { avatar: null, nickname: 'Alima', rating: 1658, games: 132 },
+  { avatar: null, nickname: 'Mira', rating: 1775, games: 98 },
+  { avatar: null, nickname: 'Niko', rating: 1796, games: 88 },
+  { avatar: null, nickname: 'Elena', rating: 1726, games: 76 },
+  { avatar: null, nickname: 'Arman', rating: 1688, games: 64 },
+  { avatar: null, nickname: 'Lina', rating: 1632, games: 52 },
+  { avatar: null, nickname: 'David', rating: 1590, games: 44 },
   { avatar: null, nickname: 'Sofia', rating: 1768, games: 39 },
   /* Optional filters for discussion */
   /*{ rank: 11, avatar: null, nickname: 'Sofia', rating: 1768, games: 39, wins: 19, winRate: '49%' },*/
