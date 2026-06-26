@@ -35,6 +35,37 @@ function Leaderboard({ onClose, onOpenProfile }) {
             <button className="btn btn-ghost btn-sm" type="button" aria-label="Close leaderboard" onClick={handleClose}>Close</button>
           </div>
           <div className="cm-panel-body">
+			     {!hasPlayers ? (
+              <div className="empty-state">
+                <p className="text-muted">No games have been played yet.</p>
+              </div>
+            ) : (
+              <table className="cm-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Games</th>
+                    <th>Rating</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topPlayers.map((player, index) => (
+                    <tr key={player.id}>
+                      <td>{index + 1}</td>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar avatar-md cm-avatar-photo" aria-hidden="true">{player.avatar}</div>
+                          <button className="btn btn-ghost btn-sm" type="button" onClick={() => handleProfileOpen(player)}>{player.nickname}</button>
+                        </div>
+                      </td>
+                      <td>{player.games}</td>
+                      <td>{player.rating}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
       </div>
