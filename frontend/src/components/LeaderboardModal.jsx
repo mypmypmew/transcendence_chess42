@@ -12,6 +12,8 @@ const players = [
   { avatar: null, nickname: 'Lina', rating: 1960, games: 52 },
   { avatar: null, nickname: 'David', rating: 1842, games: 44 },
   { avatar: null, nickname: 'Sofia', rating: 1768, games: 39 },
+  /* Optional filters for discussion */
+  /*{ rank: 11, avatar: null, nickname: 'Sofia', rating: 1768, games: 39, wins: 19, winRate: '49%' },*/
 ]
 function LeaderboardModal({ onClose }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null)
