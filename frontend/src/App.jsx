@@ -7,7 +7,6 @@ import GameLobby from './pages/GameLobby'
 import Game from './pages/Game'
 import Analysis from './pages/Analysis'
 import Profile from './pages/Profile'
-import Leaderboard from './pages/Leaderboard'
 import Friends from './pages/Friends'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings'
@@ -26,7 +25,7 @@ function App() {
         <Route path="/game" element={<Game />} />
 		<Route path="/analysis" element={<Analysis />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
+        {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
         <Route path="/friends" element={<Friends />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/settings" element={<Settings />} />
