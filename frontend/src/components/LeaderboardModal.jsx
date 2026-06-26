@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react'
 import './Modal.css'
 const players = [
-  { rank: 1, avatar: null, nickname: 'Serhii', rating: 2864, games: 200 },
-  { rank: 2, avatar: null, nickname: 'Taulant', rating: 2802, games: 150 },
-  { rank: 3, avatar: null, nickname: 'Tatiana', rating: 2750, games: 178 },
-  { rank: 4, avatar: null, nickname: 'Alima', rating: 2701, games: 132 },
-  { rank: 5, avatar: null, nickname: 'Mira', rating: 2410, games: 98 },
-  { rank: 6, avatar: null, nickname: 'Niko', rating: 2284, games: 88 },
-  { rank: 7, avatar: null, nickname: 'Elena', rating: 2180, games: 76 },
-  { rank: 8, avatar: null, nickname: 'Arman', rating: 2075, games: 64 },
-  { rank: 9, avatar: null, nickname: 'Lina', rating: 1960, games: 52 },
-  { rank: 10, avatar: null, nickname: 'David', rating: 1842, games: 44 },
-  { rank: 11, avatar: null, nickname: 'Sofia', rating: 1768, games: 39 },
+  { avatar: null, nickname: 'Serhii', rating: 2864, games: 200 },
+  { avatar: null, nickname: 'Taulant', rating: 2802, games: 150 },
+  { avatar: null, nickname: 'Tatiana', rating: 2750, games: 178 },
+  { avatar: null, nickname: 'Alima', rating: 2701, games: 132 },
+  { avatar: null, nickname: 'Mira', rating: 2410, games: 98 },
+  { avatar: null, nickname: 'Niko', rating: 2284, games: 88 },
+  { avatar: null, nickname: 'Elena', rating: 2180, games: 76 },
+  { avatar: null, nickname: 'Arman', rating: 2075, games: 64 },
+  { avatar: null, nickname: 'Lina', rating: 1960, games: 52 },
+  { avatar: null, nickname: 'David', rating: 1842, games: 44 },
+  { avatar: null, nickname: 'Sofia', rating: 1768, games: 39 },
 ]
 function LeaderboardModal({ onClose }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null)
