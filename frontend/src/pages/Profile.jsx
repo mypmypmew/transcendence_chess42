@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 import AppLayout from '../components/AppLayout'
 import './App.css'
 
@@ -40,22 +42,56 @@ function getResultBadgeClass(result) {
 }
 
 function Profile() {
+  const avatarInputRef = useRef(null)
+  const [avatarPreview, setAvatarPreview] = useState(null)
+
+  useEffect(() => {
+	return () => {
+	  if (avatarPreview) {
+		URL.revokeObjectURL(avatarPreview)
+	  }
+	}
+  }, [avatarPreview])
+
+  function openAvatarPicker() {
+	avatarInputRef.current?.click()
+  }
+
+  function handleAvatarChange(event) {
+	const file = event.target.files?.[0]
+
+	if (!file || !file.type.startsWith('image/')) {
+	  return
+	}
+
+	if (avatarPreview) {
+	  URL.revokeObjectURL(avatarPreview)
+	}
+
+	setAvatarPreview(URL.createObjectURL(file))
+  }
+
   return (
 	<AppLayout
 	  eyebrow="Personal account"
 	  title="My profile"
-	  actions={
-		<button className="btn btn-primary" type="button">
-		  <i className="ti ti-camera" aria-hidden="true" />
-		  Change avatar
-		</button>
-	  }
 	>
 	  <div className="cm-profile-grid">
 		<section className="cm-panel" aria-labelledby="profile-title">
 		  <div className="cm-panel-body flex flex-col items-center gap-5 text-center">
+			<input
+			  accept="image/*"
+			  hidden
+			  onChange={handleAvatarChange}
+			  ref={avatarInputRef}
+			  type="file"
+			/>
 			<div className="avatar avatar-xl avatar-ring cm-avatar-photo" aria-hidden="true">
-			  {userProfile.avatarInitial}
+			  {avatarPreview ? (
+				<img alt="" className="cm-avatar-image" src={avatarPreview} />
+			  ) : (
+				userProfile.avatarInitial
+			  )}
 			</div>
 
 			<div>
@@ -77,7 +113,11 @@ function Profile() {
 			  </div>
 			</div>
 
-			<button className="btn btn-ghost btn-full" type="button">
+			{avatarPreview && (
+			  <p className="cm-muted">New avatar selected</p>
+			)}
+
+			<button className="btn btn-primary" type="button" onClick={openAvatarPicker}>
 			  <i className="ti ti-camera" aria-hidden="true" />
 			  Change avatar
 			</button>

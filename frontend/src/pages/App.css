@@ -355,6 +355,12 @@ body {
   border: 2px solid var(--accent-border);
 }
 
+.cm-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .cm-board-layout {
   display: grid;
   grid-template-columns: minmax(180px, 250px) minmax(360px, 560px) minmax(240px, 310px);
