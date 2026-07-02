@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react'
+
+import UserProfileModal from './UserProfileModal.jsx'
 import './Modal.css'
 const players = [
-  { avatar: null, nickname: 'Serhii', rating: 1812, games: 200 },
-  { avatar: null, nickname: 'Taulant', rating: 1694, games: 150 },
-  { avatar: null, nickname: 'Tatiana', rating: 1740, games: 178 },
-  { avatar: null, nickname: 'Alima', rating: 1658, games: 132 },
-  { avatar: null, nickname: 'Mira', rating: 1775, games: 98 },
-  { avatar: null, nickname: 'Niko', rating: 1796, games: 88 },
-  { avatar: null, nickname: 'Elena', rating: 1726, games: 76 },
-  { avatar: null, nickname: 'Arman', rating: 1688, games: 64 },
-  { avatar: null, nickname: 'Lina', rating: 1632, games: 52 },
-  { avatar: null, nickname: 'David', rating: 1590, games: 44 },
-  { avatar: null, nickname: 'Sofia', rating: 1768, games: 39 },
+  { avatar: null, nickname: 'Serhii', rating: 1812, games: 200, isFriend: true },
+  { avatar: null, nickname: 'Taulant', rating: 1694, games: 150, isFriend: true },
+  { avatar: null, nickname: 'Tatiana', rating: 1740, games: 178, isFriend: true },
+  { avatar: null, nickname: 'Alima', rating: 1658, games: 132, isFriend: true },
+  { avatar: null, nickname: 'Mira', rating: 1775, games: 98, isFriend: false },
+  { avatar: null, nickname: 'Niko', rating: 1796, games: 88, isFriend: false },
+  { avatar: null, nickname: 'Elena', rating: 1726, games: 76, isFriend: false },
+  { avatar: null, nickname: 'Arman', rating: 1688, games: 64, isFriend: false },
+  { avatar: null, nickname: 'Lina', rating: 1632, games: 52, isFriend: false },
+  { avatar: null, nickname: 'David', rating: 1590, games: 44, isFriend: false },
+  { avatar: null, nickname: 'Sofia', rating: 1768, games: 39, isFriend: false },
   /* Optional filters for discussion */
   /*{ rank: 11, avatar: null, nickname: 'Sofia', rating: 1768, games: 39, wins: 19, winRate: '49%' },*/
 ]
@@ -88,37 +90,7 @@ function LeaderboardModal({ onClose }) {
         </div>
       </div>
       {selectedPlayer && (
-        <div className="cm-modal cm-modal--nested" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
-          <button className="cm-modal__backdrop" type="button" aria-label="Close profile modal" onClick={() => setSelectedPlayer(null)} />
-          <div className="cm-panel cm-modal__content cm-modal__content--sm">
-            <div className="cm-panel-header">
-              <div className="flex items-center gap-3">
-                <div className="avatar avatar-md cm-avatar-photo">
-                  {selectedPlayer.avatar ? <img className="cm-avatar-image" src={selectedPlayer.avatar} alt="" /> : selectedPlayer.nickname[0]}
-                </div>
-                <div>
-                  <h2 className="cm-section-title" id="profile-modal-title">{selectedPlayer.nickname}</h2>
-                  <p className="cm-muted">Profile modal will be implemented here</p>
-                </div>
-              </div>
-              <button className="btn btn-ghost btn-icon" type="button" aria-label="Close profile modal" onClick={() => setSelectedPlayer(null)}>
-                <i className="ti ti-x" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="cm-panel-body">
-              <div className="cm-list">
-                <div className="cm-list-row">
-                  <span className="text-muted">Rating</span>
-                  <strong className="text-primary">{selectedPlayer.rating}</strong>
-                </div>
-                <div className="cm-list-row">
-                  <span className="text-muted">Games</span>
-                  <strong className="text-primary">{selectedPlayer.games}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <UserProfileModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />
       )}
     </div>
   )
