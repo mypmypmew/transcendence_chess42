@@ -92,6 +92,18 @@ function UserProfileModal({ player, onClose }) {
               )
             })}
           </div>
+		  
+		  <div className="cm-modal__actions">
+            <Link className="btn btn-primary" to="/chat" onClick={onClose}>
+              Message
+            </Link>
+            <Link className="btn btn-ghost" to="/game-lobby" onClick={onClose}>
+              Challenge
+            </Link>
+            <button className="btn btn-ghost" type="button">
+              {player.isFriend ? 'Remove friend' : 'Add friend'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
