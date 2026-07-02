@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-
 import Sidebar from './Sidebar.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
+import LeaderboardModal from './LeaderboardModal.jsx'
 
 function AppLayout({ eyebrow, title, actions, children }) {
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
+  
   return (
     <div className="cm-shell fade-in">
       <div className="cm-backdrop" aria-hidden="true" />
@@ -13,28 +16,24 @@ function AppLayout({ eyebrow, title, actions, children }) {
             <i className="ti ti-crown" aria-hidden="true" />
             <span>ChessMate</span>
           </NavLink>
-
           <div className="cm-header-copy">
             <p className="cm-eyebrow">{eyebrow}</p>
             <h1>{title}</h1>
           </div>
-
           <div className="cm-header-actions">
             {actions}
             <ThemeToggle />
           </div>
         </header>
-
         <div className="cm-main-grid">
-          <Sidebar />
-
+          <Sidebar onOpenLeaderboard={() => setIsLeaderboardOpen(true)} />
           <main className="cm-content">
             {children}
           </main>
         </div>
       </div>
+      {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
     </div>
   )
 }
-
 export default AppLayout
