@@ -32,6 +32,12 @@
   align-items: center;
   gap: var(--space-3);
 }
+.cm-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
 @media (max-width: 700px) {
   .cm-modal {
     padding: var(--space-3);
