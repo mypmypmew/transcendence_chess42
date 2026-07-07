@@ -136,7 +136,59 @@ function Chat() {
           </div>
         </section>
         <section className="cm-panel cm-chat-shell" aria-labelledby="chat-active-title">
-        
+          {!activeConversation && (
+            <div className="cm-panel-body">
+              <div className="empty-state">
+                <i className="ti ti-message" aria-hidden="true" />
+                <p className="text-primary">Select a conversation</p>
+                <span className="text-muted">Choose a dialog from the left side.</span>
+              </div>
+            </div>
+          )}
+          {activeConversation && (
+            <>
+              <div className="cm-panel-header">
+                <div className="flex items-center gap-3">
+                  <div className="avatar avatar-md cm-avatar-photo">
+                    {activeConversation.contact.avatar ? (
+                      <img className="cm-avatar-image" src={activeConversation.contact.avatar} alt="" />
+                    ) : (
+                      activeConversation.contact.nickname[0]
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="cm-section-title" id="chat-active-title">{activeConversation.contact.nickname}</h2>
+                    <p className="cm-muted">{activeConversation.contact.status}</p>
+                  </div>
+                </div>
+                <button className="btn btn-ghost btn-icon" type="button" aria-label="Close conversation" onClick={handleCloseConversation}>
+                  <i className="ti ti-x" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="cm-panel-body">
+                <div className="cm-message-list">
+                  {activeConversation.messages.map((message) => (
+                    <div className={message.sender === 'me' ? 'cm-message mine' : 'cm-message'} key={message.id}>
+                      {message.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <form className="cm-panel-body flex gap-3" onSubmit={handleSendMessage}>
+                <input
+                  className="input flex-1"
+                  type="text"
+                  value={messageText}
+                  placeholder="Write a message..."
+                  aria-label="Message text"
+                  onChange={(event) => setMessageText(event.target.value)}
+                />
+                <button className="btn btn-primary" type="submit" disabled={!messageText.trim()}>
+                  Send
+                </button>
+              </form>
+            </>
+          )}
         </section>
       </div>
     </AppLayout>
