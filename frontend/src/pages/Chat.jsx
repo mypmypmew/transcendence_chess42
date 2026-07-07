@@ -93,7 +93,8 @@ function Chat() {
   }
   return (
     <AppLayout eyebrow="Messages" title="Chat">
-      <div className="cm-page-grid" style={{ gridTemplateColumns: 'minmax(220px, 1fr) minmax(0, 4fr)' }}>
+		<div className="cm-page-grid chat">
+      {/* <div className="cm-page-grid" style={{ gridTemplateColumns: 'minmax(220px, 1fr) minmax(0, 4fr)' }}> */}
         <section className="cm-panel" aria-labelledby="chat-list-title">
           <div className="cm-panel-header">
             <div>
