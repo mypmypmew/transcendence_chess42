@@ -239,6 +239,10 @@ body {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.cm-page-grid.chat {
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 4fr);
+}
+
 .cm-panel {
   border: 1px solid var(--border);
   border-radius: 22px;
@@ -555,6 +559,7 @@ body {
   .cm-main-grid,
   .cm-page-grid.two,
   .cm-page-grid.three,
+  .cm-page-grid.chat,
   .cm-board-layout,
   .cm-profile-grid {
     grid-template-columns: 1fr;
