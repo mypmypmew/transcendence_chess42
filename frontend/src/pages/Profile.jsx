@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
+import MatchHistory from '../components/MatchHistory'
 import './App.css'
 
 const userProfile = {
@@ -9,12 +10,6 @@ const userProfile = {
   email: 'demo.player@test.com',
   rating: 1768,
 }
-
-const recentMatches = [
-  { id: 1, opponent: 'Serhii', result: 'Win', ratingChange: '+12', moves: 42 },
-  { id: 2, opponent: 'Taulant', result: 'Loss', ratingChange: '-8', moves: 35 },
-  { id: 3, opponent: 'Tatiana', result: 'Draw', ratingChange: '+0', moves: 58 },
-]
 
 const friends = [
   { id: 1, name: 'Serhii', rating: 1812, status: 'online' },
@@ -27,18 +22,6 @@ const statusLabels = {
   online: 'Online',
   playing: 'In game',
   offline: 'Offline',
-}
-
-function getResultBadgeClass(result) {
-  if (result === 'Win') {
-	return 'badge badge-win'
-  }
-
-  if (result === 'Loss') {
-	return 'badge badge-loss'
-  }
-
-  return 'badge badge-draw'
 }
 
 function Profile() {
@@ -123,31 +106,7 @@ function Profile() {
 		  </div>
 		</section>
 
-		<section className="cm-panel" aria-labelledby="history-title">
-		  <div className="cm-panel-header">
-			<div>
-			  <p className="label">Games</p>
-			  <h2 className="cm-section-title" id="history-title">Match history</h2>
-			</div>
-			<span className="badge badge-accent">Preview</span>
-		  </div>
-
-		  <div className="cm-panel-body cm-list">
-			{recentMatches.map((match) => (
-			  <article className="cm-list-row" key={match.id}>
-				<i className="ti ti-chess-rook text-accent" aria-hidden="true" />
-				<div className="min-w-0">
-				  <p className="text-primary truncate">vs {match.opponent}</p>
-				  <p className="cm-muted">{match.moves} moves</p>
-				</div>
-				<div className="flex items-center gap-2">
-				  <span className={getResultBadgeClass(match.result)}>{match.result}</span>
-				  <span className="cm-muted">{match.ratingChange}</span>
-				</div>
-			  </article>
-			))}
-		  </div>
-		</section>
+		<MatchHistory />
 
 		<section className="cm-panel" aria-labelledby="friends-title">
 		  <div className="cm-panel-header">
