@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react'
 import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
+import UserProfileModal from '../components/UserProfileModal'
+import { Link } from 'react-router-dom'
+
 
 const mockFriends = [
   { id: 1, avatar: null, nickname: 'Serhii', rating: 1812, games: 200, online: true },
@@ -18,32 +21,39 @@ const mockFriends = [
 ]
 
 export default function Friends() {
-  const [friends, setFriends] = useState([...mockFriends])
+	const [friends, setFriends] = useState([...mockFriends])
+  const [selectedFriend, setSelectedFriend] = useState(null)
 
+	
 // TODO add API integration from backend  remove friend
-  const handleRemoveFriend = (friendId) => {
-    setFriends((current) => current.filter((friend) => friend.id !== friendId))
-  }
+	const handleRemoveFriend = (friendId) => {
+    // setFriends((current) => current.filter((friend) => friend.id !== friendId))
+	<button className="btn btn-danger btn-sm" onClick={() => handleRemoveFriend(friend.id)}>
+  	Remove
+	</button>
+  	}
 
-  const handleOpenProfile = (friend) => {
-    // TODO: open profile modal
-    console.log('Open profile:', friend.nickname)
-  }
+	const handleOpenProfile = (friend) => {
+    setSelectedFriend(friend)
+  	}
 
-  const handleMessage = (friend) => {
-    // TODO: open chat
-    console.log('Message:', friend.nickname)
-  }
+	const handleMessage = (friend) => {
+	<Link to={`/chat/${friend.id}`} className="btn btn-ghost btn-sm">
+  	Message
+	</Link>
+	}
 
-  const handleChallenge = (friend) => {
-    // TODO: open game lobby
-    console.log('Challenge:', friend.nickname)
-  }
-// TODO add API integration from backend to add friend
-  const handleAddFriend = () => {
+	const handleChallenge = (friend) => {
+	<Link to={`/game-lobby?opponent=${friend.id}`} className="btn btn-ghost btn-sm">
+  	Challenge
+	</Link>
+	}
+	
+	// TODO add API integration from backend to add friend
+	const handleAddFriend = () => {
     // TODO: open friend addition form??
     console.log('Add friend')
-  }
+	}
 
   return (
     <AppLayout 
@@ -125,6 +135,10 @@ export default function Friends() {
           </div>
         </section>
       </div>
+
+	  {selectedFriend && (
+	    <UserProfileModal player={selectedFriend} onClose={() => setSelectedFriend(null)} />
+	  )}
     </AppLayout>
   )
 }
