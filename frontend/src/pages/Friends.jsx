@@ -21,8 +21,18 @@ const mockFriends = [
 ]
 
 export default function Friends() {
-	const [friends, setFriends] = useState([...mockFriends])
+  const [friends, setFriends] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedFriend, setSelectedFriend] = useState(null)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setFriends([...mockFriends])
+      setIsLoading(false)
+    }, 3000)
+
+    return () => window.clearTimeout(timer)
+  }, [])
 
 	
 // TODO add API integration from backend  remove friend
@@ -74,7 +84,11 @@ export default function Friends() {
             </div>
           </div>
           <div className="cm-panel-body">
-            {friends.length === 0 ? (
+            {isLoading ? (
+              <div className="empty-state">
+                <p>Loading friends...</p>
+              </div>
+            ) : friends.length === 0 ? (
               <div className="empty-state">
                 <p>No friends yet</p>
               </div>
