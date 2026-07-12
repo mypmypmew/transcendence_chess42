@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
 const conversations = [
   {
@@ -118,13 +119,7 @@ function Chat() {
                     type="button"
                     onClick={() => setActiveConversationId(conversation.id)}
                   >
-                    <div className="avatar avatar-md cm-avatar-photo">
-                      {conversation.contact.avatar ? (
-                        <img className="cm-avatar-image" src={conversation.contact.avatar} alt="" />
-                      ) : (
-                        conversation.contact.nickname[0]
-                      )}
-                    </div>
+                    <Avatar avatar={conversation.contact.avatar} name={conversation.contact.nickname} className="avatar avatar-md" />
                     <div className="min-w-0">
                       <strong className="text-primary">{conversation.contact.nickname}</strong>
                       <p className="cm-muted">{conversation.lastMessage}</p>
@@ -149,13 +144,7 @@ function Chat() {
             <>
               <div className="cm-panel-header">
                 <div className="flex items-center gap-3">
-                  <div className="avatar avatar-md cm-avatar-photo">
-                    {activeConversation.contact.avatar ? (
-                      <img className="cm-avatar-image" src={activeConversation.contact.avatar} alt="" />
-                    ) : (
-                      activeConversation.contact.nickname[0]
-                    )}
-                  </div>
+                  <Avatar avatar={activeConversation.contact.avatar} name={activeConversation.contact.nickname} className="avatar avatar-md" />
                   <div>
                     <h2 className="cm-section-title" id="chat-active-title">{activeConversation.contact.nickname}</h2>
                     <p className="cm-muted">{activeConversation.contact.status}</p>

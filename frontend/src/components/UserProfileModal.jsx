@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 
+import Avatar from './Avatar.jsx'
+
 function getMockMatchHistory(profileOwner) {
   // TODO: Replace the mock with backend match history.
   // This keeps modal mock data aligned with Profile.jsx, but from the selected player's perspective.
@@ -61,9 +63,7 @@ function UserProfileModal({ player, onClose }) {
       <div className="cm-panel cm-modal__content cm-modal__content--sm">
         <div className="cm-panel-header">
           <div className="flex items-center gap-3">
-            <div className="avatar avatar-md cm-avatar-photo">
-              {player.avatar ? <img className="cm-avatar-image" src={player.avatar} alt="" /> : player.nickname[0]}
-            </div>
+            <Avatar avatar={player.avatar} name={player.nickname} className="avatar avatar-md" aria-hidden="true" />
             <div>
               <h2 className="cm-section-title" id="profile-modal-title">{player.nickname}</h2>
               <p className="cm-muted">Rating {player.rating}</p>

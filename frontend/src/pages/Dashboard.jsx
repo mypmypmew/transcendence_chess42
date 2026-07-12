@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout'
 import './App.css'
 
@@ -115,7 +116,7 @@ function Dashboard() {
           <div className="cm-panel-body cm-list">
             {recentGames.map((game) => (
               <div className="cm-list-row" key={game.opponent}>
-                <div className="avatar avatar-md cm-avatar-photo">{game.opponent[0]}</div>
+                <Avatar avatar={null} name={game.opponent} className="avatar avatar-md" aria-hidden="true" />
                 <div className="min-w-0">
                   <p className="text-primary truncate">vs {game.opponent}</p>
                   <p className="cm-muted">{game.time}</p>

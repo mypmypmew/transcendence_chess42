@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import './App.css'
 
@@ -7,7 +8,6 @@ const userProfile = {
   username: 'DemoPlayer',
   email: 'demo.player@test.com',
   rating: 1768,
-  avatarInitial: 'R',
 }
 
 const recentMatches = [
@@ -86,13 +86,12 @@ function Profile() {
 			  ref={avatarInputRef}
 			  type="file"
 			/>
-			<div className="avatar avatar-xl avatar-ring cm-avatar-photo" aria-hidden="true">
-			  {avatarPreview ? (
-				<img alt="" className="cm-avatar-image" src={avatarPreview} />
-			  ) : (
-				userProfile.avatarInitial
-			  )}
-			</div>
+			<Avatar
+			  avatar={avatarPreview}
+			  name={userProfile.username}
+			  className="avatar avatar-xl avatar-ring"
+			  aria-hidden="true"
+			/>
 
 			<div>
 			  <p className="label">Player profile</p>
@@ -162,9 +161,7 @@ function Profile() {
 		  <div className="cm-panel-body cm-list">
 			{friends.map((friend) => (
 			  <article className="cm-list-row" key={friend.id}>
-				<div className="avatar avatar-md cm-avatar-photo" aria-hidden="true">
-				  {friend.name[0]}
-				</div>
+				<Avatar avatar={null} name={friend.name} className="avatar avatar-md" aria-hidden="true" />
 				<div className="min-w-0">
 				  <p className="text-primary truncate">{friend.name}</p>
 				  <p className="cm-muted">Rating {friend.rating}</p>
