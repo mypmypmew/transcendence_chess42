@@ -14,10 +14,6 @@ const mockFriends = [
   { id: 5, avatar: null, nickname: 'Mira', rating: 1775, games: 98, online: true },
   { id: 6, avatar: null, nickname: 'Niko', rating: 1796, games: 88, online: false },
   { id: 7, avatar: null, nickname: 'Elena', rating: 1726, games: 76, online: false },
-  { id: 8, avatar: null, nickname: 'Arman', rating: 1688, games: 64, online: true },
-  { id: 9, avatar: null, nickname: 'Lina', rating: 1632, games: 52, online: false },
-  { id: 10, avatar: null, nickname: 'David', rating: 1590, games: 44, online: true },
-  { id: 11, avatar: null, nickname: 'Sofia', rating: 1768, games: 39, online: false },
 ]
 
 export default function Friends() {
@@ -35,13 +31,10 @@ export default function Friends() {
   }, [])
 
 	
-// TODO add API integration from backend  remove friend
-	const handleRemoveFriend = (friendId) => {
-    // setFriends((current) => current.filter((friend) => friend.id !== friendId))
-	<button className="btn btn-danger btn-sm" onClick={() => handleRemoveFriend(friend.id)}>
-  	Remove
-	</button>
-  	}
+  const handleRemoveFriend = (friendId) => {
+    setFriends((current) => current.filter((friend) => friend.id !== friendId))
+    setSelectedFriend((current) => (current?.id === friendId ? null : current))
+  }
 
 	const handleOpenProfile = (friend) => {
     setSelectedFriend(friend)
