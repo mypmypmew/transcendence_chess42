@@ -135,7 +135,7 @@ function Profile() {
 		  <div className="cm-panel-body cm-list">
 			{recentMatches.map((match) => (
 			  <article className="cm-list-row" key={match.id}>
-				<i className="ti ti-chess text-accent" aria-hidden="true" />
+				<i className="ti ti-chess-rook text-accent" aria-hidden="true" />
 				<div className="min-w-0">
 				  <p className="text-primary truncate">vs {match.opponent}</p>
 				  <p className="cm-muted">{match.moves} moves</p>
