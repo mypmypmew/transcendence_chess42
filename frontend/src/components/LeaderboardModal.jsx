@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import Avatar from './Avatar.jsx'
 import UserProfileModal from './UserProfileModal.jsx'
 import './Modal.css'
 const players = [
@@ -72,9 +73,7 @@ function LeaderboardModal({ onClose }) {
                     <td>{player.rank}</td>
                     <td>
                       <div className="flex items-center gap-3">
-                        <div className="avatar avatar-md cm-avatar-photo">
-                          {player.avatar ? <img className="cm-avatar-image" src={player.avatar} alt="" /> : player.nickname[0]}
-                        </div>
+                        <Avatar avatar={player.avatar} name={player.nickname} className="avatar avatar-md" />
                         <button className="btn btn-ghost btn-sm" type="button" onClick={() => setSelectedPlayer(player)}>
                           {player.nickname}
                         </button>
