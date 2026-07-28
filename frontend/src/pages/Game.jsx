@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import AppLayout from '../components/AppLayout.jsx'
 import GameOverModal from '../components/GameOverModal.jsx'
@@ -5,9 +6,21 @@ import useChessGame from '../hooks/useChessGame.js'
 
 function Game() {
   const { fen, history, status, isGameOver, gameOverInfo, makeMove, restartGame } = useChessGame()
+  const [isModalDismissed, setIsModalDismissed] = useState(false)
+
+  useEffect(() => {
+    if (isGameOver) {
+      setIsModalDismissed(false)
+    }
+  }, [isGameOver])
 
   function handlePieceDrop({ sourceSquare, targetSquare }) {
     return makeMove(sourceSquare, targetSquare)
+  }
+
+  function handleRestart() {
+    setIsModalDismissed(false)
+    restartGame()
   }
 
   const chessboardOptions = {
@@ -20,13 +33,13 @@ function Game() {
       eyebrow="Game Screen"
       title="Play Chess"
       actions={
-        <button className="btn btn-ghost" type="button" onClick={restartGame}>
+        <button className="btn btn-ghost" type="button" onClick={handleRestart}>
           Restart
         </button>
       }
     >
       <div className="cm-board-layout">
-        <section className={`cm-game-card${isGameOver ? ' cm-game-card--over' : ''}`}>
+        <section className="cm-game-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="label">Game status</p>
@@ -35,16 +48,19 @@ function Game() {
             <i className="ti ti-chess-knight text-accent" aria-hidden="true" />
           </div>
         </section>
-        <section className="cm-game-card">
-          <div style={{ width: 560 }}>
-            <Chessboard options={chessboardOptions} />
-          </div>
-        </section>
-        {/* ...move history без изменений... */}
+       <section className="cm-game-card cm-chessboard-card">
+		<div className="cm-chessboard-wrapper">
+			<Chessboard options={chessboardOptions} />
+		</div>
+		</section>
       </div>
 
-      {isGameOver && (
-        <GameOverModal gameOverInfo={gameOverInfo} onRestart={restartGame} />
+      {isGameOver && !isModalDismissed && (
+        <GameOverModal
+          gameOverInfo={gameOverInfo}
+          onClose={() => setIsModalDismissed(true)}
+          onRestart={handleRestart}
+        />
       )}
     </AppLayout>
   )
