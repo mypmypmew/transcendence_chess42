@@ -1,34 +1,46 @@
 :root {
   color-scheme: dark;
+
   --bg-base: #0f172a;
   --bg-surface: #142336;
   --bg-elevated: #0b1624;
   --bg-overlay: rgba(4, 10, 18, 0.72);
   --bg-pattern: none;
+
   --accent: #d4a037;
   --accent-hover: #ffbd59;
   --accent-muted: rgba(212, 160, 55, 0.16);
   --accent-border: rgba(212, 160, 55, 0.38);
   --accent-text: #fff8e8;
-  --text-primary: #f7f9ff;
-  --text-secondary: #d7deea;
-  --text-muted: #95a4b8;
-  --text-hint: #637388;
+
   --border: rgba(148, 163, 184, 0.22);
   --border-subtle: rgba(148, 163, 184, 0.16);
   --border-surface: rgba(148, 163, 184, 0.28);
+
   --color-win: #6cc56f;
   --color-win-bg: rgba(108, 197, 111, 0.16);
   --color-loss: #ff7777;
   --color-loss-bg: rgba(255, 119, 119, 0.14);
   --color-draw: #c0c8d4;
   --color-draw-bg: rgba(192, 200, 212, 0.12);
+
   --color-online: #60d96f;
   --color-playing: #d4a037;
   --color-offline: #5b687a;
+
   --color-danger: #ff7b7b;
   --color-danger-bg: rgba(255, 123, 123, 0.12);
   --color-danger-border: rgba(255, 123, 123, 0.36);
+
+  --text-primary: #f7f9ff;
+  --text-secondary: #dfe5f0;
+  --text-muted: #aab6c7;
+  --text-hint: #8b96a8;
+
+  /* Text colors used on surfaces that always have a dark background */
+  --text-on-dark: #f7f9ff;
+  --text-on-dark-secondary: #dfe5f0;
+  --text-on-dark-muted: #aab6c7;
 }
 
 body {
@@ -194,7 +206,10 @@ body {
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
   border: 1px solid transparent;
-  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base);
 }
 
 .cm-nav-link:hover,
@@ -288,6 +303,7 @@ body {
   border: 1px solid var(--accent-border);
   position: relative;
   overflow: hidden;
+  color: var(--text-on-dark);
 }
 
 .cm-hero-card::after {
@@ -306,6 +322,21 @@ body {
   z-index: 1;
 }
 
+.cm-hero-card .text-primary,
+.cm-hero-card .cm-section-title {
+  color: var(--text-on-dark);
+}
+
+.cm-hero-card .text-secondary,
+.cm-hero-card .label {
+  color: var(--text-on-dark-secondary);
+}
+
+.cm-hero-card .text-muted,
+.cm-hero-card .cm-muted {
+  color: var(--text-on-dark-muted);
+}
+
 .cm-hero-title {
   font-size: clamp(34px, 4vw, 54px);
 }
@@ -322,8 +353,10 @@ body {
   border-radius: var(--radius-xl);
   background: rgba(12, 26, 42, 0.78);
   border: 1px solid var(--border);
-  color: var(--text-primary);
-  transition: transform var(--transition-base), border-color var(--transition-base);
+  color: var(--text-on-dark);
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .cm-action-card:hover {
@@ -335,6 +368,22 @@ body {
   color: var(--accent-hover);
   font-size: 28px;
   margin-bottom: var(--space-3);
+  color: var(--text-on-dark);
+}
+
+.cm-action-card .text-primary,
+.cm-action-card .cm-section-title {
+  color: var(--text-on-dark);
+}
+
+.cm-action-card .text-secondary,
+.cm-action-card .label {
+  color: var(--text-on-dark-secondary);
+}
+
+.cm-action-card .text-muted,
+.cm-action-card .cm-muted {
+  color: var(--text-on-dark-muted);
 }
 
 .cm-list {
@@ -351,6 +400,22 @@ body {
   border-radius: var(--radius-lg);
   background: rgba(10, 22, 35, 0.68);
   border: 1px solid var(--border-subtle);
+  color: var(--text-on-dark);
+}
+
+.cm-list-row .text-primary,
+.cm-list-row .cm-section-title {
+  color: var(--text-on-dark);
+}
+
+.cm-list-row .text-secondary,
+.cm-list-row .label {
+  color: var(--text-on-dark-secondary);
+}
+
+.cm-list-row .text-muted,
+.cm-list-row .cm-muted {
+  color: var(--text-on-dark-muted);
 }
 
 .cm-avatar-photo {
@@ -378,6 +443,28 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background: rgba(8, 20, 33, 0.82);
+  color: var(--text-on-dark);
+}
+
+.cm-player-card .text-primary,
+.cm-game-card .text-primary,
+.cm-player-card .cm-section-title,
+.cm-game-card .cm-section-title {
+  color: var(--text-on-dark);
+}
+
+.cm-player-card .text-secondary,
+.cm-game-card .text-secondary,
+.cm-player-card .label,
+.cm-game-card .label {
+  color: var(--text-on-dark-secondary);
+}
+
+.cm-player-card .text-muted,
+.cm-game-card .text-muted,
+.cm-player-card .cm-muted,
+.cm-game-card .cm-muted {
+  color: var(--text-on-dark-muted);
 }
 
 .cm-clock {
@@ -387,7 +474,7 @@ body {
   border: 1px solid var(--accent-border);
   font-family: var(--font-mono);
   font-size: 28px;
-  color: var(--text-primary);
+  color: var(--text-on-dark);
   text-align: center;
   margin-top: var(--space-3);
 }
@@ -446,7 +533,7 @@ body {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  color: var(--text-secondary);
+  color: var(--text-on-dark-secondary);
 }
 
 .cm-move-row.active {
@@ -488,7 +575,7 @@ body {
 .cm-tab {
   border: 1px solid var(--border);
   background: rgba(8, 20, 33, 0.74);
-  color: var(--text-secondary);
+  color: var(--text-on-dark-secondary);
   border-radius: var(--radius-md);
   min-height: 36px;
   padding: 0 var(--space-4);
@@ -546,13 +633,13 @@ body {
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   background: rgba(20, 35, 54, 0.82);
-  color: var(--text-secondary);
+  color: var(--text-on-dark-secondary);
 }
 
 .cm-message.mine {
   justify-self: end;
-  background: rgba(212, 160, 55, 0.24);
-  color: var(--text-primary);
+  background: rgba(202, 136, 60, 0.803);
+  color: var(--text-on-dark); #b87a24
 }
 
 @media (max-width: 1120px) {
@@ -608,35 +695,46 @@ body {
   }
 }
 
-
 /* Light theme overrides */
 html[data-theme='light'] {
   color-scheme: light;
+
   --bg-base: #f5f2eb;
   --bg-surface: #fffaf0;
   --bg-elevated: #ffffff;
   --bg-overlay: rgba(255, 255, 255, 0.72);
+
   --accent: #9f6b21;
   --accent-hover: #b87a24;
   --accent-muted: rgba(159, 107, 33, 0.13);
   --accent-border: rgba(159, 107, 33, 0.3);
   --accent-text: #fff8e8;
+
   --text-primary: #17202a;
   --text-secondary: #405063;
   --text-muted: #738196;
   --text-hint: #9aa6b8;
+
+  /* These values stay light because they are used on dark surfaces */
+  --text-on-dark: #f7f9ff;
+  --text-on-dark-secondary: #dfe5f0;
+  --text-on-dark-muted: #aab6c7;
+
   --border: rgba(88, 103, 124, 0.22);
   --border-subtle: rgba(88, 103, 124, 0.16);
   --border-surface: rgba(88, 103, 124, 0.28);
+
   --color-win: #2f7d48;
   --color-win-bg: rgba(47, 125, 72, 0.13);
   --color-loss: #b24545;
   --color-loss-bg: rgba(178, 69, 69, 0.12);
   --color-draw: #6a7180;
   --color-draw-bg: rgba(106, 113, 128, 0.12);
+
   --color-online: #2f7d48;
   --color-playing: #9f6b21;
   --color-offline: #a4adba;
+
   --color-danger: #b24545;
   --color-danger-bg: rgba(178, 69, 69, 0.1);
   --color-danger-border: rgba(178, 69, 69, 0.3);
