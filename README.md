@@ -7,6 +7,7 @@
 ```bash
 git clone <url-репозитория>
 cd <папка-проекта>
+cp backend/.env.example backend/.env
 docker compose up --build
 ```
 

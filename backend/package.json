@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "postinstall": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "dev": "npm run db:deploy && nodemon index.js",
+    "start": "npm run db:deploy && node index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +16,7 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
     "express": "^5.2.1"
   },
   "devDependencies": {

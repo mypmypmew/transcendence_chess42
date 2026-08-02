@@ -1,2 +1,8 @@
 node_modules
 .env
+/generated/prisma
+
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
