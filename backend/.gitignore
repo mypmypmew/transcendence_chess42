@@ -1,0 +1,12 @@
+node_modules
+
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+# Local SQLite database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
