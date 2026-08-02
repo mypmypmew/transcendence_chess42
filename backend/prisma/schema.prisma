@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  rating       Int      @default(1200)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  friendshipsAsA Friendship[] @relation("FriendshipUserA")
+  friendshipsAsB Friendship[] @relation("FriendshipUserB")
+
+  gamesAsWhite Game[] @relation("WhitePlayer")
+  gamesAsBlack Game[] @relation("BlackPlayer")
+  gamesWon     Game[] @relation("GameWinner")
+}
+
+model Friendship {
+  id        Int      @id @default(autoincrement())
+  userAId   Int
+  userBId   Int
+  createdAt DateTime @default(now())
+
+  userA User @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum GameResult {
+  WHITE_WIN
+  BLACK_WIN
+  DRAW
+}
+
+model Game {
+  id        Int         @id @default(autoincrement())
+  whiteId   Int
+  blackId   Int
+  winnerId  Int?
+  status    GameStatus  @default(IN_PROGRESS)
+  result    GameResult?
+  pgn       String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  endedAt   DateTime?
+
+  white  User  @relation("WhitePlayer", fields: [whiteId], references: [id], onDelete: Restrict)
+  black  User  @relation("BlackPlayer", fields: [blackId], references: [id], onDelete: Restrict)
+  winner User? @relation("GameWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+
+  @@index([whiteId])
+  @@index([blackId])
+  @@index([winnerId])
+  @@index([createdAt])
+}
