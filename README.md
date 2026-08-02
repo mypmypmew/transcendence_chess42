@@ -1,22 +1,23 @@
- # Chess Project
+# Chess Project
 
-## Запуск
+## Launch
 
-Требуется установленный Docker.
+Docker must be installed.
 
 ```bash
-git clone <url-репозитория>
-cd <папка-проекта>
+git clone <repo-url>
+cd <project-folder>
 cp backend/.env.example backend/.env
 docker compose up --build
 ```
 
-Открыть в браузере:
+Open in a browser:
+
 - Frontend: http://localhost:5173
 - Backend health-check: http://localhost:3000/api/health
 
-## Остановка
+Backend documentation: [backend/README.md](backend/README.md)
 
-\`Ctrl+C\` в терминале, либо \`docker compose down\` из корня проекта.
+## Stop
 
-тест
+`Ctrl+C` in the terminal, or `docker compose down` from the project root.
