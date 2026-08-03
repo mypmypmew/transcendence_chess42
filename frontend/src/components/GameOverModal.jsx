@@ -8,6 +8,13 @@ function getGameOverContent(gameOverInfo) {
       message: `${gameOverInfo.winner} wins by checkmate`,
     }
   }
+  if (gameOverInfo?.type === 'resignation') {
+    return {
+      icon: 'ti-flag',
+      title: 'Resignation',
+      message: `${gameOverInfo.winner} wins by resignation.`,
+    }
+  }
   if (gameOverInfo?.type === 'stalemate') {
     return {
       icon: 'ti-flag-3',

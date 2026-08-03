@@ -45,15 +45,15 @@ function useChessGame() {
     setGameOverInfo(getGameOverInfo(game))
   }
 
-  function makeMove(sourceSquare, targetSquare) {
-    if (game.isGameOver()) {
+  function makeMove(sourceSquare, targetSquare, promotion = 'q') {
+    if (gameOverInfo !== null || game.isGameOver()) {
       return false
     }
     try {
       const move = game.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q',
+        promotion,
       })
       if (!move) {
         return false
@@ -63,6 +63,26 @@ function useChessGame() {
     } catch {
       return false
     }
+  }
+
+  function resignGame(resigningColor) {
+    if (gameOverInfo !== null || game.isGameOver()) {
+      return false
+    }
+
+    if (resigningColor !== 'w' && resigningColor !== 'b') {
+      return false
+    }
+
+    const winner = resigningColor === 'w' ? 'Black' : 'White'
+
+    setStatus(`${winner} wins by resignation`)
+    setGameOverInfo({
+      type: 'resignation',
+      winner,
+    })
+
+    return true
   }
 
   function restartGame() {
@@ -77,6 +97,7 @@ function useChessGame() {
     isGameOver: gameOverInfo !== null,
     gameOverInfo,
     makeMove,
+    resignGame,
     restartGame,
   }
 }

@@ -639,7 +639,7 @@ body {
 .cm-message.mine {
   justify-self: end;
   background: rgba(202, 136, 60, 0.803);
-  color: var(--text-on-dark); #b87a24
+  color: var(--text-on-dark);
 }
 
 @media (max-width: 1120px) {
