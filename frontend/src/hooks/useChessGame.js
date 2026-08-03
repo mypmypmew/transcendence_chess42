@@ -45,7 +45,7 @@ function useChessGame() {
     setGameOverInfo(getGameOverInfo(game))
   }
 
-  function makeMove(sourceSquare, targetSquare) {
+  function makeMove(sourceSquare, targetSquare, promotion = 'q') {
     if (gameOverInfo !== null || game.isGameOver()) {
       return false
     }
@@ -53,7 +53,7 @@ function useChessGame() {
       const move = game.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q',
+        promotion,
       })
       if (!move) {
         return false
