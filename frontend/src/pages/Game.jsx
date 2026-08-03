@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import AppLayout from '../components/AppLayout.jsx'
 import GameOverModal from '../components/GameOverModal.jsx'
 import useChessGame from '../hooks/useChessGame.js'
 
 function Game() {
-  const { fen, history, status, isGameOver, gameOverInfo, makeMove, restartGame } = useChessGame()
+  const {
+    fen,
+    status,
+    isGameOver,
+    gameOverInfo,
+    makeMove,
+    resignGame,
+    restartGame } = useChessGame()
   const [isModalDismissed, setIsModalDismissed] = useState(false)
-
-  useEffect(() => {
-    if (isGameOver) {
-      setIsModalDismissed(false)
-    }
-  }, [isGameOver])
 
   function handlePieceDrop({ sourceSquare, targetSquare }) {
     return makeMove(sourceSquare, targetSquare)
@@ -33,9 +34,29 @@ function Game() {
       eyebrow="Game Screen"
       title="Play Chess"
       actions={
+              <>
+        <button
+          className="btn btn-ghost"
+          type="button"
+          disabled={isGameOver}
+          onClick={() => resignGame('w')}
+        >
+          White resigns
+        </button>
+
+        <button
+          className="btn btn-ghost"
+          type="button"
+          disabled={isGameOver}
+          onClick={() => resignGame('b')}
+        >
+          Black resigns
+        </button>
+
         <button className="btn btn-ghost" type="button" onClick={handleRestart}>
           Restart
         </button>
+      </>
       }
     >
       <div className="cm-board-layout">
