@@ -7,7 +7,8 @@
     "postinstall": "prisma generate",
     "db:deploy": "prisma migrate deploy",
     "dev": "npm run db:deploy && nodemon index.js",
-    "start": "npm run db:deploy && node index.js"
+    "start": "npm run db:deploy && node index.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
