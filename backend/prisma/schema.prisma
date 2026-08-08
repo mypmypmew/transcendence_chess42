@@ -13,7 +13,7 @@ datasource db {
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
-  username     String   @unique
+  username     String   @unique 
   passwordHash String
   rating       Int      @default(1200)
   createdAt    DateTime @default(now())
@@ -25,6 +25,8 @@ model User {
   gamesAsWhite Game[] @relation("WhitePlayer")
   gamesAsBlack Game[] @relation("BlackPlayer")
   gamesWon     Game[] @relation("GameWinner")
+
+  sessions Session[]
 }
 
 model Friendship {
@@ -73,4 +75,15 @@ model Game {
   @@index([blackId])
   @@index([winnerId])
   @@index([createdAt])
+}
+
+model Session {
+  id          String  @id
+  userId      Int
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields:[userId], references: [id], onDelete:  Cascade)
+
+  @@index([userId])
 }
