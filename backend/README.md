@@ -32,6 +32,19 @@ Stop the project with `Ctrl+C`, or run:
 docker compose down
 ```
 
+## Socket.IO manual verification
+
+### Launch:
+```
+docker compose up -d --build --force-recreate backend
+```
+
+### health-check:
+```
+curl http://localhost:3000/api/health
+```
+expd: {"status":"ok"}
+
 ## Environment
 
 The local configuration is stored in `backend/.env`:
@@ -51,6 +64,8 @@ backend/
 ├── prisma/
 │   ├── schema.prisma                Database schema
 │   └── migrations/                  Committed SQL migration history
+├── scripts/
+│   └── socketSmokeClient.js   
 └── src/
     ├── db/
     │   └── prisma.js                Shared PrismaClient instance
@@ -59,6 +74,10 @@ backend/
         ├── friendshipRepository.js  Friendship persistence operations
         └── gameRepository.js        Game persistence operations
 ```
+
+## Socket.IO
+
+The current implementation also provides an initial Socket.IO connection with connection lifecycle logging and a ping/pong smoke check.
 
 ## NPM scripts
 
@@ -71,6 +90,7 @@ compatible local Node.js environment.
 | `npm start` | Apply committed migrations and start the server with Node.js |
 | `npm run db:deploy` | Apply pending committed migrations |
 | `npm run postinstall` | Generate Prisma Client; npm runs this automatically after install |
+| `npm run socket:check` | Connect to Socket.IO, verify ping/pong, and disconnect |
 
 The Docker image uses Node.js 20 and `npm ci`, so dependency versions come from
 `package-lock.json`.

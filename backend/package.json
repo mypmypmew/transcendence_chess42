@@ -8,6 +8,7 @@
     "db:deploy": "prisma migrate deploy",
     "dev": "npm run db:deploy && nodemon index.js",
     "start": "npm run db:deploy && node index.js",
+    "socket:check": "node scripts/socketSmokeClient.js",
     "test": "node --test"
   },
   "keywords": [],
@@ -19,10 +20,12 @@
     "chess.js": "^1.4.0",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "prisma": "^6.19.3"
+    "prisma": "^6.19.3",
+    "socket.io-client": "^4.8.3"
   }
 }
