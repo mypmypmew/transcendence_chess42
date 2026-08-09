@@ -19,7 +19,23 @@ async function createSession(userId, res) {
   });
 }
 
+async function getSession(req) {
+  const id = req.cookies?.[SESSION_COOKIE];
+  if (!id) return null;
+
+  const session = await sessionRepository.findSessionById(id);
+  if (!session) return null;
+
+  if (session.expiresAt <= new Date()) {
+    await sessionRepository.deleteSessionById(id);
+    return null;
+  }
+
+  return session;
+}
+
 module.exports = {
   createSession,
+  getSession,
   SESSION_COOKIE,
 };
