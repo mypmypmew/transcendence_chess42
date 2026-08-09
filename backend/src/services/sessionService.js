@@ -37,7 +37,7 @@ async function getSession(req) {
 async function destroySession(req, res) {
   const id = req.cookies?.[SESSION_COOKIE];
   if (id) {
-    await sessionRepository.deleteSessionById(id).catch(() => {});
+    await sessionRepository.deleteSessionById(id);
   }
   res.clearCookie(SESSION_COOKIE, { path: '/' });
 }
