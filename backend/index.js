@@ -1,6 +1,7 @@
 let express = require('express')
 let cors = require('cors');
 let cookieParser = require('cookie-parser');
+let authRoutes = require('./src/routes/authRoutes');
 let app = express();
 let PORT = 3000;
 const http = require('http');
@@ -27,8 +28,10 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use(cors(cors({ origin: 'http://localhost:5173', credentials: true })));
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(cookieParser());
+
+app.use('/api/auth', authRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
