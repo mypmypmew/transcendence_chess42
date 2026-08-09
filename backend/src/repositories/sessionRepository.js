@@ -25,7 +25,7 @@ async function findSessionById(id) {
 }
 
 async function deleteSessionById(id) {
-  return prisma.session.delete({
+  return prisma.session.deleteMany({
     where: { id },
   });
 }
