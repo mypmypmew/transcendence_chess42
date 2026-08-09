@@ -37,3 +37,29 @@ test('session lookup selects only public user fields', async () => {
     prisma.session.findUnique = originalFindUnique;
   }
 });
+
+test('session deletion is idempotent when the record is missing', async () => {
+  const originalDeleteMany = prisma.session.deleteMany;
+  let query;
+
+  prisma.session.deleteMany = async (receivedQuery) => {
+    query = receivedQuery;
+    return { count: 0 };
+  };
+
+  try {
+    const result = await sessionRepository.deleteSessionById('missing-session');
+
+    assert.deepEqual(query, {
+      where: {
+        id: 'missing-session',
+      },
+    });
+
+    assert.deepEqual(result, {
+      count: 0,
+    });
+  } finally {
+    prisma.session.deleteMany = originalDeleteMany;
+  }
+});
