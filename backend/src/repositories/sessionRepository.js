@@ -9,7 +9,18 @@ async function createSession({ id, userId, expiresAt }) {
 async function findSessionById(id) {
   return prisma.session.findUnique({
     where: { id },
-    include: { user: true },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          rating: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
   });
 }
 
