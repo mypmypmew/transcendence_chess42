@@ -14,6 +14,18 @@ const io = new Server(httpServer, {
   },
 });
 
+io.on('connection', (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+
+  socket.on('client:ping', () => {
+    socket.emit('server:pong');
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log(`Socket disconnected: ${socket.id}; reason: ${reason}`);
+  });
+});
+
 app.use(cors());
 
 app.get('/api/health', (req, res) => {
