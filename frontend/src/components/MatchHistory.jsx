@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 const resultConfig = {
   win: { label: 'Win', badge: 'badge badge-win' },
   loss: { label: 'Loss', badge: 'badge badge-loss' },
@@ -36,11 +34,7 @@ function sortByDateDesc(matches) {
  * Rows are not clickable in this version (no game details view yet).
  */
 function MatchHistory({ matches = mockMatches, isLoading = false }) {
-  const [sortedMatches, setSortedMatches] = useState([])
-
-  useEffect(() => {
-    setSortedMatches(sortByDateDesc(matches))
-  }, [matches])
+  const sortedMatches = sortByDateDesc(matches)
 
   return (
     <section className="cm-panel" aria-labelledby="history-title">
