@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import GameOverModal from '../components/GameOverModal.jsx'
 
+const PROMOTION_OPTIONS = [
+  { value: 'q', label: 'Queen' },
+  { value: 'r', label: 'Rook' },
+  { value: 'b', label: 'Bishop' },
+  { value: 'n', label: 'Knight' },
+]
+
 function normalizeBoardOrientation(boardOrientation) {
   if (boardOrientation === 'black' || boardOrientation === 'b') {
     return 'black'
@@ -18,6 +25,13 @@ function colorCode(color) {
   return color === 'black' ? 'b' : color
 }
 
+function isPromotionMove(piece, targetSquare) {
+  return (
+    (piece?.pieceType === 'wP' && targetSquare?.[1] === '8') ||
+    (piece?.pieceType === 'bP' && targetSquare?.[1] === '1')
+  )
+}
+
 function ChessGame({
   fen,
   status,
@@ -31,6 +45,8 @@ function ChessGame({
   onRestart,
 }) {
   const [isModalDismissed, setIsModalDismissed] = useState(false)
+  const [pendingPromotion, setPendingPromotion] = useState(null)
+  const isBoardDisabled = isGameOver || pendingPromotion !== null || isWaitingForServer
   const normalizedOrientation = normalizeBoardOrientation(boardOrientation)
   const playerColorCode = colorCode(playerColor)
 
@@ -50,9 +66,15 @@ function ChessGame({
     return onMove(sourceSquare, targetSquare)
   }
 
+  function handlePromotionChoice(promotion) {
+    if (!pendingPromotion) {
+      return
+    }
+
     const { sourceSquare, targetSquare } = pendingPromotion
 
     setPendingPromotion(null)
+    onMove(sourceSquare, targetSquare, promotion)
   }
 
   function handleRestart() {
@@ -118,6 +140,27 @@ function ChessGame({
           </div>
         </section>
 
+        {pendingPromotion && !isGameOver && (
+          <section className="cm-game-card">
+            <p className="label">Pawn promotion</p>
+            <h2 className="cm-section-title">Choose a piece</h2>
+
+            <div className="flex gap-3">
+              {PROMOTION_OPTIONS.map((option) => (
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  key={option.value}
+                  disabled={isWaitingForServer}
+                  onClick={() => handlePromotionChoice(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="cm-game-card cm-chessboard-card">
           <div className="cm-chessboard-wrapper">
             <Chessboard options={chessboardOptions} />
@@ -134,5 +177,6 @@ function ChessGame({
       )}
     </>
   )
+}
 
 export default ChessGame
