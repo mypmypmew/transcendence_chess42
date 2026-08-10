@@ -4,6 +4,7 @@ const sessionService = require('./sessionService');
 const authValidator = require('../validators/authValidator');
 
 const BCRYPT_ROUNDS = 12;
+const DUMMY_HASH = bcrypt.hashSync('invalid-placeholder-password', BCRYPT_ROUNDS);
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -60,12 +61,9 @@ async function login({ email, password }, res) {
   const normalizedEmail = authValidator.normalizeEmail(email);
   const user = await userRepository.findUserByEmail(normalizedEmail);
 
-  if (!user) {
-    throw httpError(401, 'Invalid email or password');
-  }
+const matches = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
 
-  const matches = await bcrypt.compare(password, user.passwordHash);
-  if (!matches) {
+  if (!user || !matches) {
     throw httpError(401, 'Invalid email or password');
   }
 
