@@ -22,7 +22,9 @@ function colorLabel(color) {
 }
 
 function colorCode(color) {
-  return color === 'black' ? 'b' : color
+  if (color === 'white') return 'w'
+  if (color === 'black') return 'b'
+  return color
 }
 
 function isPromotionMove(piece, targetSquare) {
