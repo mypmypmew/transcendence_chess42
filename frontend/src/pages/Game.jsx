@@ -1,5 +1,5 @@
 import AppLayout from '../components/AppLayout.jsx'
-import ChessGame from './ChessGame.jsx'
+import ChessGame from '../components/ChessGame.jsx'
 import useChessGame from '../hooks/useChessGame.js'
 
 function Game() {
