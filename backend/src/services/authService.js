@@ -27,15 +27,19 @@ async function register({ username, email, password }, res) {
   if (errors.length > 0) {
     throw httpError(400, errors.join('; '));
   }
+
   const normalizedEmail = authValidator.normalizeEmail(email);
   const trimmedUsername = username.trim();
+
   if (await userRepository.findUserByEmail(normalizedEmail)) {
     throw httpError(409, 'Email already in use');
   }
   if (await userRepository.findUserByUsername(trimmedUsername)) {
     throw httpError(409, 'Username already in use');
   }
+
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
   const user = await userRepository.createUser({
     email: normalizedEmail,
     username: trimmedUsername,
@@ -47,7 +51,31 @@ async function register({ username, email, password }, res) {
   return toPublicUser(user);
 }
 
+async function login({ email, password }, res) {
+  const errors = authValidator.validateLoginInput({ email, password });
+  if (errors.length > 0) {
+    throw httpError(401, 'Invalid email or password');
+  }
+
+  const normalizedEmail = authValidator.normalizeEmail(email);
+  const user = await userRepository.findUserByEmail(normalizedEmail);
+
+  if (!user) {
+    throw httpError(401, 'Invalid email or password');
+  }
+
+  const matches = await bcrypt.compare(password, user.passwordHash);
+  if (!matches) {
+    throw httpError(401, 'Invalid email or password');
+  }
+
+  await sessionService.createSession(user.id, res);
+
+  return toPublicUser(user);
+}
+
 module.exports = {
   register,
+  login,
   toPublicUser,
 };

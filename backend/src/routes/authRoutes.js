@@ -16,6 +16,19 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
+router.post('/login', async (req, res, next) => {
+  try {
+    const user = await authService.login(req.body, res);
+    res.status(200).json({ user });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    next(err);
+  }
+});
+
+
 router.post('/logout', async (req, res, next) => {
   try {
     await sessionService.destroySession(req, res);
