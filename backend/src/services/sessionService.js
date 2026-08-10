@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const sessionRepository = require('../repositories/sessionRepository');
 
+
 const SESSION_COOKIE = 'sid';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
