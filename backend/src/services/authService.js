@@ -27,12 +27,15 @@ async function register({ username, email, password }, res) {
   if (errors.length > 0) {
     throw httpError(400, errors.join('; '));
   }
-
   const normalizedEmail = authValidator.normalizeEmail(email);
   const trimmedUsername = username.trim();
-
+  if (await userRepository.findUserByEmail(normalizedEmail)) {
+    throw httpError(409, 'Email already in use');
+  }
+  if (await userRepository.findUserByUsername(trimmedUsername)) {
+    throw httpError(409, 'Username already in use');
+  }
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-
   const user = await userRepository.createUser({
     email: normalizedEmail,
     username: trimmedUsername,
