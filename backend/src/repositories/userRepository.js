@@ -10,7 +10,7 @@ async function findUserByUsername(username) {
   return prisma.user.findUnique({
     where: { username },
   });
-} 
+}
 
 async function createUser({ email, username, passwordHash }) {
   return prisma.user.create({
@@ -24,5 +24,6 @@ async function createUser({ email, username, passwordHash }) {
 
 module.exports = {
   findUserByEmail,
+  findUserByUsername,
   createUser,
 };
