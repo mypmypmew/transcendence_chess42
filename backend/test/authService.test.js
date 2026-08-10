@@ -55,12 +55,13 @@ test('register creates a session with the new user id', async (t) => {
   t.mock.method(userRepository, 'createUser', async () => fakeUser({ id: 42 }));
   const createSession = t.mock.method(sessionService, 'createSession', async () => {});
 
-  await authService.register(
+  const user = await authService.register(
     { username: 'chessplayer', email: 'player@example.com', password: 'Password1!' },
     {},
   );
 
   assert.equal(createSession.mock.calls[0].arguments[0], 42);
+  assert.equal('passwordHash' in user, false);
 });
 
 test('register rejects a duplicate email with 409', async (t) => {
