@@ -2,14 +2,16 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import ThemeToggle from '../components/ThemeToggle.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
 import './App.css'
 
-const MOCK_FAILED_EMAIL = 'fail@test.com'
 
 function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -24,7 +26,7 @@ function Login() {
   const passwordIcon = showPassword ? 'ti ti-eye-off' : 'ti ti-eye'
   const passwordLabel = showPassword ? 'Hide password' : 'Show password'
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
     setTouched({ email: true, password: true })
@@ -34,12 +36,17 @@ function Login() {
       return
     }
 
-    if (trimmedEmail.toLowerCase() === MOCK_FAILED_EMAIL) {
-      setLoginError('Invalid email or password')
-      return
-    }
+    setIsLoading(true)
 
-    navigate('/dashboard')
+    try {
+      // Password spaces are allowed, so send the password exactly as typed.
+      await login({ email: trimmedEmail, password })
+      navigate('/dashboard')
+    } catch {
+      setLoginError('Invalid email or password')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   function handleBlur(fieldName) {
@@ -155,9 +162,9 @@ function Login() {
               </div>
             </div>
 
-            <button className="btn btn-primary btn-full" type="submit">
-              Sign in
-              <i className="ti ti-arrow-right" aria-hidden="true" />
+            <button className="btn btn-primary btn-full" type="submit" disabled={isLoading}>
+              {isLoading ? 'Signing in…' : 'Sign in'}
+              {!isLoading && <i className="ti ti-arrow-right" aria-hidden="true" />}
             </button>
           </form>
 
