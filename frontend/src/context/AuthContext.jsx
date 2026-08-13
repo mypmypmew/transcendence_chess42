@@ -105,7 +105,7 @@ function useAuth() {
   return context
 }
 
+// Allows exporting the provider and its hook from this file despite React Fast Refresh lint rules.
 // Same temporary pattern as ThemeContext.
 // eslint-disable-next-line react-refresh/only-export-components
-// Allows exporting the provider and its hook from this file despite React Fast Refresh lint rules.
 export { AuthProvider, useAuth }
