@@ -42,8 +42,8 @@ function Login() {
       // Password spaces are allowed, so send the password exactly as typed.
       await login({ email: trimmedEmail, password })
       navigate('/dashboard')
-    } catch {
-      setLoginError('Invalid email or password')
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Invalid email or password')
     } finally {
       setIsLoading(false)
     }
