@@ -62,6 +62,7 @@ function useTheme() {
   return context
 }
 
-// TODO: Move useTheme to a separate useTheme.js file.
+// TODO: Decide later to move useTheme to a separate useTheme.js file or not. It might be better to keep it here for now since it's closely related to ThemeProvider and the context.
 // eslint-disable-next-line react-refresh/only-export-components
+// Allows exporting the provider and its hook from this file despite React Fast Refresh lint rules.
 export { ThemeProvider, useTheme }
