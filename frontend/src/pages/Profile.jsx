@@ -3,13 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
+import { useAuth } from '../context/AuthContext.jsx'
 import './App.css'
-
-const userProfile = {
-  username: 'DemoPlayer',
-  email: 'demo.player@test.com',
-  rating: 1768,
-}
 
 const friends = [
   { id: 1, name: 'Serhii', rating: 1812, status: 'online' },
@@ -25,6 +20,7 @@ const statusLabels = {
 }
 
 function Profile() {
+  const { user } = useAuth()
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
 
@@ -54,6 +50,10 @@ function Profile() {
 	setAvatarPreview(URL.createObjectURL(file))
   }
 
+  if (!user) {
+	return null
+  }
+
   return (
 	<AppLayout
 	  eyebrow="Personal account"
@@ -71,14 +71,14 @@ function Profile() {
 			/>
 			<Avatar
 			  avatar={avatarPreview}
-			  name={userProfile.username}
+			  name={user.username}
 			  className="avatar avatar-xl avatar-ring"
 			  aria-hidden="true"
 			/>
 
 			<div>
 			  <p className="label">Player profile</p>
-			  <h2 className="cm-section-title" id="profile-title">{userProfile.username}</h2>
+			  <h2 className="cm-section-title" id="profile-title">{user.username}</h2>
 			  <p className="cm-muted">Your ChessMate personal account</p>
 			</div>
 
@@ -86,12 +86,12 @@ function Profile() {
 			  <div className="cm-list-row">
 				<i className="ti ti-chart-bar text-accent" aria-hidden="true" />
 				<span className="cm-muted">Rating</span>
-				<strong className="text-primary">{userProfile.rating}</strong>
+				<strong className="text-primary">{user.rating}</strong>
 			  </div>
 			  <div className="cm-list-row">
 				<i className="ti ti-mail text-accent" aria-hidden="true" />
 				<span className="cm-muted">Email</span>
-				<strong className="text-primary truncate">{userProfile.email}</strong>
+				<strong className="text-primary truncate">{user.email}</strong>
 			  </div>
 			</div>
 
