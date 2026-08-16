@@ -7,6 +7,7 @@ import './Auth.css'
 import './App.css'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
 
 function Register() {
   const navigate = useNavigate()
@@ -27,6 +28,7 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false)
 
   const trimmedUsername = username.trim()
+  const usernameIsValid = USERNAME_PATTERN.test(trimmedUsername)
   const trimmedEmail = email.trim()
   const passwordPolicy = {
     minLength: password.length >= 8,
@@ -40,7 +42,9 @@ function Register() {
 
   const usernameError = touched.username && trimmedUsername === ''
     ? 'Username is required'
-    : ''
+    : touched.username && !usernameIsValid
+      ? 'Use 3-20 characters: letters, numbers, and underscore'
+      : ''
   const emailError = touched.email && trimmedEmail === ''
     ? 'Email is required'
     : touched.email && !emailIsValid
@@ -57,7 +61,7 @@ function Register() {
       ? 'Passwords do not match'
       : ''
 
-  const isFormValid = trimmedUsername !== ''
+  const isFormValid = usernameIsValid
     && trimmedEmail !== ''
     && emailIsValid
     && password !== ''
