@@ -1,6 +1,21 @@
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function passwordMeetsPolicy(password) {
+  if (typeof password !== 'string') {
+    return false;
+  }
+
+  const policy = {
+    minLength: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    number: /\d/.test(password),
+    specialCharacter: /[^A-Za-z0-9\s]/.test(password),
+  };
+
+  return Object.values(policy).every(Boolean);
+}
+
 function normalizeEmail(email) {
   return String(email).trim().toLowerCase();
 }
@@ -14,8 +29,8 @@ function validateRegisterInput({ username, email, password }) {
   if (typeof email !== 'string' || !EMAIL_RE.test(normalizeEmail(email))) {
     errors.push('email must be a valid email address');
   }
-  if (typeof password !== 'string' || password.length < 8) {
-    errors.push('password must be at least 8 characters');
+  if (!passwordMeetsPolicy(password)) {
+    errors.push('password must be at least 8 characters and include an uppercase letter, number, and special character');
   }
 
   return errors;

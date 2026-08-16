@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
+import { useAuth } from './context/AuthContext.jsx'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -11,24 +12,69 @@ import Friends from './pages/Friends'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings'
 
+function AuthLoadingScreen() {
+  return (
+    <main className="auth-scene fade-in">
+      <p>Loading…</p>
+    </main>
+  )
+}
+
+function HomeRoute() {
+  const { isAuthLoading, isAuthenticated } = useAuth()
+
+  if (isAuthLoading) {
+    return <AuthLoadingScreen />
+  }
+
+  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />
+}
+
+function ProtectedRoute({ children }) {
+  const { isAuthLoading, isAuthenticated } = useAuth()
+
+  if (isAuthLoading) {
+    return <AuthLoadingScreen />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
+
+function PublicOnlyRoute({ children }) {
+  const { isAuthLoading, isAuthenticated } = useAuth()
+
+  if (isAuthLoading) {
+    return <AuthLoadingScreen />
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return children
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<HomeRoute />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/game-lobby" element={<GameLobby />} />
-        <Route path="/game" element={<Game />} />
-		<Route path="/analysis" element={<Analysis />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/game-lobby" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
+        <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+        <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

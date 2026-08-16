@@ -101,6 +101,9 @@ test('register rejects invalid input with 400', async (t) => {
   const badInputs = [
     { username: 'ab', email: 'player@example.com', password: 'Password1!' },
     { username: 'chessplayer', email: 'not-an-email', password: 'Password1!' },
+    { username: 'chessplayer', email: 'player@example.com', password: 'password1!' },
+    { username: 'chessplayer', email: 'player@example.com', password: 'Password!' },
+    { username: 'chessplayer', email: 'player@example.com', password: 'Password1' },
     { username: 'chessplayer', email: 'player@example.com', password: 'short' },
     { username: { $ne: null }, email: 'player@example.com', password: 'Password1!' },
   ];

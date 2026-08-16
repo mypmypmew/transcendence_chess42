@@ -1,32 +1,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { useAuth } from '../context/AuthContext.jsx'
+
 import './Auth.css'
 import './App.css'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const MOCK_DELAY_MS = 800
-const MOCK_TAKEN_EMAIL = 'taken@test.com'
-const MOCK_TAKEN_USERNAME = 'taken'
-
-function mockRegister({ email, username }) {
-  return new Promise((resolve, reject) => {
-    window.setTimeout(() => {
-      const isTaken = email.toLowerCase() === MOCK_TAKEN_EMAIL
-        || username.toLowerCase() === MOCK_TAKEN_USERNAME
-
-      if (isTaken) {
-        reject(new Error('Email/Username already taken'))
-        return
-      }
-
-      resolve()
-    }, MOCK_DELAY_MS)
-  })
-}
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
 
 function Register() {
   const navigate = useNavigate()
+  const { register } = useAuth()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,6 +28,7 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false)
 
   const trimmedUsername = username.trim()
+  const usernameIsValid = USERNAME_PATTERN.test(trimmedUsername)
   const trimmedEmail = email.trim()
   const passwordPolicy = {
     minLength: password.length >= 8,
@@ -56,7 +42,9 @@ function Register() {
 
   const usernameError = touched.username && trimmedUsername === ''
     ? 'Username is required'
-    : ''
+    : touched.username && !usernameIsValid
+      ? 'Use 3-20 characters: letters, numbers, and underscore'
+      : ''
   const emailError = touched.email && trimmedEmail === ''
     ? 'Email is required'
     : touched.email && !emailIsValid
@@ -73,7 +61,7 @@ function Register() {
       ? 'Passwords do not match'
       : ''
 
-  const isFormValid = trimmedUsername !== ''
+  const isFormValid = usernameIsValid
     && trimmedEmail !== ''
     && emailIsValid
     && password !== ''
@@ -111,7 +99,12 @@ function Register() {
     setIsLoading(true)
 
     try {
-      await mockRegister({ email: trimmedEmail, username: trimmedUsername })
+      // Password spaces are allowed, so send the password exactly as typed.
+      await register({
+        username: trimmedUsername,
+        email: trimmedEmail,
+        password,
+      })
       navigate('/dashboard')
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'Registration failed')
