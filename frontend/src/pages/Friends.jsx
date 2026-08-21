@@ -4,6 +4,7 @@ import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
 import { Link } from 'react-router-dom'
+import { searchUsers, sendFriendRequest } from '../api/userApi.js'
 
 
 const mockFriends = [
@@ -20,6 +21,13 @@ export default function Friends() {
   const [friends, setFriends] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedFriend, setSelectedFriend] = useState(null)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearchLoading, setIsSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState(null)
+  const [sentRequestIds, setSentRequestIds] = useState([])
+  const [sendingRequestIds, setSendingRequestIds] = useState([])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -29,6 +37,45 @@ export default function Friends() {
 
     return () => window.clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    const trimmedSearch = searchTerm.trim()
+
+    if (!isSearchOpen || trimmedSearch.length < 2) {
+      return
+    }
+
+    let isCancelled = false
+
+    const timer = window.setTimeout(async () => {
+      try {
+        if (!isCancelled) {
+          setIsSearchLoading(true)
+          setSearchError(null)
+        }
+
+        const data = await searchUsers(trimmedSearch)
+
+        if (!isCancelled) {
+          setSearchResults(Array.isArray(data?.users) ? data.users : [])
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setSearchResults([])
+          setSearchError(error.message)
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSearchLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [isSearchOpen, searchTerm])
 
 	
   const handleRemoveFriend = (friendId) => {
@@ -54,9 +101,40 @@ export default function Friends() {
 	
 	// TODO add API integration from backend to add friend
 	const handleAddFriend = () => {
-    // TODO: open friend addition form??
-    console.log('Add friend')
+    if (isSearchOpen) {
+      setSearchTerm('')
+      setSearchResults([])
+      setIsSearchLoading(false)
+      setSearchError(null)
+    }
+
+    setIsSearchOpen((current) => !current)
 	}
+
+  const handleSearchTermChange = (event) => {
+    const nextSearchTerm = event.target.value
+    setSearchTerm(nextSearchTerm)
+
+    if (nextSearchTerm.trim().length < 2) {
+      setSearchResults([])
+      setIsSearchLoading(false)
+      setSearchError(null)
+    }
+  }
+
+  const handleSendFriendRequest = async (user) => {
+    setSendingRequestIds((current) => [...current, user.id])
+    setSearchError(null)
+
+    try {
+      await sendFriendRequest(user.id)
+      setSentRequestIds((current) => [...current, user.id])
+    } catch (error) {
+      setSearchError(error.message)
+    } finally {
+      setSendingRequestIds((current) => current.filter((id) => id !== user.id))
+    }
+  }
 
   return (
     <AppLayout 
@@ -69,6 +147,87 @@ export default function Friends() {
       }
     >
       <div className="cm-page-grid">
+        {isSearchOpen && (
+          <section className="cm-panel">
+            <div className="cm-panel-header">
+              <div>
+                <p className="cm-eyebrow">Add Friend</p>
+                <h2 className="cm-section-title">Search Users</h2>
+              </div>
+            </div>
+            <div className="cm-panel-body">
+              {searchError && (
+                <div className="alert alert-error visible" role="alert">
+                  <i className="ti ti-alert-circle" aria-hidden="true" />
+                  {searchError}
+                </div>
+              )}
+
+              <div className="field">
+                <label className="field-label" htmlFor="friend-search">
+                  Username
+                </label>
+                <input
+                  className="input"
+                  id="friend-search"
+                  type="search"
+                  value={searchTerm}
+                  placeholder="Search username..."
+                  onChange={handleSearchTermChange}
+                />
+              </div>
+
+              {searchTerm.trim().length < 2 ? (
+                <div className="empty-state">
+                  <p>Enter at least 2 characters</p>
+                </div>
+              ) : isSearchLoading ? (
+                <div className="empty-state">
+                  <p>Searching users...</p>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="empty-state">
+                  <p>No users found</p>
+                </div>
+              ) : (
+                <div className="cm-list">
+                  {searchResults.map((user) => {
+                    const isSent = sentRequestIds.includes(user.id)
+                    const isSending = sendingRequestIds.includes(user.id)
+
+                    return (
+                      <div key={user.id} className="cm-list-row">
+                        <Avatar
+                          avatar={user.avatar}
+                          name={user.username}
+                          className="avatar avatar-md"
+                        />
+
+                        <div>
+                          <div className="text-primary">{user.username}</div>
+                          <div className="flex items-center gap-2">
+                            <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                            <span className="text-muted">{user.rating}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          className="btn btn-primary btn-sm"
+                          type="button"
+                          disabled={isSent || isSending}
+                          onClick={() => handleSendFriendRequest(user)}
+                        >
+                          {isSent ? 'Request Sent' : 'Add'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         <section className="cm-panel">
           <div className="cm-panel-header">
             <div>
