@@ -1,8 +1,11 @@
 const { io } = require('socket.io-client');
 
+const sid = process.env.SID;  
+
 const socket = io('http://localhost:3000', {
   reconnection: false,
   timeout: 5000,
+  extraHeaders: sid ? { Cookie: `sid=${sid}` } : {},
 });
 
 const verificationTimeout = setTimeout(() => {
