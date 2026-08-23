@@ -2,6 +2,7 @@ let express = require('express')
 let cors = require('cors');
 let cookieParser = require('cookie-parser');
 let authRoutes = require('./src/routes/authRoutes');
+const gameRoutes = require('./src/routes/gameRoutes');
 let app = express();
 let PORT = 3000;
 const http = require('http');
@@ -33,6 +34,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/games', gameRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
