@@ -45,6 +45,32 @@ curl http://localhost:3000/api/health
 ```
 expd: {"status":"ok"}
 
+### Socket.IO authentication
+
+Sockets require a valid session.
+
+Without a session, the handshake is rejected:
+    
+    docker compose exec backend node scripts/socketSmokeClient.js
+
+expd: `Connection failed: Unauthorized`
+
+Obtain a session cookie:
+
+    curl -s -c jar.txt -X POST http://localhost:3000/api/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"email":"<email>","password":"<password>"}' > /dev/null
+
+The `sid` value is the last field in `jar.txt`.
+
+Connect with that session:
+
+    docker compose exec -e SID=<sid value> backend node scripts/socketSmokeClient.js
+
+expd: client receives `server:pong`; server logs `Socket connected: <id> (user <userId>)`
+
+Delete `jar.txt` afterwards — it contains a live session token.
+
 ## Environment
 
 The local configuration is stored in `backend/.env`:
