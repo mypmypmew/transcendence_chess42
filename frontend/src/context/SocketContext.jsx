@@ -15,7 +15,7 @@ const SocketContext = createContext(null)
 function SocketProvider({ children }) {
   const { isAuthenticated, isAuthLoading } = useAuth()
   const [status, setStatus] = useState(
-    socket.connected ? 'connected' : 'disconnecting',
+    socket.connected ? 'connected' : 'disconnected',
   )
   const [error, setError] = useState(null)
 
@@ -75,11 +75,11 @@ function SocketProvider({ children }) {
 
       if (isAuthenticated) {
         socket.connect()
-        return 
+        return
       }
 
       socket.disconnect()
-    }, [isAuthenticated, isAuthLoading, connect, disconnect])
+    }, [isAuthenticated, isAuthLoading])
 
     const value = useMemo(() => ({
         socket,
