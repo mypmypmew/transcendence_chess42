@@ -2,6 +2,7 @@ let express = require('express')
 let cors = require('cors');
 let cookieParser = require('cookie-parser');
 let authRoutes = require('./src/routes/authRoutes');
+const socketAuth = require('./src/middlewares/socketAuth');
 let app = express();
 let PORT = 3000;
 const http = require('http');
@@ -16,8 +17,10 @@ const io = new Server(httpServer, {
   },
 });
 
+io.use(socketAuth);
+
 io.on('connection', (socket) => {
-  console.log(`Socket connected: ${socket.id}`);
+  console.log(`Socket connected: ${socket.id} (user ${socket.data.userId})`);
 
   socket.on('client:ping', () => {
     socket.emit('server:pong');

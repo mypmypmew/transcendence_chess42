@@ -8,12 +8,14 @@ import {
 } from 'react'
 
 import { socket } from '../socket/socket.js'
+import { useAuth } from './AuthContext.jsx'
 
 const SocketContext = createContext(null)
 
 function SocketProvider({ children }) {
+  const { isAuthenticated, isAuthLoading } = useAuth()
   const [status, setStatus] = useState(
-    socket.connected ? 'connected' : 'connecting',
+    socket.connected ? 'connected' : 'disconnected',
   )
   const [error, setError] = useState(null)
 
@@ -41,8 +43,6 @@ function SocketProvider({ children }) {
     socket.on('connect_error', handleConnectError)
     socket.io.on('reconnect_attempt', handleReconnectAttempt)
 
-    socket.connect()
-
     return () => {
       socket.off('connect', handleConnect)
       socket.off('disconnect', handleDisconnect)
@@ -67,6 +67,19 @@ function SocketProvider({ children }) {
     setStatus('disconnected')
     setError(null)
     }, [])
+
+    useEffect(() => {
+      if (isAuthLoading) {
+        return
+      }
+
+      if (isAuthenticated) {
+        socket.connect()
+        return
+      }
+
+      socket.disconnect()
+    }, [isAuthenticated, isAuthLoading])
 
     const value = useMemo(() => ({
         socket,
