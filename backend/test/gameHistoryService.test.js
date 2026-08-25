@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 
 const gameRepository = require('../src/repositories/gameRepository');
 const gameHistoryService = require('../src/services/gameHistoryService');
+const { game } = require('../src/db/prisma');
 
 function fakeGame(overrides = {}) {
     return {
@@ -59,4 +60,32 @@ test('lists games wihtout PGN or private player data', async (t) => {
         username: 'blackPlayer',
         rating: 1250,
     });
+});
+
+test('retrieves a game with pgn when the current user is white', async(t) => {
+    const findGameById = t.mock.method(
+        gameRepository,
+        'findGameById',
+        async () => fakeGame(),
+    );
+
+    const game = await gameHistoryService.getGame(42, 10);
+
+    assert.equal(findGameById.mock.callCount(), 1);
+    assert.equal(findGameById.mock.calls[0].arguments[0], 10);
+    assert.equal(game.id, 10);
+    assert.equal(game.pgn, '1. e4 e5 2. Nf3');
+});
+
+test('retrieves a game with pgn when the current user is black', async(t) => {
+    const findGameById = t.mock.method(
+        gameRepository,
+        'findGameById',
+        async () => fakeGame(),
+    );
+
+    const game = await gameHistoryService.getGame(84, 10);
+
+    assert.equal(game.id, 10);
+    assert.equal(game.pgn, '1. e4 e5 2. Nf3');
 });
