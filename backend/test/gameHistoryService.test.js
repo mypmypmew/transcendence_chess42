@@ -89,3 +89,39 @@ test('retrieves a game with pgn when the current user is black', async(t) => {
     assert.equal(game.id, 10);
     assert.equal(game.pgn, '1. e4 e5 2. Nf3');
 });
+
+test('rejects invalid game IDs without querying the repository', async (t) => {
+  const findGameById = t.mock.method(
+    gameRepository,
+    'findGameById',
+    async () => fakeGame(),
+  );
+
+  for (const gameId of [0, -1, 1.5, NaN, '10']) {
+    await assert.rejects(
+      gameHistoryService.getGame(42, gameId),
+      (err) => (
+        err.status === 400
+        && err.message === 'gameId must be a positive integer'
+      ),
+    );
+  }
+
+  assert.equal(findGameById.mock.callCount(), 0);
+});
+
+test('returns 404 when the game does not exist', async (t) => {
+  t.mock.method(
+    gameRepository,
+    'findGameById',
+    async () => null,
+  );
+
+  await assert.rejects(
+    gameHistoryService.getGame(42, 999),
+    (err) => (
+      err.status === 404
+      && err.message === 'Game not found'
+    ),
+  );
+});
