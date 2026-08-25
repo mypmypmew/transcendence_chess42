@@ -12,7 +12,7 @@ function toPublicPlayer(player) {
     username: player.username,
     rating: player.rating,
   }
-}
+};
 
 function toGameSummary(game) {
   return {

@@ -45,8 +45,8 @@ test('game list finds games where the user is white or black, newest first', asy
     assert.deepEqual(findManyCalls[0][0], {
         where: {
             OR: [
-                { whiteId: 42},
-                { blackId: 42},
+                { whiteId: 42 },
+                { blackId: 42 },
             ],
         },
         include: {
@@ -140,7 +140,7 @@ test('game history repository rejects invalid IDs before querying Prisma', async
             err instanceof TypeError
             && err.message === 'gameId must be a positive integer'
         ),
-    )
+    );
 
     assert.equal(findManyCalls.length, 0);
     assert.equal(findUniqueCalls.length, 0);
