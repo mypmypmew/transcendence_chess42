@@ -6,6 +6,14 @@ function httpError(status, message) {
   return err;
 }
 
+function toPublicPlayer(player) {
+  return {
+    id: player.id,
+    username: player.username,
+    rating: player.rating,
+  }
+}
+
 function toGameSummary(game) {
   return {
     id: game.id,
@@ -14,8 +22,8 @@ function toGameSummary(game) {
     winnerId: game.winnerId,
     createdAt: game.createdAt,
     endedAt: game.endedAt,
-    white: game.white,
-    black: game.black,
+    white: toPublicPlayer(game.white),
+    black: toPublicPlayer(game.black),
   };
 }
 
@@ -33,7 +41,7 @@ async function listGames(userId) {
 
 async function getGame(userId, gameId) {
   if (!Number.isInteger(gameId) || gameId <= 0) {
-    throw httpError(404, 'Game not found');
+    throw httpError(400, 'Game must be a positive integer');
   }
 
   const game = await gameRepository.findGameById(gameId);
