@@ -41,7 +41,7 @@ async function listGames(userId) {
 
 async function getGame(userId, gameId) {
   if (!Number.isInteger(gameId) || gameId <= 0) {
-    throw httpError(400, 'Game must be a positive integer');
+    throw httpError(400, 'gameId must be a positive integer');
   }
 
   const game = await gameRepository.findGameById(gameId);
