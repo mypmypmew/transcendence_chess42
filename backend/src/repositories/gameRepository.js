@@ -11,11 +11,41 @@ function validatePositiveInteger(value, fieldName) {
   }
 }
 
+const PUBLIC_PLAYER_SELECT = {
+  select: {
+    id: true,
+    username: true,
+    rating: true,
+  },
+};
+
 async function findGameById(gameId) {
   validatePositiveInteger(gameId, 'gameId');
 
   return prisma.game.findUnique({
     where: { id: gameId },
+    include: {
+      white: PUBLIC_PLAYER_SELECT,
+      black: PUBLIC_PLAYER_SELECT,
+    },
+  });
+}
+
+async function findGamesByUserId(userId) {
+  validatePositiveInteger(userId, 'userId');
+
+  return prisma.game.findMany({
+    where: {
+      OR: [
+        { whiteId: userId },
+        { blackId: userId },
+      ],
+    },
+    include: {
+      white: PUBLIC_PLAYER_SELECT,
+      black: PUBLIC_PLAYER_SELECT,
+    },
+    orderBy: { createdAt: 'desc' },
   });
 }
 
@@ -78,6 +108,7 @@ async function finishGame(gameId, { result, pgn = null }) {
 
 module.exports = {
   findGameById,
+  findGamesByUserId,
   createGame,
   finishGame,
 };
