@@ -27,6 +27,9 @@ model User {
   gamesWon     Game[] @relation("GameWinner")
 
   sessions Session[]
+
+  conversationsAsA Conversation[] @relation("ConversationUserA")
+  conversationsAsB Conversation[] @relation("ConversationUserB")
 }
 
 model Friendship {
@@ -86,4 +89,18 @@ model Session {
   user User @relation(fields:[userId], references: [id], onDelete:  Cascade)
 
   @@index([userId])
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  userAId   Int
+  userBId   Int
+  createdAt DateTime @default(now())
+
+  userA User @relation("ConversationUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("ConversationUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
 }
