@@ -1,4 +1,12 @@
+const { FriendshipStatus } = require('@prisma/client');
+
 const prisma = require('../db/prisma');
+
+function validateFriendshipId(friendshipId) {
+  if (!Number.isInteger(friendshipId) || friendshipId <= 0) {
+    throw new TypeError('Friendship id must be a positive integer');
+  }
+}
 
 function normalizeUserIds(firstUserId, secondUserId) {
   if (
@@ -35,21 +43,58 @@ async function findFriendship(firstUserId, secondUserId) {
   });
 }
 
-async function createFriendship(firstUserId, secondUserId) {
+async function findFriendshipById(friendshipId) {
+  validateFriendshipId(friendshipId);
+
+  return prisma.friendship.findUnique({
+    where: { id: friendshipId },
+  });
+}
+
+async function acceptFriendRequest(friendshipId) {
+  validateFriendshipId(friendshipId);
+
+  return prisma.friendship.update({
+    where: {
+      id: friendshipId,
+      status: FriendshipStatus.PENDING,
+    },
+    data: {
+      status: FriendshipStatus.ACCEPTED,
+    },
+  });
+}
+
+async function deleteFriendshipById(friendshipId) {
+  validateFriendshipId(friendshipId);
+
+  return prisma.friendship.delete({
+    where: {
+      id: friendshipId,
+    },
+  });
+}
+
+async function createFriendRequest(requesterId, recipientId) {
   const { userAId, userBId } = normalizeUserIds(
-    firstUserId,
-    secondUserId,
+    requesterId,
+    recipientId,
   );
 
   return prisma.friendship.create({
     data: {
       userAId,
       userBId,
+      requestedById: requesterId,
+      status: FriendshipStatus.PENDING,
     },
   });
 }
 
 module.exports = {
   findFriendship,
-  createFriendship,
+  findFriendshipById,
+  createFriendRequest,
+  acceptFriendRequest,
+  deleteFriendshipById,
 };
