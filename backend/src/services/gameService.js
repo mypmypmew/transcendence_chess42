@@ -1,8 +1,13 @@
 const { randomUUID } = require('node:crypto');
 const { Chess } = require('chess.js');
 
+// Use the real persistence layer by default while allowing tests to inject a fake repository
+const defaultGameRepository = require('../repositories/gameRepository');
+
 class GameService {
-  constructor() {
+  // Dependency injection keeps database access replaceable and makes unit tests independent of Prisma
+  constructor({ gameRepository = defaultGameRepository } = {}) {
+    this.gameRepository = gameRepository;
     this.games = new Map();
   }
 
