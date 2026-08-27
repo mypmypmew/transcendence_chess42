@@ -23,6 +23,52 @@ function getOtherParticipant(friendship, userId) {
             : friendship.userA;
 }
 
+function validateRequestId(requestId) {
+    if (!Number.isInteger(requestId) || requestId <= 0) {
+        throw httpError(400, 'requestId must be a positive integer');
+    }
+}
+
+function getRecipientId(request) {
+    return request.requestedById === request.userAId
+            ? request.userBId
+            : request.userAId;
+}
+
+async function acceptFriendRequest(currentUserId, requestId) {
+    validateRequestId(requestId);
+
+    const request = await friendshipRepository.findFriendshipById(requestId);
+
+    if (!request) {
+        throw httpError(404, 'Friend request not found');
+    }
+
+    if (currentUserId !== getRecipientId(request)) {
+        throw httpError(403, 'Only the recipient can accept this request');
+    }
+
+    if (request.status !== FriendshipStatus.PENDING) {
+        throw httpError(409, 'Friend request is not pending');
+    }
+
+    try {
+        const accepted = await friendshipRepository.acceptFriendRequest(requestId);
+
+        return {
+            id: accepted.id,
+            status: accepted.status,
+            createdAt: accepted.createdAt,
+        };
+    } catch (err) {
+        if (err?.code === 'P2025') {
+            throw httpError(409, 'Friend request is no longer pending');
+        }
+
+        throw err;
+    }
+}
+
 async function sendFriendRequest(requesterId, recipientId) {
     if (!Number.isInteger(recipientId) || recipientId <= 0) {
         throw httpError(400, 'recipientId must be a positive integer');
@@ -112,5 +158,4 @@ module.exports = {
     sendFriendRequest,
     listFriendRequests,
     acceptFriendRequest,
-    deleteFriendRequest,
 };
