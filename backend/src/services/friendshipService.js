@@ -17,6 +17,12 @@ function toPublicUser(user) {
     };
 }
 
+function getOtherParticipant(friendship, userId) {
+    return friendship.userAId === userId
+            ? friendship.userB
+            : friendship.userA;
+}
+
 async function sendFriendRequest(requesterId, recipientId) {
     if (!Number.isInteger(recipientId) || recipientId <= 0) {
         throw httpError(400, 'recipientId must be a positive integer');
@@ -66,6 +72,45 @@ async function sendFriendRequest(requesterId, recipientId) {
     }
 }
 
+async function listFriendRequests(userId) {
+    const requests =
+        await friendshipRepository.findPendingFriendRequestsByUserId(userId);
+
+    const incoming = [];
+    const outgoing = [];
+
+    for (const request of requests) {
+        if (request.requestedById === userId) {
+            outgoing.push({
+                id: request.id,
+                status: request.status,
+                createdAt: request.createdAt,
+                recipient: toPublicUser(getOtherParticipant(request, userId)),
+            });
+            continue;
+        }
+
+        const requester = request.requestedById === request.userAId
+            ? request.userA
+            : request.userB;
+
+        incoming.push({
+            id: request.id,
+            status: request.status,
+            createdAt: request.createdAt,
+            requester: toPublicUser(requester),
+        });
+    }
+
+    return {
+        incoming,
+        outgoing,
+    };
+}
+
 module.exports = {
     sendFriendRequest,
+    listFriendRequests,
+    acceptFriendRequest,
+    deleteFriendRequest,
 };
