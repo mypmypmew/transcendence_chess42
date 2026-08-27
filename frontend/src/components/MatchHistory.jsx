@@ -60,7 +60,7 @@ function MatchHistory({
           <p className="label">Games</p>
           <h2 className="cm-section-title" id="history-title">Match history</h2>
         </div>
-        <span className="badge badge-accent">Preview</span>
+        <span className="badge badge-accent">{games.length}</span>
       </div>
 
       <div className="cm-panel-body cm-list">

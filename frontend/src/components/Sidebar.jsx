@@ -7,6 +7,7 @@ const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'ti ti-layout-dashboard' },
   { to: '/game', label: 'Game', icon: 'ti ti-chess-rook' },
   { to: '/leaderboard', label: 'Leaderboard', icon: 'ti ti-trophy' },
+  { to: '/friends', label: 'Friends', icon: 'ti ti-users' },
   { to: '/profile', label: 'Profile', icon: 'ti ti-user-circle' },
   { to: '/chat', label: 'Chat', icon: 'ti ti-messages' },
   { action: 'logout', label: 'Logout', icon: 'ti ti-logout' },
