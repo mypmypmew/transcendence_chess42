@@ -1,6 +1,9 @@
 :root {
   color-scheme: dark;
 
+  --cm-chessboard-size: 560px;
+  --cm-chessboard-card-size: calc(var(--cm-chessboard-size) + (var(--space-4) * 2));
+
   --bg-base: #0f172a;
   --bg-surface: #142336;
   --bg-elevated: #0b1624;
@@ -82,7 +85,6 @@ body {
   background: rgba(212, 160, 55, 0.12);
 }
 
-.card,
 .surface {
   background: rgba(15, 28, 43, 0.82);
   border: 1px solid var(--border);
@@ -179,14 +181,18 @@ body {
   gap: var(--space-5);
 }
 
+.cm-panel,
+.cm-sidebar {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px);
+}
+
 .cm-sidebar {
   min-height: 0;
   padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: 22px;
   background: linear-gradient(180deg, rgba(10, 24, 38, 0.86), rgba(7, 15, 25, 0.9));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(18px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -198,18 +204,29 @@ body {
 }
 
 .cm-nav-link {
+  appearance: none;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   min-height: 44px;
   padding: 0 var(--space-3);
+  background: transparent;
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
   border: 1px solid transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   transition:
     background var(--transition-base),
     border-color var(--transition-base),
     color var(--transition-base);
+}
+
+.cm-nav-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .cm-nav-link:hover,
@@ -221,20 +238,6 @@ body {
 
 .cm-nav-link i {
   font-size: 20px;
-}
-
-.cm-sidebar-card {
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  background: rgba(212, 160, 55, 0.12);
-  border: 1px solid var(--accent-border);
-  color: var(--accent-hover);
-}
-
-.cm-sidebar-card i {
-  display: block;
-  font-size: 24px;
-  margin-bottom: var(--space-2);
 }
 
 .cm-content {
@@ -259,11 +262,7 @@ body {
 }
 
 .cm-panel {
-  border: 1px solid var(--border);
-  border-radius: 22px;
   background: linear-gradient(180deg, rgba(15, 33, 48, 0.84), rgba(8, 18, 30, 0.9));
-  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(18px);
   overflow: hidden;
 }
 
@@ -322,18 +321,18 @@ body {
   z-index: 1;
 }
 
-.cm-hero-card .text-primary,
-.cm-hero-card .cm-section-title {
+:where(.cm-hero-card, .cm-action-card, .cm-list-row, .cm-game-card) .text-primary,
+:where(.cm-hero-card, .cm-action-card, .cm-list-row, .cm-game-card) .cm-section-title {
   color: var(--text-on-dark);
 }
 
-.cm-hero-card .text-secondary,
-.cm-hero-card .label {
+:where(.cm-hero-card, .cm-action-card, .cm-list-row, .cm-game-card) .text-secondary,
+:where(.cm-hero-card, .cm-action-card, .cm-list-row, .cm-game-card) .label {
   color: var(--text-on-dark-secondary);
 }
 
-.cm-hero-card .text-muted,
-.cm-hero-card .cm-muted {
+:where(.cm-hero-card, .cm-action-card, .cm-list-row, .cm-game-card) .text-muted,
+:where(.cm-hero-card, .cm-action-card, .cm-list-row, .cm-game-card) .cm-muted {
   color: var(--text-on-dark-muted);
 }
 
@@ -371,21 +370,6 @@ body {
   color: var(--text-on-dark);
 }
 
-.cm-action-card .text-primary,
-.cm-action-card .cm-section-title {
-  color: var(--text-on-dark);
-}
-
-.cm-action-card .text-secondary,
-.cm-action-card .label {
-  color: var(--text-on-dark-secondary);
-}
-
-.cm-action-card .text-muted,
-.cm-action-card .cm-muted {
-  color: var(--text-on-dark-muted);
-}
-
 .cm-list {
   display: grid;
   gap: var(--space-3);
@@ -403,21 +387,6 @@ body {
   color: var(--text-on-dark);
 }
 
-.cm-list-row .text-primary,
-.cm-list-row .cm-section-title {
-  color: var(--text-on-dark);
-}
-
-.cm-list-row .text-secondary,
-.cm-list-row .label {
-  color: var(--text-on-dark-secondary);
-}
-
-.cm-list-row .text-muted,
-.cm-list-row .cm-muted {
-  color: var(--text-on-dark-muted);
-}
-
 .cm-avatar-photo {
   background: linear-gradient(135deg, #ffd39a, #6e3820);
   color: #0a1624;
@@ -432,12 +401,11 @@ body {
 
 .cm-board-layout {
   display: grid;
-  grid-template-columns: minmax(180px, 250px) minmax(360px, 560px) minmax(240px, 310px);
+  grid-template-columns: minmax(180px, 250px) var(--cm-chessboard-card-size) minmax(240px, 310px);
   gap: var(--space-5);
   align-items: start;
 }
 
-.cm-player-card,
 .cm-game-card {
   padding: var(--space-4);
   border: 1px solid var(--border);
@@ -446,99 +414,24 @@ body {
   color: var(--text-on-dark);
 }
 
-.cm-player-card .text-primary,
-.cm-game-card .text-primary,
-.cm-player-card .cm-section-title,
-.cm-game-card .cm-section-title {
-  color: var(--text-on-dark);
+.cm-chessboard-card {
+  width: var(--cm-chessboard-card-size);
+  max-width: 100%;
+  justify-self: center;
 }
 
-.cm-player-card .text-secondary,
-.cm-game-card .text-secondary,
-.cm-player-card .label,
-.cm-game-card .label {
-  color: var(--text-on-dark-secondary);
-}
-
-.cm-player-card .text-muted,
-.cm-game-card .text-muted,
-.cm-player-card .cm-muted,
-.cm-game-card .cm-muted {
-  color: var(--text-on-dark-muted);
-}
-
-.cm-clock {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background: rgba(4, 10, 18, 0.76);
-  border: 1px solid var(--accent-border);
-  font-family: var(--font-mono);
-  font-size: 28px;
-  color: var(--text-on-dark);
-  text-align: center;
-  margin-top: var(--space-3);
-}
-
-.chess-board {
-  width: min(100%, 560px);
+.cm-chessboard-wrapper {
+  width: var(--cm-chessboard-size);
+  height: var(--cm-chessboard-size);
+  max-width: 100%;
   aspect-ratio: 1;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  border: 1px solid var(--accent-border);
-  border-radius: var(--radius-md);
+  margin: 0 auto;
   overflow: hidden;
-  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.3);
 }
 
-.chess-square {
-  display: grid;
-  place-items: center;
-  font-family: 'Times New Roman', serif;
-  font-size: clamp(28px, 4.2vw, 54px);
-  line-height: 1;
-  position: relative;
-}
-
-.chess-square.light {
-  background: #f0d9b5;
-  color: #101820;
-}
-
-.chess-square.dark {
-  background: #7c674f;
-  color: #101820;
-}
-
-.chess-square.selected {
-  box-shadow: inset 0 0 0 4px rgba(212, 160, 55, 0.85);
-}
-
-.chess-square.target::after {
-  content: '';
-  width: 22%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(212, 160, 55, 0.75);
-  position: absolute;
-}
-
-.cm-move-list {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.cm-move-row {
-  display: grid;
-  grid-template-columns: 34px 1fr 1fr;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  color: var(--text-on-dark-secondary);
-}
-
-.cm-move-row.active {
-  background: rgba(212, 160, 55, 0.18);
-  color: var(--accent-hover);
+.cm-chessboard-wrapper > div {
+  width: 100%;
+  height: 100%;
 }
 
 .cm-table {
@@ -599,23 +492,6 @@ body {
   gap: var(--space-3);
 }
 
-.cm-achievements {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-3);
-}
-
-.cm-achievement {
-  aspect-ratio: 1;
-  border-radius: var(--radius-lg);
-  display: grid;
-  place-items: center;
-  background: rgba(212, 160, 55, 0.14);
-  border: 1px solid var(--accent-border);
-  color: var(--accent-hover);
-  font-size: 30px;
-}
-
 .cm-chat-shell {
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -664,8 +540,7 @@ body {
     justify-content: center;
   }
 
-  .cm-nav-link span,
-  .cm-sidebar-card {
+  .cm-nav-link span {
     display: none;
   }
 }
@@ -684,8 +559,7 @@ body {
   }
 
   .cm-action-grid,
-  .cm-stat-grid,
-  .cm-achievements {
+  .cm-stat-grid {
     grid-template-columns: 1fr;
   }
 
@@ -761,9 +635,7 @@ html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
   color: var(--accent-hover);
 }
 
-html[data-theme='light'] .card,
 html[data-theme='light'] .surface,
-html[data-theme='light'] .cm-card,
 html[data-theme='light'] .cm-panel,
 html[data-theme='light'] .cm-sidebar {
   background: rgba(255, 250, 240, 0.78);

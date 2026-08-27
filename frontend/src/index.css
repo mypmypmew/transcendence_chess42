@@ -254,78 +254,11 @@ code {
 .fade-in { animation: fadeIn 0.35s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* ----------------------------------------------------------------
-   Layout wrappers
-   ---------------------------------------------------------------- */
-
-/* Full-page shell with chess board background pattern */
-.page-shell {
-  background-color: var(--bg-base);
-  background-image: var(--bg-pattern);
-  background-size: var(--bg-pattern-size);
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6) var(--space-4);
-}
-
-/* Card */
-.card {
-  background: var(--bg-base);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-}
-.card-body {
-  padding: var(--space-5) calc(var(--space-5) + var(--space-1));
-}
-
 /* Surface */
 .surface {
   background: var(--bg-surface);
   border-radius: var(--radius-md);
 }
-
-/* Horizontal divider */
-.divider {
-  border: none;
-  border-top: 0.5px solid var(--border);
-  margin: var(--space-5) 0;
-}
-
-/* ----------------------------------------------------------------
-   Topbar
-   ---------------------------------------------------------------- */
-.topbar {
-  background: var(--bg-elevated);
-  border-bottom: 0.5px solid var(--border);
-  padding: 10px var(--space-5);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.topbar-icon  { font-size: 22px; color: var(--accent); line-height: 1; }
-.topbar-brand {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-}
-.topbar-spacer { flex: 1; }
-.topbar-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: var(--space-1);
-  line-height: 1;
-  transition: color var(--transition-fast);
-  border-radius: var(--radius-sm);
-}
-.topbar-btn:hover { color: var(--text-secondary); }
 
 /* ----------------------------------------------------------------
    Avatar
@@ -401,7 +334,8 @@ code {
 }
 .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 
-.btn-danger {
+.btn-danger,
+.alert-error {
   background: var(--color-danger-bg);
   color: var(--color-danger);
   border: 0.5px solid var(--color-danger-border);
@@ -410,19 +344,6 @@ code {
 .btn-full  { width: 100%; }
 .btn-sm    { font-size: var(--text-sm); padding: 6px var(--space-3); }
 .btn-icon  { padding: 7px; width: 36px; height: 36px; }
-
-/* Button loading spinner */
-.btn-spinner {
-  width: 14px; height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top-color: var(--accent-text);
-  border-radius: 50%;
-  display: none;
-  animation: spin 0.7s linear infinite;
-  flex-shrink: 0;
-}
-.btn-spinner.visible { display: block; }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ----------------------------------------------------------------
    Inputs
@@ -503,12 +424,6 @@ code {
   margin-bottom: var(--space-4);
 }
 .alert.visible { display: flex; }
-.alert-error {
-  background: var(--color-danger-bg);
-  border: 0.5px solid var(--color-danger-border);
-  color: var(--color-danger);
-}
-
 /* ----------------------------------------------------------------
    Password policy checklist
    ---------------------------------------------------------------- */
@@ -572,44 +487,6 @@ code {
 .badge-draw   { background: var(--color-draw-bg);  color: var(--color-draw); }
 
 /* ----------------------------------------------------------------
-   Modal
-   ---------------------------------------------------------------- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-overlay);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
-}
-.modal {
-  background: var(--bg-surface);
-  border: 0.5px solid var(--border-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  position: relative;
-  width: 100%;
-  max-width: 300px;
-}
-.modal-close {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0;
-  line-height: 1;
-  transition: color var(--transition-fast);
-  border-radius: var(--radius-sm);
-}
-.modal-close:hover { color: var(--text-secondary); }
-
-/* ----------------------------------------------------------------
    Empty state
    ---------------------------------------------------------------- */
 .empty-state {
@@ -620,33 +497,6 @@ code {
   gap: var(--space-3);
   padding: 48px var(--space-5);
   text-align: center;
-}
-.empty-icon  { font-size: 40px; color: var(--border); }
-.empty-title {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  color: var(--text-hint);
-  font-weight: var(--weight-semibold);
-}
-.empty-sub {
-  font-size: var(--text-base);
-  color: var(--text-hint);
-  max-width: 240px;
-  line-height: var(--leading-loose);
-}
-
-/* ----------------------------------------------------------------
-   Skeleton / loading
-   ---------------------------------------------------------------- */
-.skeleton {
-  background: var(--bg-surface);
-  border-radius: var(--radius-sm);
-  animation: skeleton-shimmer 1.2s infinite;
-}
-.skeleton-circle { border-radius: 50%; }
-@keyframes skeleton-shimmer {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.85; }
 }
 
 /* ----------------------------------------------------------------
