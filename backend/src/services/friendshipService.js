@@ -69,6 +69,39 @@ async function acceptFriendRequest(currentUserId, requestId) {
     }
 }
 
+async function deleteFriendRequest(currentUserId, requestId) {
+    validateRequestId(requestId);
+
+    const request = await friendshipRepository.findFriendshipById(requestId);
+
+    if (!request) {
+        throw httpError(404, 'Friend request not found');
+    }
+
+    const isParticipant = (
+        request.userAId === currentUserId
+        || request.userBId === currentUserId
+    );
+
+    if (!isParticipant) {
+        throw httpError(403, 'You cannot delete this friend request');
+    }
+
+    if (request.status !== FriendshipStatus.PENDING) {
+        throw httpError(409, 'Only pending requests can be deleted');
+    }
+
+    try {
+        await friendshipRepository.deleteFriendshipById(requestId);
+    } catch (err) {
+        if (err?.code === 'P2025') {
+            throw httpError(404, 'Friend request not found');
+        }
+
+        throw err;
+    }
+}
+
 async function sendFriendRequest(requesterId, recipientId) {
     if (!Number.isInteger(recipientId) || recipientId <= 0) {
         throw httpError(400, 'recipientId must be a positive integer');
@@ -158,4 +191,5 @@ module.exports = {
     sendFriendRequest,
     listFriendRequests,
     acceptFriendRequest,
+    deleteFriendRequest,
 };
