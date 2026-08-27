@@ -2,18 +2,14 @@ const resultConfig = {
   win: { label: 'Win', badge: 'badge badge-win' },
   loss: { label: 'Loss', badge: 'badge badge-loss' },
   draw: { label: 'Draw', badge: 'badge badge-draw' },
+  unknown: { label: 'Pending', badge: 'badge badge-accent' },
 }
 
-// Mocked data — no backend connection yet.
-// Each match: opponent, result relative to the profile owner, duration and date.
-const mockMatches = [
-  { id: 1, opponent: 'Serhii', result: 'win', duration: '18:42', date: '2026-07-11T14:20:00' },
-  { id: 2, opponent: 'Taulant', result: 'loss', duration: '32:05', date: '2026-07-10T09:05:00' },
-  { id: 3, opponent: 'Tatiana', result: 'draw', duration: '45:12', date: '2026-07-08T19:40:00' },
-  { id: 4, opponent: 'Alima', result: 'win', duration: '11:57', date: '2026-07-05T21:15:00' },
-]
-
 function formatDate(isoDate) {
+  if (!isoDate) {
+    return 'In progress'
+  }
+
   return new Date(isoDate).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
@@ -21,21 +17,42 @@ function formatDate(isoDate) {
   })
 }
 
-function sortByDateDesc(matches) {
-  return [...matches].sort((a, b) => new Date(b.date) - new Date(a.date))
+function getOpponent(game, currentUserId) {
+  return game.white.id === currentUserId ? game.black : game.white
+}
+
+function getGameResult(game, currentUserId) {
+  if (!game.result) {
+    return 'unknown'
+  }
+
+  if (game.result === 'DRAW') {
+    return 'draw'
+  }
+
+  if (!game.winnerId) {
+    return 'unknown'
+  }
+
+  return game.winnerId === currentUserId ? 'win' : 'loss'
 }
 
 /**
- * MatchHistory — UI-only component (personal account sub-section).
+ * MatchHistory — personal account game history.
  * Props:
- *  - matches: array of { id, opponent, result: 'win'|'loss'|'draw', duration, date } — defaults to mocked data
- *  - isLoading: boolean — shows a loading placeholder instead of the list
+ *  - games: backend game list from GET /api/games
+ *  - currentUserId: authenticated user id
+ *  - error: request error message
+ *  - isLoading: shows a loading placeholder instead of the list
  *
  * Rows are not clickable in this version (no game details view yet).
  */
-function MatchHistory({ matches = mockMatches, isLoading = false }) {
-  const sortedMatches = sortByDateDesc(matches)
-
+function MatchHistory({
+  games = [],
+  currentUserId,
+  error = null,
+  isLoading = false,
+}) {
   return (
     <section className="cm-panel" aria-labelledby="history-title">
       <div className="cm-panel-header">
@@ -49,18 +66,27 @@ function MatchHistory({ matches = mockMatches, isLoading = false }) {
       <div className="cm-panel-body cm-list">
         {isLoading ? (
           <p className="cm-muted">Loading matches…</p>
-        ) : sortedMatches.length === 0 ? (
+        ) : error ? (
+          <p className="cm-muted">{error}</p>
+        ) : games.length === 0 ? (
           <p className="cm-muted">No matches yet</p>
         ) : (
-          sortedMatches.map((match) => {
-            const config = resultConfig[match.result]
+          games.map((game) => {
+            const opponent = getOpponent(game, currentUserId)
+            const result = getGameResult(game, currentUserId)
+            const config = resultConfig[result]
 
             return (
-              <article className="cm-list-row" key={match.id}>
+              <article className="cm-list-row" key={game.id}>
                 <i className="ti ti-chess text-accent" aria-hidden="true" />
                 <div className="min-w-0">
-                  <p className="text-primary truncate">vs {match.opponent}</p>
-                  <p className="cm-muted">{match.duration} · {formatDate(match.date)}</p>
+                  <p className="text-primary truncate">vs {opponent.username}</p>
+                  <p className="cm-muted">
+                    Rating {opponent.rating} · {game.status} · {formatDate(game.createdAt)}
+                  </p>
+                  {game.endedAt && (
+                    <p className="cm-muted">Ended {formatDate(game.endedAt)}</p>
+                  )}
                 </div>
                 <span className={config.badge}>{config.label}</span>
               </article>

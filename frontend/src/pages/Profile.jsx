@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
+import { getGames } from '../api/gameApi'
 import { useAuth } from '../context/AuthContext.jsx'
 import './App.css'
 
@@ -23,6 +24,9 @@ function Profile() {
   const { user } = useAuth()
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [games, setGames] = useState([])
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true)
+  const [historyError, setHistoryError] = useState(null)
 
   useEffect(() => {
 	return () => {
@@ -31,6 +35,37 @@ function Profile() {
 	  }
 	}
   }, [avatarPreview])
+
+  useEffect(() => {
+	let isMounted = true
+
+	async function loadGames() {
+	  setIsHistoryLoading(true)
+	  setHistoryError(null)
+
+	  try {
+		const data = await getGames()
+
+		if (isMounted) {
+		  setGames(Array.isArray(data?.games) ? data.games : [])
+		}
+	  } catch (error) {
+		if (isMounted) {
+		  setHistoryError(error.message)
+		}
+	  } finally {
+		if (isMounted) {
+		  setIsHistoryLoading(false)
+		}
+	  }
+	}
+
+	loadGames()
+
+	return () => {
+	  isMounted = false
+	}
+  }, [])
 
   function openAvatarPicker() {
 	avatarInputRef.current?.click()
@@ -106,7 +141,12 @@ function Profile() {
 		  </div>
 		</section>
 
-		<MatchHistory />
+		<MatchHistory
+		  games={games}
+		  currentUserId={user.id}
+		  error={historyError}
+		  isLoading={isHistoryLoading}
+		/>
 
 		<section className="cm-panel" aria-labelledby="friends-title">
 		  <div className="cm-panel-header">
