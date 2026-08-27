@@ -2,6 +2,59 @@ const { FriendshipStatus } = require('@prisma/client');
 
 const prisma = require('../db/prisma');
 
+const PUBLIC_USER_INCLUDE = {
+  select: {
+    id: true,
+    username: true,
+    rating: true,
+  },
+};
+
+function validateUserId(userId) {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new TypeError('User id must be a positive integer');
+  }
+}
+
+async function findAcceptedFriendshipsByUserId(userId) {
+  validateUserId(userId);
+
+  return prisma.friendship.findMany({
+    where: {
+      status: FriendshipStatus.ACCEPTED,
+      OR: [
+        { userAId: userId },
+        { userBId: userId },
+      ],
+    },
+    include: {
+      userA: PUBLIC_USER_INCLUDE,
+      userB: PUBLIC_USER_INCLUDE,
+    },
+  });
+}
+
+async function findPendingFriendRequestsByUserId(userId) {
+  validateUserId(userId);
+
+  return prisma.friendship.findMany({
+    where: {
+      status: FriendshipStatus.PENDING,
+      OR: [
+        { userAId: userId },
+        { userBId: userId },
+      ],
+    },
+    include: {
+      userA: PUBLIC_USER_INCLUDE,
+      userB: PUBLIC_USER_INCLUDE,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+}
+
 function validateFriendshipId(friendshipId) {
   if (!Number.isInteger(friendshipId) || friendshipId <= 0) {
     throw new TypeError('Friendship id must be a positive integer');
@@ -94,6 +147,8 @@ async function createFriendRequest(requesterId, recipientId) {
 module.exports = {
   findFriendship,
   findFriendshipById,
+  findAcceptedFriendshipsByUserId,
+  findPendingFriendRequestsByUserId,
   createFriendRequest,
   acceptFriendRequest,
   deleteFriendshipById,
