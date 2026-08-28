@@ -161,7 +161,7 @@ class GameService {
     }
   }
 
-    resignGame({ gameId, playerId }) {
+    async resignGame({ gameId, playerId }) {
     const game = this._getGameOrThrow(gameId);
 
     if (game.status !== 'IN_PROGRESS') {
@@ -185,6 +185,13 @@ class GameService {
     } else {
       throw new Error('Player is not part of this game');
     }
+
+    // Persist the completed game so its result survives a backend restart.
+    // The repository derives winnerId from the result and stores the final PGN.
+    await this.gameRepository.finishGame(game.gameId, {
+      result: game.result,
+      pgn: game.chess.pgn(),
+    });
 
     return this.toSnapshot(game);
   }
