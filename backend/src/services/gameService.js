@@ -64,9 +64,11 @@ class GameService {
     };
   }
 
-    _getGameOrThrow(gameId) {
-    if (typeof gameId !== 'string' || gameId.trim() === '') {
-      throw new TypeError('gameId must be a non-empty string');
+  _getGameOrThrow(gameId) {
+    // Prisma generates positive integer IDs for Game records.
+    // Validate the ID before using it as a key in the active games map.
+    if (!Number.isInteger(gameId) || gameId <= 0) {
+      throw new TypeError('gameId must be a positive integer');
     }
 
     const game = this.games.get(gameId);
