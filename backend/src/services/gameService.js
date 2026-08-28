@@ -86,7 +86,7 @@ class GameService {
     return this.toSnapshot(game);
   }
 
-    makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
+  async makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
     const game = this._getGameOrThrow(gameId);
 
     if (game.status !== 'IN_PROGRESS') {
@@ -132,6 +132,15 @@ class GameService {
     }
 
     this._updateGameResult(game);
+
+    // Persist only when the accepted move completes the game.
+    // Normal in-progress moves remain in memory and do not write to the database.
+    if (game.status === 'COMPLETED') {
+      await this.gameRepository.finishGame(game.gameId, {
+        result: game.result,
+        pgn: game.chess.pgn(),
+      });
+    }
 
     return this.toSnapshot(game);
   }
