@@ -290,6 +290,74 @@ test('finishes the game after threefold repetition', async () => {
   assert.match(finished.pgn, /\[Result "1\/2-1\/2"\]/);
 });
 
+test('persists the result and PGN after a draw', async () => {
+  // Store the completion data sent to the persistence layer.
+  // This verifies that drawn games are saved just like victories.
+  let persistedCompletion = null;
+
+  const fakeGameRepository = {
+    // Simulate Prisma creating the initial Game record.
+    async createGame(players) {
+      return {
+        id: 42,
+        ...players,
+      };
+    },
+
+    // Capture the final draw result instead of writing it to the database.
+    async finishGame(gameId, completion) {
+      persistedCompletion = {
+        gameId,
+        ...completion,
+      };
+    },
+  };
+
+  const service = new GameService({
+    gameRepository: fakeGameRepository,
+  });
+
+  const game = await service.createGame({
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  // Repeat the knight positions until chess.js detects a threefold repetition.
+  const moves = [
+    { playerId: 1, from: 'g1', to: 'f3' },
+    { playerId: 2, from: 'g8', to: 'f6' },
+    { playerId: 1, from: 'f3', to: 'g1' },
+    { playerId: 2, from: 'f6', to: 'g8' },
+    { playerId: 1, from: 'g1', to: 'f3' },
+    { playerId: 2, from: 'g8', to: 'f6' },
+    { playerId: 1, from: 'f3', to: 'g1' },
+    { playerId: 2, from: 'f6', to: 'g8' },
+  ];
+
+  let finished;
+
+  // Process moves sequentially so each move uses the latest server state.
+
+  for (const move of moves) {
+    finished = await service.makeMove({
+      gameId: game.gameId,
+      ...move,
+    });
+  }
+
+  // Verify the snapshot returned to both players.
+  assert.equal(finished.status, 'COMPLETED');
+  assert.equal(finished.result, 'DRAW');
+  assert.equal(finished.winnerId, null);
+
+  // Verify that the draw and its final PGN are persisted.
+  assert.deepEqual(persistedCompletion, {
+    gameId: 42,
+    result: 'DRAW',
+    pgn: finished.pgn,
+  });
+});
+
 test('allows a player to resign outside their turn', async () => {
   const service = createTestService();
   const game = await service.createGame({
