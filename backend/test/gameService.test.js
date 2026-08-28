@@ -18,6 +18,12 @@ function createTestService() {
           ...players,
         };
       },
+
+      // Provide the same interface as the real repository.
+      // Persistence arguments are verified separately in dedicated tests.
+      async finishGame() {
+        return undefined;
+      },
     },
   });
 }
@@ -228,7 +234,7 @@ test('allows a player to resign outside their turn', async () => {
     blackId: 2,
   });
 
-  const finished = service.resignGame({
+  const finished = await service.resignGame({
     gameId: game.gameId,
     playerId: 2,
   });
