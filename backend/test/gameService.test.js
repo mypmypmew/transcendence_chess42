@@ -2,12 +2,30 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { GameService } = require('../src/services/gameService');
-const { createGame } = require('../src/repositories/gameRepository');
 
-test('creates a game in the initial position', () => {
-  const service = new GameService();
+// Create an isolated GameService for tests that do not examine persistence directly.
+// The fake repository prevents unit tests from connecting to Prisma.
+function createTestService() {
+  let nextGameId = 1;
 
-  const game = service.createGame({
+  return new GameService({
+    gameRepository: {
+      // Simulate Prisma creating a Game record with a numeric database ID.
+      async createGame(players) {
+        return {
+          id: nextGameId++,
+          ...players,
+        };
+      },
+    },
+  });
+}
+
+test('creates a game in the initial position', async () => {
+  const service = createTestService();
+
+  // Wait until the fake repository returns the database record.
+  const game = await service.createGame({
     whiteId: 1,
     blackId: 2,
   });
@@ -71,9 +89,9 @@ test('persists a new game and uses the database id as gameId', async () => {
   assert.equal(game.gameId, 42);
 });
 
-test('accepts a legal move and rejects invalid moves', () => {
-  const service = new GameService();
-  const game = service.createGame({
+test('accepts a legal move and rejects invalid moves', async () => {
+  const service = createTestService();
+  const game = await service.createGame({
     whiteId: 1,
     blackId: 2,
   });
@@ -115,9 +133,9 @@ test('accepts a legal move and rejects invalid moves', () => {
   );
 });
 
-test('finishes the game after checkmate', () => {
-  const service = new GameService();
-  const game = service.createGame({
+test('finishes the game after checkmate', async () => {
+  const service = createTestService();
+  const game = await service.createGame({
     whiteId: 1,
     blackId: 2,
   });
@@ -167,9 +185,9 @@ test('finishes the game after checkmate', () => {
   );
 });
 
-test('finishes the game after threefold repetition', () => {
-  const service = new GameService();
-  const game = service.createGame({
+test('finishes the game after threefold repetition', async () => {
+  const service = createTestService();
+  const game = await service.createGame({
     whiteId: 1,
     blackId: 2,
   });
@@ -202,9 +220,9 @@ test('finishes the game after threefold repetition', () => {
   assert.match(finished.pgn, /\[Result "1\/2-1\/2"\]/);
 });
 
-test('allows a player to resign outside their turn', () => {
-  const service = new GameService();
-  const game = service.createGame({
+test('allows a player to resign outside their turn', async () => {
+  const service = createTestService();
+  const game = await service.createGame({
     whiteId: 1,
     blackId: 2,
   });
