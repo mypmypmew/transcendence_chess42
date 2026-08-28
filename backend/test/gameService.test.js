@@ -192,6 +192,69 @@ test('finishes the game after checkmate', async () => {
   );
 });
 
+test('persists the result and PGN after checkmate', async () => {
+  // Store the completion data that GameService sends to the repository.
+  // The value remains null if the completed game is never persisted.
+  let persistedCompletion = null;
+
+  const fakeGameRepository = {
+    // Simulate Prisma creating a new Game record.
+    async createGame(players) {
+      return {
+        id: 42,
+        ...players,
+      };
+    },
+
+    // Capture the final result and PGN instead of writing them to a database.
+    async finishGame(gameId, completion) {
+      persistedCompletion = {
+        gameId,
+        ...completion,
+      };
+    },
+  };
+
+  const service = new GameService({
+    gameRepository: fakeGameRepository,
+  });
+
+  const game = await service.createGame({
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  // Play Fool's Mate, which finishes the game with a black victory.
+  const moves = [
+    { playerId: 1, from: 'f2', to: 'f3' },
+    { playerId: 2, from: 'e7', to: 'e5' },
+    { playerId: 1, from: 'g2', to: 'g4' },
+    { playerId: 2, from: 'd8', to: 'h4' },
+  ];
+
+  let finished;
+
+  // Await every move so the final persistence operation finishes before the assertions are evaluated.
+  for (const move of moves) {
+    finished = await service.makeMove({
+      gameId: game.gameId,
+      ...move,
+    });
+  }
+
+  // Verify that the final server snapshot describes the checkmate.
+  assert.equal(finished.status, 'COMPLETED');
+  assert.equal(finished.result, 'BLACK_WIN');
+  assert.equal(finished.winnerId, 2);
+
+  // Verify that the same result and PGN are sent to the persistence layer.
+  assert.deepEqual(persistedCompletion, {
+    gameId: 42,
+    result: 'BLACK_WIN',
+    pgn: finished.pgn,
+  });
+});
+
 test('finishes the game after threefold repetition', async () => {
   const service = createTestService();
   const game = await service.createGame({
