@@ -1,4 +1,3 @@
-const { randomUUID } = require('node:crypto');
 const { Chess } = require('chess.js');
 
 // Use the real persistence layer by default while allowing tests to inject a fake repository
@@ -11,7 +10,7 @@ class GameService {
     this.games = new Map();
   }
 
-  createGame({ whiteId, blackId }) {
+  async createGame({ whiteId, blackId }) {
     if (!Number.isInteger(whiteId) || whiteId <= 0) {
       throw new TypeError('whiteId must be a positive integer');
     }
@@ -24,7 +23,17 @@ class GameService {
       throw new Error('White and black players must be different users');
     }
 
-    const gameId = randomUUID();
+    // Create the database record before storing the active game in memory.
+    // Prisma generates the permanent numeric ID shared by the database,
+    // Socket.IO events and frontend routes.
+    const persistedGame = await this.gameRepository.createGame({
+      whiteId,
+      blackId,
+    });
+
+    // Use Prisma's ID instead of generating a separate in-memory UUID.
+    // This prevents the same game from having two unrelated identifiers.
+    const gameId = persistedGame.id;
 
     const game = {
       gameId,
