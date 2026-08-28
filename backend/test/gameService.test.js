@@ -103,7 +103,7 @@ test('accepts a legal move and rejects invalid moves', async () => {
     blackId: 2,
   });
 
-  const afterLegalMove = service.makeMove({
+  const afterLegalMove = await service.makeMove({
     gameId: game.gameId,
     playerId: 1,
     from: 'e2',
@@ -112,7 +112,7 @@ test('accepts a legal move and rejects invalid moves', async () => {
 
   assert.equal(afterLegalMove.turn, 'b');
 
-  assert.throws(
+  await assert.rejects(
     () =>
       service.makeMove({
         gameId: game.gameId,
@@ -123,7 +123,7 @@ test('accepts a legal move and rejects invalid moves', async () => {
     /turn/,
   );
 
-  assert.throws(
+  await assert.rejects(
     () =>
       service.makeMove({
         gameId: game.gameId,
@@ -147,28 +147,28 @@ test('finishes the game after checkmate', async () => {
     blackId: 2,
   });
 
-  service.makeMove({
+  await service.makeMove({
     gameId: game.gameId,
     playerId: 1,
     from: 'f2',
     to: 'f3',
   });
 
-  service.makeMove({
+  await service.makeMove({
     gameId: game.gameId,
     playerId: 2,
     from: 'e7',
     to: 'e5',
   });
 
-  service.makeMove({
+  await service.makeMove({
     gameId: game.gameId,
     playerId: 1,
     from: 'g2',
     to: 'g4',
   });
 
-  const finished = service.makeMove({
+  const finished =  await service.makeMove({
     gameId: game.gameId,
     playerId: 2,
     from: 'd8',
@@ -180,7 +180,7 @@ test('finishes the game after checkmate', async () => {
   assert.equal(finished.winnerId, 2);
   assert.match(finished.pgn, /\[Result "0-1"\]/);
 
-  assert.throws(
+  await assert.rejects(
     () =>
       service.makeMove({
         gameId: game.gameId,
@@ -276,7 +276,7 @@ test('finishes the game after threefold repetition', async () => {
   let finished;
 
   for (const [playerId, from, to] of moves) {
-    finished = service.makeMove({
+    finished = await service.makeMove({
       gameId: game.gameId,
       playerId,
       from,
