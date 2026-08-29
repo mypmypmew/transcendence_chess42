@@ -23,6 +23,39 @@ function getOtherParticipant(friendship, userId) {
             : friendship.userA;
 }
 
+async function removeFriend(currentUserId, friendUserId) {
+    if (!Number.isInteger(friendUserId) || friendUserId <= 0) {
+        throw httpError(400, 'friendId must be a positive integer');
+    }
+
+    if (currentUserId === friendUserId) {
+        throw httpError(400, 'A user cannot remove themselves as a friend');
+    }
+
+    const friendship = await friendshipRepository.findFriendship(
+        currentUserId,
+        friendUserId,
+    );
+
+    if (!friendship) {
+        throw httpError(404, 'Friendship not found');
+    }
+
+    if (friendship.status !== FriendshipStatus.ACCEPTED) {
+        throw httpError(409, 'Only accepted friendships can be removed');
+    }
+
+    try {
+        await friendshipRepository.deleteFriendshipById(friendship.id);
+    } catch (err) {
+        if (err?.code === 'P2025') {
+            throw httpError(404, 'Friendship not found');
+        }
+
+        throw err;
+    }
+}
+
 function validateRequestId(requestId) {
     if (!Number.isInteger(requestId) || requestId <= 0) {
         throw httpError(400, 'requestId must be a positive integer');
@@ -192,4 +225,5 @@ module.exports = {
     listFriendRequests,
     acceptFriendRequest,
     deleteFriendRequest,
+    removeFriend,
 };
