@@ -32,6 +32,12 @@ class MatchmakingService {
 			};
 		}
 
+		// Reject duplicate requests from the player who already occupies the queue.
+		// This prevents GameService from receiving the same user as both opponents.
+		if (this.waitingPlayerId === playerId) {
+			throw new Error('Player is already waiting for a match');
+		}
+
 		// Preserve both player IDs before clearing the waiting slot.
 		// The first player receives white and the second player receives black.
 		const whiteId = this.waitingPlayerId;
