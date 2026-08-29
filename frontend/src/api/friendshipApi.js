@@ -18,7 +18,14 @@ function sendFriendRequest(recipientId) {
   })
 }
 
+function acceptFriendRequest(requestId) {
+  return request(`/api/friend-requests/${requestId}/accept`, {
+    method: 'POST',
+  })
+}
+
 export {
+  acceptFriendRequest,
   getFriendRequests,
   getFriends,
   sendFriendRequest,

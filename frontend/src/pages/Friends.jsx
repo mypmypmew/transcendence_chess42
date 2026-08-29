@@ -3,6 +3,7 @@ import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
 import {
+  acceptFriendRequest,
   getFriendRequests,
   getFriends,
   sendFriendRequest,
@@ -32,6 +33,7 @@ export default function Friends() {
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
   const [sendingRequestIds, setSendingRequestIds] = useState([])
+  const [processingRequestIds, setProcessingRequestIds] = useState([])
 
   const friendUserIds = useMemo(
     () => friends.map((friendship) => friendship.user.id),
@@ -168,6 +170,27 @@ export default function Friends() {
     }
   }
 
+  const handleAcceptFriendRequest = async (request) => {
+    setProcessingRequestIds((current) => [...current, request.id])
+    setPageError(null)
+
+    try {
+      await acceptFriendRequest(request.id)
+      setIncomingRequests((current) => current.filter((item) => item.id !== request.id))
+      setFriends((current) => [
+        ...current,
+        {
+          friendshipId: request.id,
+          user: request.requester,
+        },
+      ])
+    } catch (error) {
+      setPageError(error.message)
+    } finally {
+      setProcessingRequestIds((current) => current.filter((id) => id !== request.id))
+    }
+  }
+
   return (
     <AppLayout 
       eyebrow="Friends" 
@@ -286,31 +309,40 @@ export default function Friends() {
               </div>
             ) : (
               <div className="cm-list">
-                {incomingRequests.map((request) => (
-                  <div key={`incoming-${request.id}`} className="cm-list-row">
-                    <Avatar
-                      avatar={request.requester.avatar}
-                      name={request.requester.username}
-                      className="avatar avatar-md"
-                    />
-                    <div>
-                      <div className="text-primary">{request.requester.username}</div>
-                      <div className="flex items-center gap-2">
-                        <i className="ti ti-trophy text-accent" aria-hidden="true" />
-                        <span className="text-muted">{request.requester.rating}</span>
-                        <span className="text-muted">Incoming</span>
+                {incomingRequests.map((request) => {
+                  const isProcessing = processingRequestIds.includes(request.id)
+
+                  return (
+                    <div key={`incoming-${request.id}`} className="cm-list-row">
+                      <Avatar
+                        avatar={request.requester.avatar}
+                        name={request.requester.username}
+                        className="avatar avatar-md"
+                      />
+                      <div>
+                        <div className="text-primary">{request.requester.username}</div>
+                        <div className="flex items-center gap-2">
+                          <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                          <span className="text-muted">{request.requester.rating}</span>
+                          <span className="text-muted">Incoming</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleAcceptFriendRequest(request)}
+                        >
+                          Accept
+                        </button>
+                        <button className="btn btn-ghost btn-sm" type="button" disabled>
+                          Decline
+                        </button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button className="btn btn-primary btn-sm" type="button" disabled>
-                        Accept
-                      </button>
-                      <button className="btn btn-ghost btn-sm" type="button" disabled>
-                        Decline
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
 
                 {outgoingRequests.map((request) => (
                   <div key={`outgoing-${request.id}`} className="cm-list-row">
