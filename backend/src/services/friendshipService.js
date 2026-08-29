@@ -23,6 +23,16 @@ function getOtherParticipant(friendship, userId) {
             : friendship.userA;
 }
 
+async function listFriends(userId) {
+    const friendships =
+        await friendshipRepository.findAcceptedFriendshipsByUserId(userId);
+
+    return friendships.map((friendship) => ({
+        friendshipId: friendship.id,
+        user: toPublicUser(getOtherParticipant(friendship, userId)),
+    }));
+}
+
 async function removeFriend(currentUserId, friendUserId) {
     if (!Number.isInteger(friendUserId) || friendUserId <= 0) {
         throw httpError(400, 'friendId must be a positive integer');
