@@ -18,8 +18,14 @@ async function createConversation(firstUserId, secondUserId) {
   });
 }
 
+async function findConversationById(conversationId) {
+  return prisma.conversation.findUnique({
+    where: { id: conversationId },
+  });
+}
 
 module.exports = {
   findConversationByPair,
   createConversation,
+  findConversationById,
 };
