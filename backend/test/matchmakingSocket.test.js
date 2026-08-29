@@ -43,7 +43,15 @@ test('joins matchmaking with the authenticated socket user', async () => {
 	},
   };
 
+  const fakeIo = {
+	// A waiting player must not trigger room broadcasts.
+	to() {
+		throw new Error('Room broadcast was not expected');
+	},
+  };
+
   registerMatchmakingHandlers({
+	io: fakeIo,
 	socket: fakeSocket,
 	matchmakingService: fakeMatchmakingService,
   });
@@ -94,8 +102,16 @@ test('joins a personal room for the authenticated user', () => {
 		},
 	};
 
+	const fakeIo = {
+		// Registering a socket must not broadcast any events.
+		to() {
+			throw new Error('Room broadcast was not expected');
+		},
+	};
+
 	// Registering handlers must also place the authenticated socket into a stable room based on its database user ID.
 	registerMatchmakingHandlers({
+		io: fakeIo,
 		socket: fakeSocket,
 		matchmakingService: fakeMatchmakingService,
 	});
@@ -104,3 +120,82 @@ test('joins a personal room for the authenticated user', () => {
 		'user:7',
 	]);
 });
+
+test('notifies both player rooms when a match is created', async () => {
+	const handlers = new Map();
+	const roomEvents = [];
+
+	const game = {
+		gameId: 42,
+		whiteId: 1,
+		blackId: 2,
+		status: 'IN_PROGRESS',
+	};
+
+	const fakeSocket = {
+		data: {
+			userId: 2,
+		},
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		emit() {
+			// A matched result is broadcast through io rooms, not only this socket.
+		},
+
+		join() {
+			// Personal room membership is covere by a separate test.
+		},
+  	};
+	  
+	const fakeIo = {
+		// Imitate io.to(room).emit(event, payload).
+		to(roomName) {
+			return {
+				emit(eventName, payload) {
+					roomEvents.push({
+						roomName,
+						eventName,
+						payload,
+					});
+				},
+			};
+		},
+	};
+
+	const fakeMatchmakingService = {
+		async join() {
+			return {
+				status: 'MATCHED',
+				game,
+			};
+		},
+	};
+
+	registerMatchmakingHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		matchmakingService: fakeMatchmakingService,
+	});
+
+	const joinHandler = handlers.get('matchmaking:join');
+
+	await joinHandler();
+
+	// Both authenticated users receive the same authoritative game snapshot.
+	assert.deepEqual(roomEvents, [
+		{
+			roomName: 'user:1',
+			eventName: 'matchmaking:matched',
+			payload: game,
+		},
+		{
+			roomName: 'user:2',
+			eventName: 'matchmaking:matched',
+			payload: game,
+		},
+	]);
+});
+
