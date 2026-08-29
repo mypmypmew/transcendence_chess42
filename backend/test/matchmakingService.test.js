@@ -113,3 +113,39 @@ test('rejects a player who is already waiting', async () => {
   // No game may be created with the same user as both players.
   assert.equal(createGameCalls, 0);
 });
+
+test('removes a waiting player when matchmaking is cancelled', async () => {
+  // Count game creation attempts to verify that a cancelled player is not used in a later match.
+  let createGameCalls = 0;
+
+  const fakeGameService = {
+    async createGame() {
+      createGameCalls += 1;
+
+      return {
+        gameId: 42,
+      };
+    },
+  };
+
+  const matchmakingService = new MatchmakingService({
+    gameService: fakeGameService,
+  });
+
+  // Player 1 starts searching and then cncels the search.
+  await matchmakingService.join(1);
+
+  const wasRemoved = matchmakingService.leave(1);
+
+  // Leave returns true when the player was actually removed.
+  assert.equal(wasRemoved, true);
+
+  // Player 2 must now become the new waiting player, rather than being matched with the cancelled player.
+  const result = await matchmakingService.join(2);
+
+  assert.deepEqual(result, {
+    status: 'WAITING',
+  });
+
+  assert.equal(createGameCalls, 0);
+});
