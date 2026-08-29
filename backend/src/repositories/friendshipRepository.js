@@ -1,4 +1,65 @@
+const { FriendshipStatus } = require('@prisma/client');
+
 const prisma = require('../db/prisma');
+
+const PUBLIC_USER_INCLUDE = {
+  select: {
+    id: true,
+    username: true,
+    rating: true,
+  },
+};
+
+function validateUserId(userId) {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new TypeError('User id must be a positive integer');
+  }
+}
+
+async function findAcceptedFriendshipsByUserId(userId) {
+  validateUserId(userId);
+
+  return prisma.friendship.findMany({
+    where: {
+      status: FriendshipStatus.ACCEPTED,
+      OR: [
+        { userAId: userId },
+        { userBId: userId },
+      ],
+    },
+    include: {
+      userA: PUBLIC_USER_INCLUDE,
+      userB: PUBLIC_USER_INCLUDE,
+    },
+  });
+}
+
+async function findPendingFriendRequestsByUserId(userId) {
+  validateUserId(userId);
+
+  return prisma.friendship.findMany({
+    where: {
+      status: FriendshipStatus.PENDING,
+      OR: [
+        { userAId: userId },
+        { userBId: userId },
+      ],
+    },
+    include: {
+      userA: PUBLIC_USER_INCLUDE,
+      userB: PUBLIC_USER_INCLUDE,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+}
+
+function validateFriendshipId(friendshipId) {
+  if (!Number.isInteger(friendshipId) || friendshipId <= 0) {
+    throw new TypeError('Friendship id must be a positive integer');
+  }
+}
 
 function normalizeUserIds(firstUserId, secondUserId) {
   if (
@@ -35,21 +96,60 @@ async function findFriendship(firstUserId, secondUserId) {
   });
 }
 
-async function createFriendship(firstUserId, secondUserId) {
+async function findFriendshipById(friendshipId) {
+  validateFriendshipId(friendshipId);
+
+  return prisma.friendship.findUnique({
+    where: { id: friendshipId },
+  });
+}
+
+async function acceptFriendRequest(friendshipId) {
+  validateFriendshipId(friendshipId);
+
+  return prisma.friendship.update({
+    where: {
+      id: friendshipId,
+      status: FriendshipStatus.PENDING,
+    },
+    data: {
+      status: FriendshipStatus.ACCEPTED,
+    },
+  });
+}
+
+async function deleteFriendshipById(friendshipId) {
+  validateFriendshipId(friendshipId);
+
+  return prisma.friendship.delete({
+    where: {
+      id: friendshipId,
+    },
+  });
+}
+
+async function createFriendRequest(requesterId, recipientId) {
   const { userAId, userBId } = normalizeUserIds(
-    firstUserId,
-    secondUserId,
+    requesterId,
+    recipientId,
   );
 
   return prisma.friendship.create({
     data: {
       userAId,
       userBId,
+      requestedById: requesterId,
+      status: FriendshipStatus.PENDING,
     },
   });
 }
 
 module.exports = {
   findFriendship,
-  createFriendship,
+  findFriendshipById,
+  findAcceptedFriendshipsByUserId,
+  findPendingFriendRequestsByUserId,
+  createFriendRequest,
+  acceptFriendRequest,
+  deleteFriendshipById,
 };
