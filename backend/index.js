@@ -10,6 +10,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const FRONTEND_ORIGIN = 'http://localhost:5173';
 const httpServer = http.createServer(app);
+const userRoutes = require('./src/routes/userRoutes');
 
 const io = new Server(httpServer, {
   cors: {
@@ -38,6 +39,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
