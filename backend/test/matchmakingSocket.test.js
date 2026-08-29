@@ -258,3 +258,62 @@ test('leaves matchmaking with the authenticated socket user', () => {
 	assert.equal(removedPlayerId, 7);
 });
 
+test('emits a matchmaking error when joining the queue fails', async () => {
+	const handlers = new Map();
+	const emittedEvents = [];
+
+	const fakeSocket = {
+		data: {
+			userId: 7,
+		},
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		emit(eventName, payload) {
+			emittedEvents.push({
+				eventName,
+				payload,
+			});
+		},
+
+		join() {
+			// Personal room membership is covered by a separate test.
+		},
+  	};
+	  
+	const fakeIo = {
+		to() {
+			throw new Error('Room broadcast was not expected');
+		},
+	};
+
+	const fakeMatchmakingService = {
+		// Simulate a known matchmaking failure such as a duplicate join.
+		async join() {
+			throw new Error('Player is already waiting for a match');
+		},
+	};
+
+	registerMatchmakingHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		matchmakingService: fakeMatchmakingService,
+	});
+
+	const joinHandler = handlers.get('matchmaking:join');
+
+	// The socket handler must convert the service error into a client event instead of allowing the rejected promise to escape.
+	await joinHandler();
+
+	assert.deepEqual(emittedEvents, [
+		{
+			eventName: 'matchmaking:error',
+			payload: {
+				message: 'Player is already waiting for a match',
+			},
+		},
+	]);
+});
+
