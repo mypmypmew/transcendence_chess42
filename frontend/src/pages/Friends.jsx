@@ -1,41 +1,95 @@
-// later API integration will be done from backend and handle actions like remove friend, open profile, message, and challenge.
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
-import { Link } from 'react-router-dom'
-import { searchUsers, sendFriendRequest } from '../api/userApi.js'
+import {
+  acceptFriendRequest,
+  deleteFriendRequest,
+  getFriendRequests,
+  getFriends,
+  removeFriend,
+  sendFriendRequest,
+} from '../api/friendshipApi.js'
+import { searchUsers } from '../api/userApi.js'
 
-
-const mockFriends = [
-  { id: 1, avatar: null, nickname: 'Serhii', rating: 1812, games: 200, online: true },
-  { id: 2, avatar: null, nickname: 'Taulant', rating: 1694, games: 150, online: false },
-  { id: 3, avatar: null, nickname: 'Tatiana', rating: 1740, games: 178, online: true },
-  { id: 4, avatar: null, nickname: 'Alima', rating: 1658, games: 132, online: false },
-  { id: 5, avatar: null, nickname: 'Mira', rating: 1775, games: 98, online: true },
-  { id: 6, avatar: null, nickname: 'Niko', rating: 1796, games: 88, online: false },
-  { id: 7, avatar: null, nickname: 'Elena', rating: 1726, games: 76, online: false },
-]
+function toModalPlayer(user) {
+  return {
+    id: user.id,
+    avatar: user.avatar || null,
+    nickname: user.username,
+    rating: user.rating,
+    isFriend: true,
+  }
+}
 
 export default function Friends() {
   const [friends, setFriends] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [pageError, setPageError] = useState(null)
+  const [incomingRequests, setIncomingRequests] = useState([])
+  const [outgoingRequests, setOutgoingRequests] = useState([])
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
-  const [sentRequestIds, setSentRequestIds] = useState([])
   const [sendingRequestIds, setSendingRequestIds] = useState([])
+  const [processingRequestIds, setProcessingRequestIds] = useState([])
+  const [removingFriendIds, setRemovingFriendIds] = useState([])
+
+  const friendUserIds = useMemo(
+    () => friends.map((friendship) => friendship.user.id),
+    [friends],
+  )
+
+  const outgoingRecipientIds = useMemo(
+    () => outgoingRequests.map((request) => request.recipient.id),
+    [outgoingRequests],
+  )
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setFriends([...mockFriends])
-      setIsLoading(false)
-    }, 3000)
+    let isCancelled = false
 
-    return () => window.clearTimeout(timer)
+    const timer = window.setTimeout(async () => {
+      try {
+        if (!isCancelled) {
+          setIsLoading(true)
+          setPageError(null)
+        }
+
+        const [friendsData, requestsData] = await Promise.all([
+          getFriends(),
+          getFriendRequests(),
+        ])
+
+        if (!isCancelled) {
+          setFriends(Array.isArray(friendsData?.friends) ? friendsData.friends : [])
+          setIncomingRequests(
+            Array.isArray(requestsData?.incoming) ? requestsData.incoming : [],
+          )
+          setOutgoingRequests(
+            Array.isArray(requestsData?.outgoing) ? requestsData.outgoing : [],
+          )
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setPageError(error.message)
+          setFriends([])
+          setIncomingRequests([])
+          setOutgoingRequests([])
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
+      }
+    }, 0)
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(timer)
+    }
   }, [])
 
   useEffect(() => {
@@ -77,30 +131,28 @@ export default function Friends() {
     }
   }, [isSearchOpen, searchTerm])
 
-	
-  const handleRemoveFriend = (friendId) => {
-    setFriends((current) => current.filter((friend) => friend.id !== friendId))
-    setSelectedFriend((current) => (current?.id === friendId ? null : current))
+  const handleOpenProfile = (friendship) => {
+    setSelectedFriend(toModalPlayer(friendship.user))
   }
 
-	const handleOpenProfile = (friend) => {
-    setSelectedFriend(friend)
-  	}
+  const handleRemoveFriend = async (friendUserId) => {
+    setRemovingFriendIds((current) => [...current, friendUserId])
+    setPageError(null)
 
-	const handleMessage = (friend) => {
-	<Link to={`/chat/${friend.id}`} className="btn btn-ghost btn-sm">
-  	Message
-	</Link>
-	}
-
-	const handleChallenge = (friend) => {
-	<Link to={`/game-lobby?opponent=${friend.id}`} className="btn btn-ghost btn-sm">
-  	Challenge
-	</Link>
-	}
+    try {
+      await removeFriend(friendUserId)
+      setFriends((current) => (
+        current.filter((friendship) => friendship.user.id !== friendUserId)
+      ))
+      setSelectedFriend((current) => (current?.id === friendUserId ? null : current))
+    } catch (error) {
+      setPageError(error.message)
+    } finally {
+      setRemovingFriendIds((current) => current.filter((id) => id !== friendUserId))
+    }
+  }
 	
-	// TODO add API integration from backend to add friend
-	const handleAddFriend = () => {
+  const handleAddFriend = () => {
     if (isSearchOpen) {
       setSearchTerm('')
       setSearchResults([])
@@ -109,7 +161,7 @@ export default function Friends() {
     }
 
     setIsSearchOpen((current) => !current)
-	}
+  }
 
   const handleSearchTermChange = (event) => {
     const nextSearchTerm = event.target.value
@@ -127,12 +179,50 @@ export default function Friends() {
     setSearchError(null)
 
     try {
-      await sendFriendRequest(user.id)
-      setSentRequestIds((current) => [...current, user.id])
+      const data = await sendFriendRequest(user.id)
+      if (data?.request) {
+        setOutgoingRequests((current) => [...current, data.request])
+      }
     } catch (error) {
       setSearchError(error.message)
     } finally {
       setSendingRequestIds((current) => current.filter((id) => id !== user.id))
+    }
+  }
+
+  const handleAcceptFriendRequest = async (request) => {
+    setProcessingRequestIds((current) => [...current, request.id])
+    setPageError(null)
+
+    try {
+      await acceptFriendRequest(request.id)
+      setIncomingRequests((current) => current.filter((item) => item.id !== request.id))
+      setFriends((current) => [
+        ...current,
+        {
+          friendshipId: request.id,
+          user: request.requester,
+        },
+      ])
+    } catch (error) {
+      setPageError(error.message)
+    } finally {
+      setProcessingRequestIds((current) => current.filter((id) => id !== request.id))
+    }
+  }
+
+  const handleDeleteFriendRequest = async (requestId) => {
+    setProcessingRequestIds((current) => [...current, requestId])
+    setPageError(null)
+
+    try {
+      await deleteFriendRequest(requestId)
+      setIncomingRequests((current) => current.filter((request) => request.id !== requestId))
+      setOutgoingRequests((current) => current.filter((request) => request.id !== requestId))
+    } catch (error) {
+      setPageError(error.message)
+    } finally {
+      setProcessingRequestIds((current) => current.filter((id) => id !== requestId))
     }
   }
 
@@ -147,6 +237,13 @@ export default function Friends() {
       }
     >
       <div className="cm-page-grid">
+        {pageError && (
+          <div className="alert alert-error visible" role="alert">
+            <i className="ti ti-alert-circle" aria-hidden="true" />
+            {pageError}
+          </div>
+        )}
+
         {isSearchOpen && (
           <section className="cm-panel">
             <div className="cm-panel-header">
@@ -192,7 +289,8 @@ export default function Friends() {
               ) : (
                 <div className="cm-list">
                   {searchResults.map((user) => {
-                    const isSent = sentRequestIds.includes(user.id)
+                    const isFriend = friendUserIds.includes(user.id)
+                    const isSent = outgoingRecipientIds.includes(user.id)
                     const isSending = sendingRequestIds.includes(user.id)
 
                     return (
@@ -214,10 +312,10 @@ export default function Friends() {
                         <button
                           className="btn btn-primary btn-sm"
                           type="button"
-                          disabled={isSent || isSending}
+                          disabled={isFriend || isSent || isSending}
                           onClick={() => handleSendFriendRequest(user)}
                         >
-                          {isSent ? 'Request Sent' : 'Add'}
+                          {isFriend ? 'Friend' : isSent ? 'Request Sent' : 'Add'}
                         </button>
                       </div>
                     )
@@ -227,6 +325,94 @@ export default function Friends() {
             </div>
           </section>
         )}
+
+        <section className="cm-panel">
+          <div className="cm-panel-header">
+            <div>
+              <p className="cm-eyebrow">Requests</p>
+              <h2 className="cm-section-title">Friend Requests</h2>
+            </div>
+          </div>
+          <div className="cm-panel-body">
+            {isLoading ? (
+              <div className="empty-state">
+                <p>Loading requests...</p>
+              </div>
+            ) : incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
+              <div className="empty-state">
+                <p>No pending requests</p>
+              </div>
+            ) : (
+              <div className="cm-list">
+                {incomingRequests.map((request) => {
+                  const isProcessing = processingRequestIds.includes(request.id)
+
+                  return (
+                    <div key={`incoming-${request.id}`} className="cm-list-row">
+                      <Avatar
+                        avatar={request.requester.avatar}
+                        name={request.requester.username}
+                        className="avatar avatar-md"
+                      />
+                      <div>
+                        <div className="text-primary">{request.requester.username}</div>
+                        <div className="flex items-center gap-2">
+                          <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                          <span className="text-muted">{request.requester.rating}</span>
+                          <span className="text-muted">Incoming</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleAcceptFriendRequest(request)}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleDeleteFriendRequest(request.id)}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {outgoingRequests.map((request) => (
+                  <div key={`outgoing-${request.id}`} className="cm-list-row">
+                    <Avatar
+                      avatar={request.recipient.avatar}
+                      name={request.recipient.username}
+                      className="avatar avatar-md"
+                    />
+                    <div>
+                      <div className="text-primary">{request.recipient.username}</div>
+                      <div className="flex items-center gap-2">
+                        <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                        <span className="text-muted">{request.recipient.rating}</span>
+                        <span className="text-muted">Outgoing</span>
+                      </div>
+                    </div>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      type="button"
+                      disabled={processingRequestIds.includes(request.id)}
+                      onClick={() => handleDeleteFriendRequest(request.id)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
         <section className="cm-panel">
           <div className="cm-panel-header">
@@ -246,11 +432,11 @@ export default function Friends() {
               </div>
             ) : (
               <div className="cm-list">
-                {friends.map((friend) => (
-                  <div key={friend.id} className="cm-list-row">
+                {friends.map((friendship) => (
+                  <div key={friendship.friendshipId} className="cm-list-row">
                     <Avatar
-                      avatar={friend.avatar}
-                      name={friend.nickname}
+                      avatar={friendship.user.avatar}
+                      name={friendship.user.username}
                       className="avatar avatar-md"
                     />
                     
@@ -258,38 +444,36 @@ export default function Friends() {
                       <div 
                         className="text-primary"
                         style={{ cursor: 'pointer' }}
-                        onClick={() => handleOpenProfile(friend)}
+                        onClick={() => handleOpenProfile(friendship)}
                       >
-                        {friend.nickname}
+                        {friendship.user.username}
                       </div>
                       <div className="flex items-center gap-2">
-						<i className="ti ti-trophy text-accent" aria-hidden="true" />
-						<span className="text-muted">{friend.rating}</span>
-						<i className="ti ti-chess-rook text-accent" aria-hidden="true" />
-						<span className="text-muted">{friend.games}</span>
-						<span className={`status-dot ${friend.online ? 'online' : 'offline'}`} />
-                        <span className="text-muted">
-                          {friend.online ? 'Online' : 'Offline'}
-                        </span>
+                        <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                        <span className="text-muted">{friendship.user.rating}</span>
                       </div>
                     </div>
 
                     <div className="flex gap-2">
                       <button 
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleMessage(friend)}
+                        type="button"
+                        disabled
                       >
                         Message
                       </button>
                       <button 
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleChallenge(friend)}
+                        type="button"
+                        disabled
                       >
                         Challenge
                       </button>
-                      <button 
+                      <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleRemoveFriend(friend.id)}
+                        type="button"
+                        disabled={removingFriendIds.includes(friendship.user.id)}
+                        onClick={() => handleRemoveFriend(friendship.user.id)}
                       >
                         Remove
                       </button>
