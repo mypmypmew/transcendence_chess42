@@ -22,6 +22,11 @@ test('joins matchmaking with the authenticated socket user', async () => {
 		handlers.set(eventName, handler);
 	},
 
+	// Provide the room API that the real Socket.IO socket exposes.
+	join() {
+		// Room membership is verified in a dedicated test below.
+	},
+
 	// Capture events that would normally be sent to the frontend.
 	emit(eventName) {
 		emittedEvents.push(eventName);
@@ -57,4 +62,45 @@ test('joins matchmaking with the authenticated socket user', async () => {
   assert.deepEqual(emittedEvents, [
 	'matchmaking:waiting',
   ]);
+});
+
+test('joins a personal room for the authenticated user', () => {
+	// Store room names to verify where the socket is registered.
+	const joinedRooms = [];
+
+	const fakeSocket = {
+		data: {
+			userId: 7,
+		},
+
+		on() {
+			// Event registration is not relevant to this room test.
+		},
+
+		emit() {
+			// No client event is expected during handler registration.
+		},
+
+		join(roomName) {
+			joinedRooms.push(roomName);
+		},
+  	};
+
+	const fakeMatchmakingService = {
+		async join() {
+			return {
+				status: 'WAITING',
+			};
+		},
+	};
+
+	// Registering handlers must also place the authenticated socket into a stable room based on its database user ID.
+	registerMatchmakingHandlers({
+		socket: fakeSocket,
+		matchmakingService: fakeMatchmakingService,
+	});
+
+	assert.deepEqual(joinedRooms, [
+		'user:7',
+	]);
 });
