@@ -1,4 +1,11 @@
-function registerMatchmakingHandlers({socket, matchmakingService,} = {}) {
+function registerMatchmakingHandlers({io, socket, matchmakingService,} = {}) {
+	// io broadcasts match results to personal rooms of both players.
+	if (!io ||
+		typeof io.to !== 'function'
+	) {
+		throw new TypeError('io with a to method is required');
+	}
+	
 	// Require the minimal Socket.IO interface used by these handlers.
 	// this also makes dependency errors clear in unit tests.
 	if (!socket ||
@@ -31,6 +38,24 @@ function registerMatchmakingHandlers({socket, matchmakingService,} = {}) {
 		// Tell the current client that it remains in the matchmaking queue.
 		if (result.status === 'WAITING') {
 			socket.emit('matchmaking:waiting');
+
+			return;
+		}
+
+		// Broadcast the authoritative game snapshot to both personal rooms.
+		// This also notifies the first playerId, whose original join request finished earlier with the WAITING status
+		if (result.status === 'MATCHED') {
+			const { game } = result;
+
+			io.to(`user:${game.whiteId}`).emit(
+				'matchmaking:matched',
+				game,
+			);
+
+			io.to(`user:${game.blackId}`).emit(
+				'matchmaking:matched',
+				game,
+			);
 		}
 	});
 }
