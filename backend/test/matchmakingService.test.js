@@ -82,3 +82,34 @@ test('matches the second player and creates a game', async () => {
     game: createdGame,
   });
 });
+
+test('rejects a player who is already waiting', async () => {
+  // Count game creation attempts to prove that a duplicate join cannot create a game aginst the same user.
+  let createGameCalls = 0;
+
+  const fakeGameService = {
+    async createGame() {
+      createGameCalls += 1;
+
+      return {
+        gameId: 42,
+      };
+    },
+  };
+
+  const matchmakingService = new MatchmakingService({
+    gameService: fakeGameService,
+  });
+
+  // The player enters the queue for the first time.
+  await matchmakingService.join(1);
+
+  // A repeated request from the same authenticated user must be rejected.
+  await assert.rejects(
+    () => matchmakingService.join(1),
+    /already waiting/,
+  );
+
+  // No game may be created with the same user as both players.
+  assert.equal(createGameCalls, 0);
+});
