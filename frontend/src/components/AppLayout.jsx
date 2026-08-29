@@ -3,8 +3,9 @@ import { NavLink } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import LeaderboardModal from './LeaderboardModal.jsx'
+import LegalFooter from './LegalFooter.jsx'
 
-function AppLayout({ eyebrow, title, actions, children }) {
+function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }) {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
   
   return (
@@ -31,6 +32,7 @@ function AppLayout({ eyebrow, title, actions, children }) {
             {children}
           </main>
         </div>
+        {showLegalFooter && <LegalFooter />}
       </div>
       {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
     </div>
