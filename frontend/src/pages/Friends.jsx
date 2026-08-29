@@ -230,6 +230,7 @@ export default function Friends() {
     <AppLayout 
       eyebrow="Friends" 
       title="Friends"
+      showLegalFooter={false}
       actions={
         <button className="btn btn-primary" onClick={handleAddFriend}>
           Add Friend
