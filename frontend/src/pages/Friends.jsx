@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
-import { getFriends } from '../api/friendshipApi.js'
+import {
+  getFriendRequests,
+  getFriends,
+} from '../api/friendshipApi.js'
 import { searchUsers } from '../api/userApi.js'
 
 function toModalPlayer(user) {
@@ -19,6 +22,8 @@ export default function Friends() {
   const [friends, setFriends] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [pageError, setPageError] = useState(null)
+  const [incomingRequests, setIncomingRequests] = useState([])
+  const [outgoingRequests, setOutgoingRequests] = useState([])
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -41,15 +46,26 @@ export default function Friends() {
           setPageError(null)
         }
 
-        const friendsData = await getFriends()
+        const [friendsData, requestsData] = await Promise.all([
+          getFriends(),
+          getFriendRequests(),
+        ])
 
         if (!isCancelled) {
           setFriends(Array.isArray(friendsData?.friends) ? friendsData.friends : [])
+          setIncomingRequests(
+            Array.isArray(requestsData?.incoming) ? requestsData.incoming : [],
+          )
+          setOutgoingRequests(
+            Array.isArray(requestsData?.outgoing) ? requestsData.outgoing : [],
+          )
         }
       } catch (error) {
         if (!isCancelled) {
           setPageError(error.message)
           setFriends([])
+          setIncomingRequests([])
+          setOutgoingRequests([])
         }
       } finally {
         if (!isCancelled) {
@@ -225,6 +241,75 @@ export default function Friends() {
             </div>
           </section>
         )}
+
+        <section className="cm-panel">
+          <div className="cm-panel-header">
+            <div>
+              <p className="cm-eyebrow">Requests</p>
+              <h2 className="cm-section-title">Friend Requests</h2>
+            </div>
+          </div>
+          <div className="cm-panel-body">
+            {isLoading ? (
+              <div className="empty-state">
+                <p>Loading requests...</p>
+              </div>
+            ) : incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
+              <div className="empty-state">
+                <p>No pending requests</p>
+              </div>
+            ) : (
+              <div className="cm-list">
+                {incomingRequests.map((request) => (
+                  <div key={`incoming-${request.id}`} className="cm-list-row">
+                    <Avatar
+                      avatar={request.requester.avatar}
+                      name={request.requester.username}
+                      className="avatar avatar-md"
+                    />
+                    <div>
+                      <div className="text-primary">{request.requester.username}</div>
+                      <div className="flex items-center gap-2">
+                        <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                        <span className="text-muted">{request.requester.rating}</span>
+                        <span className="text-muted">Incoming</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="btn btn-primary btn-sm" type="button" disabled>
+                        Accept
+                      </button>
+                      <button className="btn btn-ghost btn-sm" type="button" disabled>
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {outgoingRequests.map((request) => (
+                  <div key={`outgoing-${request.id}`} className="cm-list-row">
+                    <Avatar
+                      avatar={request.recipient.avatar}
+                      name={request.recipient.username}
+                      className="avatar avatar-md"
+                    />
+                    <div>
+                      <div className="text-primary">{request.recipient.username}</div>
+                      <div className="flex items-center gap-2">
+                        <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                        <span className="text-muted">{request.recipient.rating}</span>
+                        <span className="text-muted">Outgoing</span>
+                      </div>
+                    </div>
+                    <button className="btn btn-ghost btn-sm" type="button" disabled>
+                      Cancel
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
         <section className="cm-panel">
           <div className="cm-panel-header">
