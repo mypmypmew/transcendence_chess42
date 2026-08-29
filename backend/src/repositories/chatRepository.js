@@ -1,5 +1,12 @@
 const prisma = require('../db/prisma');
 
+function canonicalPair(firstUserId, secondUserId) {
+  if (firstUserId < secondUserId) {
+    return { userAId: firstUserId, userBId: secondUserId };
+  }
+  return { userAId: secondUserId, userBId: firstUserId };
+}
+
 async function findConversationByPair(firstUserId, secondUserId) {
   const pair = canonicalPair(firstUserId, secondUserId);
 
