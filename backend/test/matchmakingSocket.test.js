@@ -146,7 +146,7 @@ test('notifies both player rooms when a match is created', async () => {
 		},
 
 		join() {
-			// Personal room membership is covere by a separate test.
+			// Personal room membership is covered by a separate test.
 		},
   	};
 	  
@@ -197,5 +197,64 @@ test('notifies both player rooms when a match is created', async () => {
 			payload: game,
 		},
 	]);
+});
+
+test('leaves matchmaking with the authenticated socket user', () => {
+	const handlers = new Map();
+	let removedPlayerId = null;
+
+	const fakeSocket = {
+		data: {
+			userId: 7,
+		},
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		emit() {
+			// Cancellation does not need to broadcast a new client event.
+		},
+
+		join() {
+			// Personal room membership is covered by a separate test.
+		},
+  	};
+	  
+	const fakeIo = {
+		to() {
+			throw new Error('Room broadcast was not expected');
+		},
+	};
+
+	const fakeMatchmakingService = {
+		async join() {
+			return {
+				status: 'WAITING',
+			};
+		},
+
+		// Record which authenticated user is removed from the queue.
+		leave(playerId) {
+			removedPlayerId = playerId;
+
+			return true;
+		},
+	};
+
+	registerMatchmakingHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		matchmakingService: fakeMatchmakingService,
+	});
+
+	const leaveHandler = handlers.get('matchmaking:leave');
+
+	// Send a forged userId to prove that the handler ignores client identity.
+	leaveHandler({
+		userId: 999,
+	});
+
+	assert.equal(removedPlayerId, 7);
 });
 
