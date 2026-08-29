@@ -236,4 +236,5 @@ module.exports = {
     acceptFriendRequest,
     deleteFriendRequest,
     removeFriend,
+    listFriends,
 };

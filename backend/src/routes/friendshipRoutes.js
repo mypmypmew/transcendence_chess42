@@ -22,7 +22,7 @@ router.post('/friend-requests', requireAuth, async (req, res, next) => {
     }
 });
 
-router.post('/friend-requests/:requestId/accept', 
+router.post('/friend-requests/:requestId/accept',
     requireAuth,
     async (req, res, next) => {
     try {
