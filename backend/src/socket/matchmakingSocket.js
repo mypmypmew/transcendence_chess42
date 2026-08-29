@@ -58,6 +58,11 @@ function registerMatchmakingHandlers({io, socket, matchmakingService,} = {}) {
 			);
 		}
 	});
+
+	socket.on('matchmaking:leave', () => {
+		// Ignore any client-provided identity and remove only the user authenticated by socketAuth for this connection.
+		matchmakingService.leave(playerId);
+	});
 }
 
 module.exports = {
