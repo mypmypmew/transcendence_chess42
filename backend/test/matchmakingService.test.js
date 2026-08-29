@@ -36,3 +36,49 @@ test('keeps the first player waiting for an opponent', async () => {
   // Matchmaking must not create a game for a player alone.
   assert.equal(createGameCalls, 0);
 });
+
+test('matches the second player and creates a game', async () => {
+  // Store the players passed to GameService so the test can verify their assigned chess colors.
+  let createdPlayers = null;
+
+  const createdGame = {
+    gameId: 42,
+    whiteId: 1,
+    blackId: 2,
+  };
+
+  const fakeGameService = {
+    // Simulate authoritative game creation without Prisma or chess.js.
+    async createGame(players) {
+      createdPlayers = players;
+
+      return createdGame;
+    },
+  };
+
+  const matchmakingService = new MatchmakingService({
+    gameService: fakeGameService,
+  });
+
+  // The first player occupies the waiting slot.
+  const waitingResult = await matchmakingService.join(1);
+
+  assert.deepEqual(waitingResult, {
+    status: 'WAITING',
+  });
+
+  // The second player completes the pair and starts the game.
+  const matchedResult = await matchmakingService.join(2);
+
+  // The first waiting player receives white and the second player receives black.
+  assert.deepEqual(createdPlayers, {
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  // Return the server-created game so the socket.IO layer can notify both players.
+  assert.deepEqual(matchedResult, {
+    status: 'MATCHED',
+    game: createdGame,
+  });
+});
