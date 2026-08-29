@@ -1,41 +1,67 @@
-// later API integration will be done from backend and handle actions like remove friend, open profile, message, and challenge.
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
-import { Link } from 'react-router-dom'
-import { searchUsers, sendFriendRequest } from '../api/userApi.js'
+import { getFriends } from '../api/friendshipApi.js'
+import { searchUsers } from '../api/userApi.js'
 
-
-const mockFriends = [
-  { id: 1, avatar: null, nickname: 'Serhii', rating: 1812, games: 200, online: true },
-  { id: 2, avatar: null, nickname: 'Taulant', rating: 1694, games: 150, online: false },
-  { id: 3, avatar: null, nickname: 'Tatiana', rating: 1740, games: 178, online: true },
-  { id: 4, avatar: null, nickname: 'Alima', rating: 1658, games: 132, online: false },
-  { id: 5, avatar: null, nickname: 'Mira', rating: 1775, games: 98, online: true },
-  { id: 6, avatar: null, nickname: 'Niko', rating: 1796, games: 88, online: false },
-  { id: 7, avatar: null, nickname: 'Elena', rating: 1726, games: 76, online: false },
-]
+function toModalPlayer(user) {
+  return {
+    id: user.id,
+    avatar: user.avatar || null,
+    nickname: user.username,
+    rating: user.rating,
+    isFriend: true,
+  }
+}
 
 export default function Friends() {
   const [friends, setFriends] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [pageError, setPageError] = useState(null)
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
-  const [sentRequestIds, setSentRequestIds] = useState([])
-  const [sendingRequestIds, setSendingRequestIds] = useState([])
+
+  const friendUserIds = useMemo(
+    () => friends.map((friendship) => friendship.user.id),
+    [friends],
+  )
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setFriends([...mockFriends])
-      setIsLoading(false)
-    }, 3000)
+    let isCancelled = false
 
-    return () => window.clearTimeout(timer)
+    const timer = window.setTimeout(async () => {
+      try {
+        if (!isCancelled) {
+          setIsLoading(true)
+          setPageError(null)
+        }
+
+        const friendsData = await getFriends()
+
+        if (!isCancelled) {
+          setFriends(Array.isArray(friendsData?.friends) ? friendsData.friends : [])
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setPageError(error.message)
+          setFriends([])
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
+      }
+    }, 0)
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(timer)
+    }
   }, [])
 
   useEffect(() => {
@@ -77,30 +103,11 @@ export default function Friends() {
     }
   }, [isSearchOpen, searchTerm])
 
-	
-  const handleRemoveFriend = (friendId) => {
-    setFriends((current) => current.filter((friend) => friend.id !== friendId))
-    setSelectedFriend((current) => (current?.id === friendId ? null : current))
+  const handleOpenProfile = (friendship) => {
+    setSelectedFriend(toModalPlayer(friendship.user))
   }
-
-	const handleOpenProfile = (friend) => {
-    setSelectedFriend(friend)
-  	}
-
-	const handleMessage = (friend) => {
-	<Link to={`/chat/${friend.id}`} className="btn btn-ghost btn-sm">
-  	Message
-	</Link>
-	}
-
-	const handleChallenge = (friend) => {
-	<Link to={`/game-lobby?opponent=${friend.id}`} className="btn btn-ghost btn-sm">
-  	Challenge
-	</Link>
-	}
 	
-	// TODO add API integration from backend to add friend
-	const handleAddFriend = () => {
+  const handleAddFriend = () => {
     if (isSearchOpen) {
       setSearchTerm('')
       setSearchResults([])
@@ -109,7 +116,7 @@ export default function Friends() {
     }
 
     setIsSearchOpen((current) => !current)
-	}
+  }
 
   const handleSearchTermChange = (event) => {
     const nextSearchTerm = event.target.value
@@ -119,20 +126,6 @@ export default function Friends() {
       setSearchResults([])
       setIsSearchLoading(false)
       setSearchError(null)
-    }
-  }
-
-  const handleSendFriendRequest = async (user) => {
-    setSendingRequestIds((current) => [...current, user.id])
-    setSearchError(null)
-
-    try {
-      await sendFriendRequest(user.id)
-      setSentRequestIds((current) => [...current, user.id])
-    } catch (error) {
-      setSearchError(error.message)
-    } finally {
-      setSendingRequestIds((current) => current.filter((id) => id !== user.id))
     }
   }
 
@@ -147,6 +140,13 @@ export default function Friends() {
       }
     >
       <div className="cm-page-grid">
+        {pageError && (
+          <div className="alert alert-error visible" role="alert">
+            <i className="ti ti-alert-circle" aria-hidden="true" />
+            {pageError}
+          </div>
+        )}
+
         {isSearchOpen && (
           <section className="cm-panel">
             <div className="cm-panel-header">
@@ -192,8 +192,7 @@ export default function Friends() {
               ) : (
                 <div className="cm-list">
                   {searchResults.map((user) => {
-                    const isSent = sentRequestIds.includes(user.id)
-                    const isSending = sendingRequestIds.includes(user.id)
+                    const isFriend = friendUserIds.includes(user.id)
 
                     return (
                       <div key={user.id} className="cm-list-row">
@@ -214,10 +213,9 @@ export default function Friends() {
                         <button
                           className="btn btn-primary btn-sm"
                           type="button"
-                          disabled={isSent || isSending}
-                          onClick={() => handleSendFriendRequest(user)}
+                          disabled
                         >
-                          {isSent ? 'Request Sent' : 'Add'}
+                          {isFriend ? 'Friend' : 'Add'}
                         </button>
                       </div>
                     )
@@ -246,11 +244,11 @@ export default function Friends() {
               </div>
             ) : (
               <div className="cm-list">
-                {friends.map((friend) => (
-                  <div key={friend.id} className="cm-list-row">
+                {friends.map((friendship) => (
+                  <div key={friendship.friendshipId} className="cm-list-row">
                     <Avatar
-                      avatar={friend.avatar}
-                      name={friend.nickname}
+                      avatar={friendship.user.avatar}
+                      name={friendship.user.username}
                       className="avatar avatar-md"
                     />
                     
@@ -258,38 +256,35 @@ export default function Friends() {
                       <div 
                         className="text-primary"
                         style={{ cursor: 'pointer' }}
-                        onClick={() => handleOpenProfile(friend)}
+                        onClick={() => handleOpenProfile(friendship)}
                       >
-                        {friend.nickname}
+                        {friendship.user.username}
                       </div>
                       <div className="flex items-center gap-2">
-						<i className="ti ti-trophy text-accent" aria-hidden="true" />
-						<span className="text-muted">{friend.rating}</span>
-						<i className="ti ti-chess-rook text-accent" aria-hidden="true" />
-						<span className="text-muted">{friend.games}</span>
-						<span className={`status-dot ${friend.online ? 'online' : 'offline'}`} />
-                        <span className="text-muted">
-                          {friend.online ? 'Online' : 'Offline'}
-                        </span>
+                        <i className="ti ti-trophy text-accent" aria-hidden="true" />
+                        <span className="text-muted">{friendship.user.rating}</span>
                       </div>
                     </div>
 
                     <div className="flex gap-2">
                       <button 
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleMessage(friend)}
+                        type="button"
+                        disabled
                       >
                         Message
                       </button>
                       <button 
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleChallenge(friend)}
+                        type="button"
+                        disabled
                       >
                         Challenge
                       </button>
-                      <button 
+                      <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleRemoveFriend(friend.id)}
+                        type="button"
+                        disabled
                       >
                         Remove
                       </button>
