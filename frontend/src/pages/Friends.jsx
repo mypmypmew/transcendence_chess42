@@ -5,6 +5,7 @@ import UserProfileModal from '../components/UserProfileModal'
 import {
   getFriendRequests,
   getFriends,
+  sendFriendRequest,
 } from '../api/friendshipApi.js'
 import { searchUsers } from '../api/userApi.js'
 
@@ -30,10 +31,16 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState([])
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
+  const [sendingRequestIds, setSendingRequestIds] = useState([])
 
   const friendUserIds = useMemo(
     () => friends.map((friendship) => friendship.user.id),
     [friends],
+  )
+
+  const outgoingRecipientIds = useMemo(
+    () => outgoingRequests.map((request) => request.recipient.id),
+    [outgoingRequests],
   )
 
   useEffect(() => {
@@ -145,6 +152,22 @@ export default function Friends() {
     }
   }
 
+  const handleSendFriendRequest = async (user) => {
+    setSendingRequestIds((current) => [...current, user.id])
+    setSearchError(null)
+
+    try {
+      const data = await sendFriendRequest(user.id)
+      if (data?.request) {
+        setOutgoingRequests((current) => [...current, data.request])
+      }
+    } catch (error) {
+      setSearchError(error.message)
+    } finally {
+      setSendingRequestIds((current) => current.filter((id) => id !== user.id))
+    }
+  }
+
   return (
     <AppLayout 
       eyebrow="Friends" 
@@ -209,6 +232,8 @@ export default function Friends() {
                 <div className="cm-list">
                   {searchResults.map((user) => {
                     const isFriend = friendUserIds.includes(user.id)
+                    const isSent = outgoingRecipientIds.includes(user.id)
+                    const isSending = sendingRequestIds.includes(user.id)
 
                     return (
                       <div key={user.id} className="cm-list-row">
@@ -229,9 +254,10 @@ export default function Friends() {
                         <button
                           className="btn btn-primary btn-sm"
                           type="button"
-                          disabled
+                          disabled={isFriend || isSent || isSending}
+                          onClick={() => handleSendFriendRequest(user)}
                         >
-                          {isFriend ? 'Friend' : 'Add'}
+                          {isFriend ? 'Friend' : isSent ? 'Request Sent' : 'Add'}
                         </button>
                       </div>
                     )
