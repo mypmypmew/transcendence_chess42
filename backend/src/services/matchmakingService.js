@@ -59,6 +59,24 @@ class MatchmakingService {
 			game,
 		};
 	}
+
+	leave(playerId) {
+		// Apply the same user ID validation used by join().
+		if (!Number.isInteger(playerId) || playerId <= 0) {
+			throw new TypeError('playerId must be a positive integer');
+		}
+
+		// Return false when this user does not occupy the waiting slot.
+		// This keeps cancellation idempotent (safe repeated cancellation) for repeated Socket.IO events.
+		if (this.waitingPlayerId !== playerId) {
+			return false;
+		}
+
+		// Clear the queue so the next user becomes the new waiting player.
+		this.waitingPlayerId = null;
+
+		return true;
+	}
 }
 
 module.exports = {
