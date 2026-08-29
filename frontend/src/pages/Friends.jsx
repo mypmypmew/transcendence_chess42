@@ -4,8 +4,10 @@ import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
 import {
   acceptFriendRequest,
+  deleteFriendRequest,
   getFriendRequests,
   getFriends,
+  removeFriend,
   sendFriendRequest,
 } from '../api/friendshipApi.js'
 import { searchUsers } from '../api/userApi.js'
@@ -34,6 +36,7 @@ export default function Friends() {
   const [searchError, setSearchError] = useState(null)
   const [sendingRequestIds, setSendingRequestIds] = useState([])
   const [processingRequestIds, setProcessingRequestIds] = useState([])
+  const [removingFriendIds, setRemovingFriendIds] = useState([])
 
   const friendUserIds = useMemo(
     () => friends.map((friendship) => friendship.user.id),
@@ -131,6 +134,23 @@ export default function Friends() {
   const handleOpenProfile = (friendship) => {
     setSelectedFriend(toModalPlayer(friendship.user))
   }
+
+  const handleRemoveFriend = async (friendUserId) => {
+    setRemovingFriendIds((current) => [...current, friendUserId])
+    setPageError(null)
+
+    try {
+      await removeFriend(friendUserId)
+      setFriends((current) => (
+        current.filter((friendship) => friendship.user.id !== friendUserId)
+      ))
+      setSelectedFriend((current) => (current?.id === friendUserId ? null : current))
+    } catch (error) {
+      setPageError(error.message)
+    } finally {
+      setRemovingFriendIds((current) => current.filter((id) => id !== friendUserId))
+    }
+  }
 	
   const handleAddFriend = () => {
     if (isSearchOpen) {
@@ -188,6 +208,21 @@ export default function Friends() {
       setPageError(error.message)
     } finally {
       setProcessingRequestIds((current) => current.filter((id) => id !== request.id))
+    }
+  }
+
+  const handleDeleteFriendRequest = async (requestId) => {
+    setProcessingRequestIds((current) => [...current, requestId])
+    setPageError(null)
+
+    try {
+      await deleteFriendRequest(requestId)
+      setIncomingRequests((current) => current.filter((request) => request.id !== requestId))
+      setOutgoingRequests((current) => current.filter((request) => request.id !== requestId))
+    } catch (error) {
+      setPageError(error.message)
+    } finally {
+      setProcessingRequestIds((current) => current.filter((id) => id !== requestId))
     }
   }
 
@@ -336,7 +371,12 @@ export default function Friends() {
                         >
                           Accept
                         </button>
-                        <button className="btn btn-ghost btn-sm" type="button" disabled>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleDeleteFriendRequest(request.id)}
+                        >
                           Decline
                         </button>
                       </div>
@@ -359,7 +399,12 @@ export default function Friends() {
                         <span className="text-muted">Outgoing</span>
                       </div>
                     </div>
-                    <button className="btn btn-ghost btn-sm" type="button" disabled>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      type="button"
+                      disabled={processingRequestIds.includes(request.id)}
+                      onClick={() => handleDeleteFriendRequest(request.id)}
+                    >
                       Cancel
                     </button>
                   </div>
@@ -427,7 +472,8 @@ export default function Friends() {
                       <button
                         className="btn btn-danger btn-sm"
                         type="button"
-                        disabled
+                        disabled={removingFriendIds.includes(friendship.user.id)}
+                        onClick={() => handleRemoveFriend(friendship.user.id)}
                       >
                         Remove
                       </button>

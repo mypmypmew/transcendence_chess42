@@ -24,9 +24,23 @@ function acceptFriendRequest(requestId) {
   })
 }
 
+function deleteFriendRequest(requestId) {
+  return request(`/api/friend-requests/${requestId}`, {
+    method: 'DELETE',
+  })
+}
+
+function removeFriend(friendUserId) {
+  return request(`/api/friends/${friendUserId}`, {
+    method: 'DELETE',
+  })
+}
+
 export {
   acceptFriendRequest,
+  deleteFriendRequest,
   getFriendRequests,
   getFriends,
+  removeFriend,
   sendFriendRequest,
 }
