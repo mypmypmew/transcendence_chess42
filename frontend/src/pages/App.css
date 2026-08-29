@@ -241,6 +241,26 @@ body {
   min-width: 0;
 }
 
+.cm-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-top: var(--space-5);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+}
+
+.cm-footer a {
+  color: var(--text-secondary);
+}
+
+.cm-footer a:hover {
+  color: var(--accent-hover);
+}
+
 .cm-page-grid {
   display: grid;
   gap: var(--space-5);
