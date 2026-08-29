@@ -10,6 +10,16 @@ async function findConversationByPair(firstUserId, secondUserId) {
   });
 }
 
+async function createConversation(firstUserId, secondUserId) {
+  const pair = canonicalPair(firstUserId, secondUserId);
+
+  return prisma.conversation.create({
+    data: pair,
+  });
+}
+
+
 module.exports = {
   findConversationByPair,
+  createConversation,
 };
