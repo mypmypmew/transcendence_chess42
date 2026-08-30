@@ -3,21 +3,20 @@ import { useEffect, useRef, useState } from 'react'
 import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
+import UserProfileModal from '../components/UserProfileModal'
+import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
 import { useAuth } from '../context/AuthContext.jsx'
 import './App.css'
 
-const friends = [
-  { id: 1, name: 'Serhii', rating: 1812, status: 'online' },
-  { id: 2, name: 'Taulant', rating: 1694, status: 'playing' },
-  { id: 3, name: 'Tatiana', rating: 1740, status: 'online' },
-  { id: 4, name: 'Alima', rating: 1658, status: 'offline' },
-]
-
-const statusLabels = {
-  online: 'Online',
-  playing: 'In game',
-  offline: 'Offline',
+function toModalPlayer(user) {
+  return {
+	id: user.id,
+	avatar: user.avatar || null,
+	nickname: user.username,
+	rating: user.rating,
+	isFriend: true,
+  }
 }
 
 function Profile() {
@@ -27,6 +26,10 @@ function Profile() {
   const [games, setGames] = useState([])
   const [isHistoryLoading, setIsHistoryLoading] = useState(true)
   const [historyError, setHistoryError] = useState(null)
+  const [friends, setFriends] = useState([])
+  const [isFriendsLoading, setIsFriendsLoading] = useState(true)
+  const [friendsError, setFriendsError] = useState(null)
+  const [selectedFriend, setSelectedFriend] = useState(null)
 
   useEffect(() => {
 	return () => {
@@ -67,6 +70,38 @@ function Profile() {
 	}
   }, [])
 
+  useEffect(() => {
+	let isMounted = true
+
+	async function loadFriends() {
+	  setIsFriendsLoading(true)
+	  setFriendsError(null)
+
+	  try {
+		const data = await getFriends()
+
+		if (isMounted) {
+		  setFriends(Array.isArray(data?.friends) ? data.friends : [])
+		}
+	  } catch (error) {
+		if (isMounted) {
+		  setFriends([])
+		  setFriendsError(error.message)
+		}
+	  } finally {
+		if (isMounted) {
+		  setIsFriendsLoading(false)
+		}
+	  }
+	}
+
+	loadFriends()
+
+	return () => {
+	  isMounted = false
+	}
+  }, [])
+
   function openAvatarPicker() {
 	avatarInputRef.current?.click()
   }
@@ -83,6 +118,18 @@ function Profile() {
 	}
 
 	setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  function handleOpenFriendProfile(friendship) {
+	setSelectedFriend(toModalPlayer(friendship.user))
+  }
+
+  async function handleRemoveFriend(player) {
+	await removeFriend(player.id)
+	setFriends((current) => (
+	  current.filter((friendship) => friendship.user.id !== player.id)
+	))
+	setSelectedFriend(null)
   }
 
   if (!user) {
@@ -157,24 +204,58 @@ function Profile() {
 			<span className="badge badge-accent">{friends.length}</span>
 		  </div>
 
-		  <div className="cm-panel-body cm-list">
-			{friends.map((friend) => (
-			  <article className="cm-list-row" key={friend.id}>
-				<Avatar avatar={null} name={friend.name} className="avatar avatar-md" aria-hidden="true" />
-				<div className="min-w-0">
-				  <p className="text-primary truncate">{friend.name}</p>
-				  <p className="cm-muted">Rating {friend.rating}</p>
-				</div>
+		  <div className="cm-panel-body">
+			{friendsError && (
+			  <div className="alert alert-error visible" role="alert">
+				<i className="ti ti-alert-circle" aria-hidden="true" />
+				{friendsError}
+			  </div>
+			)}
 
-				<div className="flex items-center gap-2 cm-muted">
-				  <span className={`status-dot ${friend.status}`} aria-hidden="true" />
-				  <span>{statusLabels[friend.status]}</span>
-				</div>
-			  </article>
-			))}
+			{isFriendsLoading ? (
+			  <div className="empty-state">
+				<p>Loading friends...</p>
+			  </div>
+			) : friends.length === 0 ? (
+			  <div className="empty-state">
+				<p>No friends yet</p>
+			  </div>
+			) : (
+			  <div className="cm-list">
+				{friends.map((friendship) => (
+				  <button
+					className="cm-list-row"
+					key={friendship.friendshipId}
+					type="button"
+					onClick={() => handleOpenFriendProfile(friendship)}
+				  >
+					<Avatar
+					  avatar={friendship.user.avatar}
+					  name={friendship.user.username}
+					  className="avatar avatar-md"
+					  aria-hidden="true"
+					/>
+					<div className="min-w-0 text-left">
+					  <p className="text-primary truncate">{friendship.user.username}</p>
+					  <p className="cm-muted">Rating {friendship.user.rating}</p>
+					</div>
+
+					<i className="ti ti-chevron-right cm-muted" aria-hidden="true" />
+				  </button>
+				))}
+			  </div>
+			)}
 		  </div>
 		</section>
 	  </div>
+
+	  {selectedFriend && (
+		<UserProfileModal
+		  player={selectedFriend}
+		  onRemoveFriend={handleRemoveFriend}
+		  onClose={() => setSelectedFriend(null)}
+		/>
+	  )}
 	</AppLayout>
   )
 }
