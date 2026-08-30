@@ -331,3 +331,88 @@ test('emits an error without broadcasting an invalid move', async () => {
 	// The server state did not change, so the room receives nothing.
 	assert.deepEqual(roomEvents, []);
 });
+
+test('broadcasts the final state after an authenticated resignation', async () => {
+	const handlers = new Map();
+	const roomEvents = [];
+	let receivedResignation = null;
+
+	const finishedGame = {
+		gameId: 42,
+		whiteId: 1,
+		blackId: 2,
+		status: 'COMPLETED',
+		result: 'BLACK_WIN',
+		winnerId: 2,
+	};
+
+	const fakeSocket = {
+		data: { userId: 1 },
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		join() {
+			// Room membership is covered by the game:join test.
+		},
+
+		emit() {
+			// Successful moves are broadcast to the entire game room.
+		},
+	};
+
+	const fakeIo = {
+		to(roomName) {
+			return {
+				emit(eventName, payload) {
+					roomEvents.push({
+						roomName,
+						eventName,
+						payload,
+					});
+				},
+			};
+		},
+	};
+
+	const fakeGameService = {
+		getGame() {
+			return finishedGame;
+		},
+
+		// Capture the authenticated player passed by the socket layer.
+		async resignGame(resignation) {
+			receivedResignation = resignation;
+			return finishedGame;
+		},
+	};
+
+	registerGameHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		gameService: fakeGameService,
+	});
+
+	const resignHandler = handlers.get('game:resign');
+
+	// Send a forged playerId to prove that client identity is ignored.
+	await resignHandler({
+		gameId: 42,
+		playerId: 999,
+	});
+
+	assert.deepEqual(receivedResignation, {
+		gameId: 42,
+		playerId: 1,
+	});
+	
+	// Both participants receive the final authoritative result.
+	assert.deepEqual(roomEvents, [
+		{
+			roomName: 'game:42',
+			eventName: 'game:state',
+			payload: updatedGame,
+		},
+	]);
+});
