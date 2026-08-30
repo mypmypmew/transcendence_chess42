@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import LegalFooter from '../components/LegalFooter.jsx'
 import ThemeToggle from '../components/ThemeToggle.jsx'
+import { Alert, Button, Icon } from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -85,7 +86,7 @@ function Login() {
             <ThemeToggle />
 
             <div className="auth-mark" aria-hidden="true">
-              <i className="ti ti-crown" />
+              <Icon name="crown" />
             </div>
             <p className="auth-kicker">Welcome back</p>
             <h1 className="auth-title" id="login-title">Continue your next move</h1>
@@ -97,10 +98,7 @@ function Login() {
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="auth-error-slot" aria-live="polite">
               {loginError && (
-                <div className="alert alert-error visible" role="alert">
-                  <i className="ti ti-alert-circle" aria-hidden="true" />
-                  <span>{loginError}</span>
-                </div>
+                <Alert>{loginError}</Alert>
               )}
             </div>
 
@@ -122,11 +120,11 @@ function Login() {
                   aria-describedby={shouldShowEmailError ? 'login-email-error' : undefined}
                 />
                 <span className="input-icon-btn" aria-hidden="true">
-                  <i className="ti ti-mail" />
+                  <Icon name="mail" />
                 </span>
               </div>
               <div className={`field-error ${shouldShowEmailError ? 'visible' : ''}`} id="login-email-error">
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" />
                 <span>Email is required</span>
               </div>
             </div>
@@ -154,19 +152,24 @@ function Login() {
                   aria-label={passwordLabel}
                   title={passwordLabel}
                 >
-                  <i className={passwordIcon} aria-hidden="true" />
+                  <Icon name={passwordIcon} />
                 </button>
               </div>
               <div className={`field-error ${shouldShowPasswordError ? 'visible' : ''}`} id="login-password-error">
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" />
                 <span>Password is required</span>
               </div>
             </div>
 
-            <button className="btn btn-primary btn-full" type="submit" disabled={isLoading}>
+            <Button
+              disabled={isLoading}
+              fullWidth
+              icon={!isLoading ? 'arrow-right' : undefined}
+              iconPosition="right"
+              type="submit"
+            >
               {isLoading ? 'Signing in…' : 'Sign in'}
-              {!isLoading && <i className="ti ti-arrow-right" aria-hidden="true" />}
-            </button>
+            </Button>
           </form>
 
           <footer className="auth-footer">

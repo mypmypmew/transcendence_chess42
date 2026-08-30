@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import LegalFooter from '../components/LegalFooter.jsx'
+import { Alert, Button, Icon } from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -120,7 +121,7 @@ function Register() {
         <div className="auth-card">
           <header className="auth-card-intro">
             <div className="auth-mark" aria-hidden="true">
-              <i className="ti ti-chess-knight" />
+              <Icon name="chess-knight" />
             </div>
             <p className="auth-kicker">Join ChessMate</p>
             <h1 className="auth-title" id="register-title">Build your chess journey</h1>
@@ -132,10 +133,7 @@ function Register() {
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="auth-error-slot" aria-live="polite">
               {serverError && (
-                <div className="alert alert-error visible" role="alert">
-                  <i className="ti ti-alert-circle" aria-hidden="true" />
-                  <span>{serverError}</span>
-                </div>
+                <Alert>{serverError}</Alert>
               )}
             </div>
 
@@ -160,7 +158,7 @@ function Register() {
                 className={`field-error ${usernameError ? 'visible' : ''}`}
                 id="register-name-error"
               >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" />
                 <span>{usernameError}</span>
               </div>
             </div>
@@ -188,7 +186,7 @@ function Register() {
                 className={`field-error ${emailError ? 'visible' : ''}`}
                 id="register-email-error"
               >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" />
                 <span>{emailError}</span>
               </div>
             </div>
@@ -219,7 +217,7 @@ function Register() {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   title={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  <i className={`ti ti-${showPassword ? 'eye-off' : 'eye'}`} aria-hidden="true" />
+                  <Icon name={showPassword ? 'eye-off' : 'eye'} />
                 </button>
               </div>
               <div
@@ -228,19 +226,19 @@ function Register() {
                 aria-label="Password requirements"
               >
                 <span className={`policy-rule ${passwordPolicy.minLength ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.minLength ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.minLength ? 'check' : 'circle'} />
                   At least 8 characters
                 </span>
                 <span className={`policy-rule ${passwordPolicy.uppercase ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.uppercase ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.uppercase ? 'check' : 'circle'} />
                   One uppercase letter
                 </span>
                 <span className={`policy-rule ${passwordPolicy.number ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.number ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.number ? 'check' : 'circle'} />
                   One number
                 </span>
                 <span className={`policy-rule ${passwordPolicy.specialCharacter ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.specialCharacter ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.specialCharacter ? 'check' : 'circle'} />
                   One special character
                 </span>
               </div>
@@ -248,7 +246,7 @@ function Register() {
                 className={`field-error ${passwordError ? 'visible' : ''}`}
                 id="register-password-error"
               >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" />
                 <span>{passwordError}</span>
               </div>
             </div>
@@ -281,22 +279,27 @@ function Register() {
                   aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
                   title={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
                 >
-                  <i className={`ti ti-${showConfirmPassword ? 'eye-off' : 'eye'}`} aria-hidden="true" />
+                  <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} />
                 </button>
               </div>
               <div
                 className={`field-error ${confirmPasswordError ? 'visible' : ''}`}
                 id="register-confirm-password-error"
               >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" />
                 <span>{confirmPasswordError}</span>
               </div>
             </div>
 
-            <button className="btn btn-primary btn-full" type="submit" disabled={isLoading}>
+            <Button
+              disabled={isLoading}
+              fullWidth
+              icon={!isLoading ? 'arrow-right' : undefined}
+              iconPosition="right"
+              type="submit"
+            >
               {isLoading ? 'Creating account…' : 'Create account'}
-              {!isLoading && <i className="ti ti-arrow-right" aria-hidden="true" />}
-            </button>
+            </Button>
           </form>
 
           <footer className="auth-footer">
