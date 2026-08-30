@@ -416,3 +416,82 @@ test('broadcasts the final state after an authenticated resignation', async () =
 		},
 	]);
 });
+
+test('emits an error without broadcasting a rejected resignation', async () => {
+	const handlers = new Map();
+	const emittedEvents = [];
+	const roomEvents = [];
+
+	const fakeSocket = {
+		data: { userId: 1 },
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		join() {
+			// Room membership is covered by the game:join test.
+		},
+
+		// Capture errors sent only to the requesting client.
+		emit(eventName, payload) {
+			emittedEvents.push({
+				eventName,
+				payload,
+			});
+		},
+	};
+
+	const fakeIo = {
+		// Record broadcasts to prove that a rejected resignation sends none.
+		to(roomName) {
+			return {
+				emit(eventName, payload) {
+					roomEvents.push({
+						roomName,
+						eventName,
+						payload,
+					});
+				},
+			};
+		},
+	};
+
+	const fakeGameService = {
+		getGame() {
+			return {
+				gameId: 42,
+				whiteId: 1,
+				blackId: 2,
+			};
+		},
+
+		// Simulate resignation being rejected after the game already ended.
+		async resignGame() {
+			throw new Error('Game is already completed');
+		},
+	};
+
+	registerGameHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		gameService: fakeGameService,
+	});
+
+	const resignHandler = handlers.get('game:resign');
+
+	await resignHandler({ gameId: 42 });
+
+	// Only the requesting client receives the service error.
+	assert.deepEqual(emittedEvents, [
+		{
+			eventName: 'game:error',
+			payload: {
+				message: 'Game is already completed',
+			},
+		},
+	]);
+	
+	// No new state is broadcast because the resignation was rejected.
+	assert.deepEqual(roomEvents, []);
+});
