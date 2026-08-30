@@ -192,6 +192,43 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		to: 'e4',
 	});
 
+	// White attempts to move again while the server expects black.
+	const outOfTurnErrorEvent = waitForEvent(
+		whiteClient,
+		'game:error',
+	);
+
+	whiteClient.emit('game:move', {
+		gameId: whiteGame.gameId,
+		from: 'g1',
+		to: 'f3',
+	});
+
+	const outOfTurnError = await outOfTurnErrorEvent;
+
+	// The server must enforce turn order independently of the frontend.
+	assert.match(
+		outOfTurnError.message,
+		/turn/i,
+	);
+
+	// Black now attempts on illegal move from e7 directly to e4.
+	const illegalMoveErrorEvent = waitForEvent(
+		blackClient,
+		'game:error',
+	);
+
+	blackClient.emit('game:move', {
+		gameId: blackGame.gameId,
+		from: 'e7',
+		to: 'e4',
+	});
+
+	const illegalMoveError = await illegalMoveErrorEvent;
+
+	// chess.js validation must reject the move without changing the position.
+	assert.equal(illegalMoveError.message, 'Illegal move');
+
 	const [
 		stateAfterMoveForWhite,
 		stateAfterMoveForBlack,
