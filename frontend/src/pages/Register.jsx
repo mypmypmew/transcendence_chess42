@@ -2,7 +2,14 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import LegalFooter from '../components/LegalFooter.jsx'
-import { Alert, Button, Icon } from '../components/ui.jsx'
+import {
+  Alert,
+  Button,
+  FormField,
+  Icon,
+  Input,
+  InputIconButton,
+} from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -137,10 +144,14 @@ function Register() {
               )}
             </div>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-name">Username</label>
-              <input
-                className={`input ${usernameError ? 'error' : ''}`}
+            <FormField
+              error={usernameError}
+              errorId="register-name-error"
+              label="Username"
+              labelFor="register-name"
+            >
+              <Input
+                hasError={Boolean(usernameError)}
                 id="register-name"
                 name="username"
                 autoComplete="username"
@@ -154,19 +165,16 @@ function Register() {
                 aria-invalid={Boolean(usernameError)}
                 aria-describedby={usernameError ? 'register-name-error' : undefined}
               />
-              <div
-                className={`field-error ${usernameError ? 'visible' : ''}`}
-                id="register-name-error"
-              >
-                <Icon name="alert-circle" />
-                <span>{usernameError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-email">Email</label>
-              <input
-                className={`input ${emailError ? 'error' : ''}`}
+            <FormField
+              error={emailError}
+              errorId="register-email-error"
+              label="Email"
+              labelFor="register-email"
+            >
+              <Input
+                hasError={Boolean(emailError)}
                 id="register-email"
                 name="email"
                 type="email"
@@ -182,20 +190,17 @@ function Register() {
                 aria-invalid={Boolean(emailError)}
                 aria-describedby={emailError ? 'register-email-error' : undefined}
               />
-              <div
-                className={`field-error ${emailError ? 'visible' : ''}`}
-                id="register-email-error"
-              >
-                <Icon name="alert-circle" />
-                <span>{emailError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-password">Password</label>
+            <FormField
+              error={passwordError}
+              errorId="register-password-error"
+              label="Password"
+              labelFor="register-password"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${passwordError ? 'error' : ''}`}
+                <Input
+                  hasError={Boolean(passwordError)}
                   id="register-password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
@@ -210,15 +215,12 @@ function Register() {
                   aria-invalid={Boolean(passwordError)}
                   aria-describedby="register-password-policy register-password-error"
                 />
-                <button
-                  className="input-icon-btn"
-                  type="button"
-                  onClick={() => setShowPassword((currentValue) => !currentValue)}
+                <InputIconButton
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  icon={showPassword ? 'eye-off' : 'eye'}
                   title={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <Icon name={showPassword ? 'eye-off' : 'eye'} />
-                </button>
+                  onClick={() => setShowPassword((currentValue) => !currentValue)}
+                />
               </div>
               <div
                 className="policy-box"
@@ -242,22 +244,17 @@ function Register() {
                   One special character
                 </span>
               </div>
-              <div
-                className={`field-error ${passwordError ? 'visible' : ''}`}
-                id="register-password-error"
-              >
-                <Icon name="alert-circle" />
-                <span>{passwordError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-confirm-password">
-                Confirm Password
-              </label>
+            <FormField
+              error={confirmPasswordError}
+              errorId="register-confirm-password-error"
+              label="Confirm Password"
+              labelFor="register-confirm-password"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${confirmPasswordError ? 'error' : ''}`}
+                <Input
+                  hasError={Boolean(confirmPasswordError)}
                   id="register-confirm-password"
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -272,24 +269,14 @@ function Register() {
                   aria-invalid={Boolean(confirmPasswordError)}
                   aria-describedby={confirmPasswordError ? 'register-confirm-password-error' : undefined}
                 />
-                <button
-                  className="input-icon-btn"
-                  type="button"
-                  onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
+                <InputIconButton
                   aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
+                  icon={showConfirmPassword ? 'eye-off' : 'eye'}
                   title={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
-                >
-                  <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} />
-                </button>
+                  onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
+                />
               </div>
-              <div
-                className={`field-error ${confirmPasswordError ? 'visible' : ''}`}
-                id="register-confirm-password-error"
-              >
-                <Icon name="alert-circle" />
-                <span>{confirmPasswordError}</span>
-              </div>
-            </div>
+            </FormField>
 
             <Button
               disabled={isLoading}

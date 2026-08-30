@@ -3,7 +3,14 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import LegalFooter from '../components/LegalFooter.jsx'
 import ThemeToggle from '../components/ThemeToggle.jsx'
-import { Alert, Button, Icon } from '../components/ui.jsx'
+import {
+  Alert,
+  Button,
+  FormField,
+  Icon,
+  Input,
+  InputIconButton,
+} from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -102,11 +109,15 @@ function Login() {
               )}
             </div>
 
-            <div className="field">
-              <label className="field-label" htmlFor="login-email">Email</label>
+            <FormField
+              error={shouldShowEmailError ? 'Email is required' : ''}
+              errorId="login-email-error"
+              label="Email"
+              labelFor="login-email"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${shouldShowEmailError ? 'error' : ''}`}
+                <Input
+                  hasError={shouldShowEmailError}
                   id="login-email"
                   name="email"
                   type="email"
@@ -119,21 +130,19 @@ function Login() {
                   aria-invalid={shouldShowEmailError}
                   aria-describedby={shouldShowEmailError ? 'login-email-error' : undefined}
                 />
-                <span className="input-icon-btn" aria-hidden="true">
-                  <Icon name="mail" />
-                </span>
+                <InputIconButton decorative icon="mail" />
               </div>
-              <div className={`field-error ${shouldShowEmailError ? 'visible' : ''}`} id="login-email-error">
-                <Icon name="alert-circle" />
-                <span>Email is required</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="login-password">Password</label>
+            <FormField
+              error={shouldShowPasswordError ? 'Password is required' : ''}
+              errorId="login-password-error"
+              label="Password"
+              labelFor="login-password"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${shouldShowPasswordError ? 'error' : ''}`}
+                <Input
+                  hasError={shouldShowPasswordError}
                   id="login-password"
                   name="password"
                   type={passwordType}
@@ -145,21 +154,14 @@ function Login() {
                   aria-invalid={shouldShowPasswordError}
                   aria-describedby={shouldShowPasswordError ? 'login-password-error' : undefined}
                 />
-                <button
-                  className="input-icon-btn"
-                  type="button"
-                  onClick={togglePasswordVisibility}
+                <InputIconButton
                   aria-label={passwordLabel}
+                  icon={passwordIcon}
                   title={passwordLabel}
-                >
-                  <Icon name={passwordIcon} />
-                </button>
+                  onClick={togglePasswordVisibility}
+                />
               </div>
-              <div className={`field-error ${shouldShowPasswordError ? 'visible' : ''}`} id="login-password-error">
-                <Icon name="alert-circle" />
-                <span>Password is required</span>
-              </div>
-            </div>
+            </FormField>
 
             <Button
               disabled={isLoading}

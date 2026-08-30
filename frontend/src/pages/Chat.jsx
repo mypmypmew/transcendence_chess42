@@ -5,6 +5,7 @@ import {
   Button,
   EmptyState,
   IconButton,
+  Input,
   ListRow,
   MessageBubble,
   Panel,
@@ -170,8 +171,8 @@ function Chat() {
                 </div>
               </PanelBody>
               <PanelBody as="form" className="flex gap-3" onSubmit={handleSendMessage}>
-                <input
-                  className="input flex-1"
+                <Input
+                  className="flex-1"
                   type="text"
                   value={messageText}
                   placeholder="Write a message..."

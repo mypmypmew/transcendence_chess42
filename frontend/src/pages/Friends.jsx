@@ -2,7 +2,19 @@ import { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
-import { Alert, Button, EmptyState, Icon, ListRow, Panel, PanelBody, PanelHeader } from '../components/ui.jsx'
+import {
+  Alert,
+  Button,
+  EmptyState,
+  FormField,
+  Icon,
+  Input,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  Toolbar,
+} from '../components/ui.jsx'
 import {
   acceptFriendRequest,
   deleteFriendRequest,
@@ -292,19 +304,15 @@ export default function Friends() {
                 </Alert>
               )}
 
-              <div className="field">
-                <label className="field-label" htmlFor="friend-search">
-                  Username
-                </label>
-                <input
-                  className="input"
+              <FormField label="Username" labelFor="friend-search">
+                <Input
                   id="friend-search"
                   type="search"
                   value={searchTerm}
                   placeholder="Search username..."
                   onChange={handleSearchTermChange}
                 />
-              </div>
+              </FormField>
 
               {searchTerm.trim().length < 2 ? (
                 <EmptyState title="Enter at least 2 characters" />
@@ -393,7 +401,7 @@ export default function Friends() {
                           <span className="text-muted">Incoming</span>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <Toolbar>
                         <Button
                           size="sm"
                           type="button"
@@ -411,7 +419,7 @@ export default function Friends() {
                         >
                           Decline
                         </Button>
-                      </div>
+                      </Toolbar>
                     </ListRow>
                   )
                 })}
@@ -486,7 +494,7 @@ export default function Friends() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <Toolbar>
                       <Button
                         size="sm"
                         type="button"
@@ -512,7 +520,7 @@ export default function Friends() {
                       >
                         Remove
                       </Button>
-                    </div>
+                    </Toolbar>
                   </ListRow>
                 ))}
               </div>
