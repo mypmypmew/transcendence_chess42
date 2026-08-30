@@ -154,3 +154,97 @@ test('rejects a user who is not part of the game', async () => {
 		},
 	]);
 });
+
+test('broadcasts authoritative state after a valid move', async () => {
+	const handlers = new Map();
+	const roomEvents = [];
+	let receivedMove = null;
+
+	const updatedGame = {
+		gameId: 42,
+		whiteId: 1,
+		blackId: 2,
+		turn: 'b',
+		status: 'IN_PROGRESS',
+		fen: 'updated-fen',
+	};
+
+	const fakeSocket = {
+		data: { userId: 1 },
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		join() {
+			// Room membership is covered by the game:join test.
+		},
+
+		emit() {
+			// Successful moves are broadcast to the entire game room.
+		},
+	};
+
+	const fakeIo = {
+		// Capture io.to(room).emit(event, payload) broadcasts.
+		to(roomName) {
+			return {
+				emit(eventName, payload) {
+					roomEvents.push({
+						roomName,
+						eventName,
+						payload,
+					});
+				},
+			};
+		},
+	};
+
+	const fakeGameService = {
+		// getGame is required by the handler dependency contract.
+		getGame() {
+			return updatedGame;
+		},
+
+		// Capture the move that the socket layer sends to GameService.
+		async makeMove(move) {
+			receivedMove = move;
+			return updatedGame;
+		},
+	};
+
+	registerGameHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		gameService: fakeGameService,
+	});
+
+	const moveHandler = handlers.get('game:move');
+
+	// Send a forged playerId to prove that client identity is ignored.
+	await moveHandler({
+		gameId: 42,
+		playerId: 999,
+		from: 'e2',
+		to: 'e4',
+		promotion: 'q',
+	});
+
+	// GameService receives the authenticated user from socket.data.
+	assert.deepEqual(receivedMove, {
+		gameId: 42,
+		playerId: 1,
+		from: 'e2',
+		to: 'e4',
+		promotion: 'q',
+	});
+	
+	// Both players receive the exact authoritative snapshot returned by GameService.
+	assert.deepEqual(roomEvents, [
+		{
+			roomName: 'game:42',
+			eventName: 'game:state',
+			payload: updatedGame,
+		},
+	]);
+});
