@@ -248,3 +248,86 @@ test('broadcasts authoritative state after a valid move', async () => {
 		},
 	]);
 });
+
+test('emits an error without broadcasting an invalid move', async () => {
+	const handlers = new Map();
+	const emittedEvents = [];
+	const roomEvents = [];
+
+	const fakeSocket = {
+		data: { userId: 1 },
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		join() {
+			// Room membership is covered by the game:join test.
+		},
+
+		// Capture errors sent only to the requesting client.
+		emit(eventName, payload) {
+			emittedEvents.push({
+				eventName,
+				payload,
+			});
+		},
+	};
+
+	const fakeIo = {
+		// Record broadcasts to prove that an invalid move sends none.
+		to(roomName) {
+			return {
+				emit(eventName, payload) {
+					roomEvents.push({
+						roomName,
+						eventName,
+						payload,
+					});
+				},
+			};
+		},
+	};
+
+	const fakeGameService = {
+		getGame() {
+			return {
+				gameId: 42,
+				whiteId: 1,
+				blackId: 2,
+			};
+		},
+
+		// Simulate chess.js or turn validation rejecting the move.
+		async makeMove() {
+			throw new Error('Illegal move');
+		},
+	};
+
+	registerGameHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		gameService: fakeGameService,
+	});
+
+	const moveHandler = handlers.get('game:move');
+
+	await moveHandler({
+		gameId: 42,
+		from: 'e2',
+		to: 'e5',
+	});
+
+	// Only the requesting client receives the validation error.
+	assert.deepEqual(emittedEvents, [
+		{
+			eventName: 'game:error',
+			payload: {
+				message: 'Illegal move',
+			},
+		},
+	]);
+	
+	// The server state did not change, so the room receives nothing.
+	assert.deepEqual(roomEvents, []);
+});
