@@ -76,6 +76,12 @@ function registerMatchmakingHandlers({io, socket, matchmakingService,} = {}) {
 		// Ignore any client-provided identity and remove only the user authenticated by socketAuth for this connection.
 		matchmakingService.leave(playerId);
 	});
+
+	socket.on('disconnect', () => {
+		// Remove disconnected users from the waiting slot.
+		// leave() safely returns false when the user was already matched or had cancelled matchmaking earlier.
+		matchmakingService.leave(playerId);
+	});
 }
 
 module.exports = {
