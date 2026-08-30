@@ -2,7 +2,6 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { registerGameHandlers } = require('../src/socket/gameSocket');
-const { GameService } = require('../src/services/gameService');
 
 test('joins an authenticated participant to the game room', async () => {
 	const handlers = new Map();
@@ -19,12 +18,19 @@ test('joins an authenticated participant to the game room', async () => {
 	};
 
 	const fakeSocket = {
-		data: { userId: 1},
+		data: { userId: 1 },
 
+		// Capture registered event handlers for direct invocation in the test.
 		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		// Capture the Socket.IO rooms joined by this connection.
+		join(roomName) {
 			joinedRooms.push(roomName);
 		},
 
+		// Capture events that would normally be sent to the frontend.
 		emit(eventName, payload) {
 			emittedEvents.push({
 				eventName,
