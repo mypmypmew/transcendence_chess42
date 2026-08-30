@@ -96,6 +96,21 @@ function registerGameHandlers({
 			}
 		},
 	);
+
+	socket.on('game:resign', async ({ gameId } = {}) => {
+		// Ignore any playerId supplied by the client.
+		// GameService resigns only the authenticated socket user.
+		const game = await gameService.resignGame({
+			gameId,
+			playerId,
+		});
+
+		// Broadcast the final authoritative result to both participants.
+		io.to(`game:${gameId}`).emit(
+			'game:state',
+			game,
+		);
+	});
 }
 
 module.exports = {
