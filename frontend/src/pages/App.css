@@ -605,7 +605,7 @@ html[data-theme='light'] {
   --accent-text: #fff8e8;
 
   --text-primary: #17202a;
-  --text-secondary: #405063;
+  --text-secondary: #6f7f93;
   --text-muted: #738196;
   --text-hint: #9aa6b8;
 
@@ -663,9 +663,15 @@ html[data-theme='light'] .cm-sidebar {
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
 
+html[data-theme='light'] .cm-game-card {
+  background: rgba(42, 58, 74, 0.84);
+  border-color: rgba(159, 107, 33, 0.26);
+  box-shadow: 0 18px 45px rgba(8, 20, 33, 0.18);
+}
+
 html[data-theme='light'] .cm-shell {
   background:
-    radial-gradient(circle at 75% 18%, rgba(184, 122, 36, 0.18), transparent 0 25%),
+    radial-gradient(circle at 75% 18%, rgba(42, 58, 74, 0.84), transparent 0 25%),
     radial-gradient(circle at 14% 8%, rgba(122, 147, 170, 0.18), transparent 0 28%),
     linear-gradient(135deg, #f5f2eb 0%, #fffaf0 52%, #ece9e0 100%);
 }

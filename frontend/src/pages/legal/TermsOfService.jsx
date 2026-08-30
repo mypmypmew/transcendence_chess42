@@ -1,22 +1,24 @@
 import { Link } from 'react-router-dom'
 
 import LegalFooter from '../../components/LegalFooter.jsx'
+import { Button, Icon, Panel, PanelBody, PanelHeader } from '../../components/ui.jsx'
 import '../App.css'
 
 function TermsOfService() {
   return (
     <main className="cm-shell fade-in">
       <div className="cm-app-frame">
-        <section className="cm-panel" aria-labelledby="terms-of-service-title">
-          <header className="cm-panel-header">
+        <Panel aria-labelledby="terms-of-service-title">
+          <PanelHeader
+            action={<Button as={Link} to="/" variant="ghost">Back</Button>}
+          >
             <Link className="cm-brand" to="/">
-              <i className="ti ti-crown" aria-hidden="true" />
+              <Icon name="crown" />
               <span>ChessMate</span>
             </Link>
-            <Link className="auth-link" to="/">Back</Link>
-          </header>
+          </PanelHeader>
 
-          <div className="cm-panel-body flex flex-col gap-4">
+          <PanelBody className="flex flex-col gap-4">
             <p className="label">Legal</p>
             <h1 className="cm-section-title" id="terms-of-service-title">Terms of Service</h1>
 
@@ -60,8 +62,8 @@ function TermsOfService() {
             </p>
 
             <LegalFooter />
-          </div>
-        </section>
+          </PanelBody>
+        </Panel>
       </div>
     </main>
   )
