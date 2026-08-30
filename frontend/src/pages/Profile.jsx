@@ -4,7 +4,17 @@ import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
 import UserProfileModal from '../components/UserProfileModal'
-import { Alert, Badge, Button, EmptyState, Icon, ListRow, Panel, PanelBody, PanelHeader } from '../components/ui.jsx'
+import {
+  Alert,
+  Badge,
+  Button,
+  EmptyState,
+  Icon,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from '../components/ui.jsx'
 import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
 import { useAuth } from '../context/AuthContext.jsx'

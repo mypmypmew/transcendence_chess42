@@ -1,7 +1,13 @@
 import { Link } from 'react-router-dom'
 
 import LegalFooter from '../../components/LegalFooter.jsx'
-import { Button, Icon, Panel, PanelBody, PanelHeader } from '../../components/ui.jsx'
+import {
+  Button,
+  Icon,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from '../../components/ui.jsx'
 import '../App.css'
 
 function TermsOfService() {

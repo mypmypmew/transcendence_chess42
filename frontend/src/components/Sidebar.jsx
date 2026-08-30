@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
-import { Alert, Icon } from './ui.jsx'
+import {
+  Alert,
+  Icon,
+} from './ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 const navigationItems = [
