@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import GameOverModal from './GameOverModal.jsx'
+import { Button, Icon, Panel } from './ui.jsx'
 
 const PROMOTION_OPTIONS = [
   { value: 'q', label: 'Queen' },
@@ -96,78 +97,78 @@ function ChessGame({
     <>
       <div className="flex gap-3" aria-label="Game controls">
         {playerColorCode ? (
-          <button
-            className="btn btn-ghost"
+          <Button
             type="button"
             disabled={isGameOver || isWaitingForServer}
+            variant="ghost"
             onClick={() => onResign(playerColorCode)}
           >
             {colorLabel(playerColorCode)} resigns
-          </button>
+          </Button>
         ) : (
           <>
-            <button
-              className="btn btn-ghost"
+            <Button
               type="button"
               disabled={isGameOver || isWaitingForServer}
+              variant="ghost"
               onClick={() => onResign('w')}
             >
               White resigns
-            </button>
+            </Button>
 
-            <button
-              className="btn btn-ghost"
+            <Button
               type="button"
               disabled={isGameOver || isWaitingForServer}
+              variant="ghost"
               onClick={() => onResign('b')}
             >
               Black resigns
-            </button>
+            </Button>
           </>
         )}
 
-        <button className="btn btn-ghost" type="button" disabled={isWaitingForServer} onClick={handleRestart}>
+        <Button type="button" disabled={isWaitingForServer} variant="ghost" onClick={handleRestart}>
           Restart
-        </button>
+        </Button>
       </div>
 
       <div className="cm-board-layout">
-        <section className="cm-game-card">
+        <Panel className="cm-game-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="label">Game status</p>
               <h2 className="cm-section-title">{status}</h2>
             </div>
-            <i className="ti ti-chess-knight text-accent" aria-hidden="true" />
+            <Icon className="text-accent" name="chess-knight" />
           </div>
-        </section>
+        </Panel>
 
         {pendingPromotion && !isGameOver && (
-          <section className="cm-game-card">
+          <Panel className="cm-game-card">
             <p className="label">Pawn promotion</p>
             <h2 className="cm-section-title">Choose a piece</h2>
 
             <div className="flex gap-3">
               {PROMOTION_OPTIONS.map((option) => (
-                <button
-                  className="btn btn-ghost"
+                <Button
                   type="button"
                   key={option.value}
                   disabled={isWaitingForServer}
+                  variant="ghost"
                   onClick={() => handlePromotionChoice(option.value)}
                 >
                   {option.label}
-                </button>
+                </Button>
               ))}
             </div>
-          </section>
+          </Panel>
         )}
 
-        <section className="cm-game-card cm-chessboard-card">
+        <Panel className="cm-game-card cm-chessboard-card">
           <div className="cm-chessboard-wrapper">
             <Chessboard options={chessboardOptions} />
           </div>
-        </section>
+        </Panel>
       </div>
 
       {isGameOver && !isModalDismissed && (

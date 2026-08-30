@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 import Avatar from './Avatar.jsx'
 import UserProfileModal from './UserProfileModal.jsx'
+import { Button, EmptyState, IconButton, Panel, PanelBody, PanelHeader } from './ui.jsx'
 import './Modal.css'
 const players = [
   { avatar: null, nickname: 'Serhii', rating: 1812, games: 200, isFriend: true },
@@ -30,32 +31,32 @@ function LeaderboardModal({ onClose }) {
   return (
     <div className="cm-modal" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
       <button className="cm-modal__backdrop" type="button" aria-label="Close leaderboard modal" onClick={onClose} />
-      <div className="cm-panel cm-modal__content">
-        <div className="cm-panel-header">
-          <div>
-            <h2 className="cm-section-title" id="leaderboard-title">Leaderboard</h2>
-            <p className="cm-muted">Top 10 players sorted by rating</p>
-          </div>
-          <div className="cm-modal__header-actions">
-            <div className="cm-tabs" role="tablist" aria-label="Leaderboard filters">
-              {/* Optional filters for discussion */}
-              <button className="cm-tab active" type="button">Global</button>
-              {/* <button className="cm-tab" type="button">Friends</button>
-              <button className="cm-tab" type="button">Weekly</button>
-              <button className="cm-tab" type="button">Monthly</button> */}
+      <Panel as="div" className="cm-modal__content">
+        <PanelHeader
+          action={(
+            <div className="cm-modal__header-actions">
+              <div className="cm-tabs" role="tablist" aria-label="Leaderboard filters">
+                {/* Optional filters for discussion */}
+                <button className="cm-tab active" type="button">Global</button>
+                {/* <button className="cm-tab" type="button">Friends</button>
+                <button className="cm-tab" type="button">Weekly</button>
+                <button className="cm-tab" type="button">Monthly</button> */}
+              </div>
+              <IconButton aria-label="Close leaderboard modal" icon="x" onClick={onClose} />
             </div>
-            <button className="btn btn-ghost btn-icon" type="button" aria-label="Close leaderboard modal" onClick={onClose}>
-              <i className="ti ti-x" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-        <div className="cm-panel-body">
+          )}
+          title="Leaderboard"
+          titleId="leaderboard-title"
+        >
+          <p className="cm-muted">Top 10 players sorted by rating</p>
+        </PanelHeader>
+        <PanelBody>
           {!hasPlayers && (
-            <div className="empty-state">
-              <i className="ti ti-trophy" aria-hidden="true" />
-              <p className="text-primary">No players yet</p>
-              <span className="text-muted">No games have been played yet.</span>
-            </div>
+            <EmptyState
+              icon="trophy"
+              title="No players yet"
+              subtitle="No games have been played yet."
+            />
           )}
           {hasPlayers && (
             <table className="cm-table">
@@ -74,9 +75,9 @@ function LeaderboardModal({ onClose }) {
                     <td>
                       <div className="flex items-center gap-3">
                         <Avatar avatar={player.avatar} name={player.nickname} className="avatar avatar-md" />
-                        <button className="btn btn-ghost btn-sm" type="button" onClick={() => setSelectedPlayer(player)}>
+                        <Button size="sm" type="button" variant="ghost" onClick={() => setSelectedPlayer(player)}>
                           {player.nickname}
-                        </button>
+                        </Button>
                       </div>
                     </td>
                     <td>{player.games}</td>
@@ -86,8 +87,8 @@ function LeaderboardModal({ onClose }) {
               </tbody>
             </table>
           )}
-        </div>
-      </div>
+        </PanelBody>
+      </Panel>
       {selectedPlayer && (
         <UserProfileModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />
       )}

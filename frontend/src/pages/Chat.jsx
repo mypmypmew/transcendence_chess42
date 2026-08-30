@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
+import {
+  Button,
+  EmptyState,
+  IconButton,
+  ListRow,
+  MessageBubble,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from '../components/ui.jsx'
 const conversations = [
   {
     id: 1,
@@ -95,26 +105,24 @@ function Chat() {
   return (
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
 		<div className="cm-page-grid chat">
-        <section className="cm-panel" aria-labelledby="chat-list-title">
-          <div className="cm-panel-header">
-            <div>
-              <h2 className="cm-section-title" id="chat-list-title">Conversations</h2>
-              <p className="cm-muted">Existing dialogs only</p>
-            </div>
-          </div>
-          <div className="cm-panel-body">
+        <Panel aria-labelledby="chat-list-title">
+          <PanelHeader title="Conversations" titleId="chat-list-title">
+            <p className="cm-muted">Existing dialogs only</p>
+          </PanelHeader>
+          <PanelBody>
             {!hasConversations && (
-              <div className="empty-state">
-                <i className="ti ti-message-circle" aria-hidden="true" />
-                <p className="text-primary">No conversations yet</p>
-                <span className="text-muted">Message someone from your friends list.</span>
-              </div>
+              <EmptyState
+                icon="message-circle"
+                title="No conversations yet"
+                subtitle="Message someone from your friends list."
+              />
             )}
             {hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
-                  <button
-                    className={activeConversationId === conversation.id ? 'cm-list-row active' : 'cm-list-row'}
+                  <ListRow
+                    as="button"
+                    className={activeConversationId === conversation.id ? 'active' : ''}
                     key={conversation.id}
                     type="button"
                     onClick={() => setActiveConversationId(conversation.id)}
@@ -124,21 +132,21 @@ function Chat() {
                       <strong className="text-primary">{conversation.contact.nickname}</strong>
                       <p className="cm-muted">{conversation.lastMessage}</p>
                     </div>
-                  </button>
+                  </ListRow>
                 ))}
               </div>
             )}
-          </div>
-        </section>
-        <section className="cm-panel cm-chat-shell" aria-labelledby="chat-active-title">
+          </PanelBody>
+        </Panel>
+        <Panel className="cm-chat-shell" aria-labelledby="chat-active-title">
           {!activeConversation && (
-            <div className="cm-panel-body">
-              <div className="empty-state">
-                <i className="ti ti-message" aria-hidden="true" />
-                <p className="text-primary">Select a conversation</p>
-                <span className="text-muted">Choose a dialog from the left side.</span>
-              </div>
-            </div>
+            <PanelBody>
+              <EmptyState
+                icon="message"
+                title="Select a conversation"
+                subtitle="Choose a dialog from the left side."
+              />
+            </PanelBody>
           )}
           {activeConversation && (
             <>
@@ -150,20 +158,18 @@ function Chat() {
                     <p className="cm-muted">{activeConversation.contact.status}</p>
                   </div>
                 </div>
-                <button className="btn btn-ghost btn-icon" type="button" aria-label="Close conversation" onClick={handleCloseConversation}>
-                  <i className="ti ti-x" aria-hidden="true" />
-                </button>
+                <IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />
               </div>
-              <div className="cm-panel-body">
+              <PanelBody>
                 <div className="cm-message-list">
                   {activeConversation.messages.map((message) => (
-                    <div className={message.sender === 'me' ? 'cm-message mine' : 'cm-message'} key={message.id}>
+                    <MessageBubble isMine={message.sender === 'me'} key={message.id}>
                       {message.text}
-                    </div>
+                    </MessageBubble>
                   ))}
                 </div>
-              </div>
-              <form className="cm-panel-body flex gap-3" onSubmit={handleSendMessage}>
+              </PanelBody>
+              <PanelBody as="form" className="flex gap-3" onSubmit={handleSendMessage}>
                 <input
                   className="input flex-1"
                   type="text"
@@ -172,13 +178,13 @@ function Chat() {
                   aria-label="Message text"
                   onChange={(event) => setMessageText(event.target.value)}
                 />
-                <button className="btn btn-primary" type="submit" disabled={!messageText.trim()}>
+                <Button type="submit" disabled={!messageText.trim()}>
                   Send
-                </button>
-              </form>
+                </Button>
+              </PanelBody>
             </>
           )}
-        </section>
+        </Panel>
       </div>
     </AppLayout>
   )
