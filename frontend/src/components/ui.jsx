@@ -89,9 +89,14 @@ export function Button({
   ].filter(Boolean).join(' ')
   const buttonType = Component === 'button' ? (type || 'button') : type
   const iconNode = icon ? <Icon name={icon} /> : null
+  const componentProps = { ...props }
+
+  if (Component === 'button') {
+    componentProps.disabled = disabled
+  }
 
   return (
-    <Component className={classes} disabled={disabled} type={buttonType} {...props}>
+    <Component className={classes} type={buttonType} {...componentProps}>
       {iconPosition === 'left' && iconNode}
       {children}
       {iconPosition === 'right' && iconNode}
