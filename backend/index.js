@@ -4,6 +4,9 @@ let cookieParser = require('cookie-parser');
 let authRoutes = require('./src/routes/authRoutes');
 const gameRoutes = require('./src/routes/gameRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
+const { GameService } = require('./src/services/gameService');
+const { MatchmakingService } = require('./src/services/matchmakingService');
+const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
 let app = express();
 let PORT = 3000;
 const http = require('http');
@@ -20,10 +23,23 @@ const io = new Server(httpServer, {
   },
 });
 
+// Keep one authoritative game store and one matchmaking queue shared by every authenticated Socket.IO connection.
+const gameService = new GameService();
+const matchmakingService = new MatchmakingService({
+  gameService,
+});
+
 io.use(socketAuth);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id} (user ${socket.data.userId})`);
+
+  // Connect this authenticated socket to the shared matchmaking services.
+  registerMatchmakingHandlers({
+    io,
+    socket,
+    matchmakingService,
+  });
 
   socket.on('client:ping', () => {
     socket.emit('server:pong');
