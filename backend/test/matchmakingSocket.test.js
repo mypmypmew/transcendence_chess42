@@ -317,3 +317,59 @@ test('emits a matchmaking error when joining the queue fails', async () => {
 	]);
 });
 
+test('removes the waiting player when the socket disconnects', () => {
+	const handlers = new Map();
+	let removedPlayerId = null;
+
+	const fakeSocket = {
+		data: {
+			userId: 7,
+		},
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		emit() {
+			// Disconnect cleanup does not emit a frontend event.
+		},
+
+		join() {
+			// Personal room membership is covered by a separate test.
+		},
+  	};
+	  
+	const fakeIo = {
+		to() {
+			throw new Error('Room broadcast was not expected');
+		},
+	};
+
+	const fakeMatchmakingService = {
+		async join() {
+			return {
+				status: 'WAITING',
+			};
+		},
+
+		// Record which authenticated user is removed during disconnect.
+		leave(playerId) {
+			removedPlayerId = playerId;
+			return true;
+		},
+	};
+
+	registerMatchmakingHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		matchmakingService: fakeMatchmakingService,
+	});
+
+	const disconnectHandler = handlers.get('disconnect');
+
+	// Socket.IO provides a reason, but queue cleanup only needs the user ID.
+	disconnectHandler('transport close');
+
+	assert.equal(removedPlayerId, 7);
+});
+
