@@ -1,56 +1,68 @@
 import { Link } from 'react-router-dom'
 
 import LegalFooter from '../../components/LegalFooter.jsx'
-import '../Auth.css'
 import '../App.css'
-
-const privacySections = [
-  'What user data we collect',
-  'Why we collect this data',
-  'Where the data is stored',
-  'Session cookies and authentication',
-  'Game history and profile data',
-  'How users can request access to their data',
-  'How users can request deletion of their data',
-  'Future review notes for backend changes',
-]
 
 function PrivacyPolicy() {
   return (
-    <main className="auth-scene fade-in">
-      <section className="auth-panel" aria-labelledby="privacy-policy-title">
-        <div className="auth-card">
-          <header className="auth-card-intro">
-            <Link className="cm-brand justify-center" to="/">
+    <main className="cm-shell fade-in">
+      <div className="cm-app-frame">
+        <section className="cm-panel" aria-labelledby="privacy-policy-title">
+          <header className="cm-panel-header">
+            <Link className="cm-brand" to="/">
               <i className="ti ti-crown" aria-hidden="true" />
               <span>ChessMate</span>
             </Link>
-            <p className="auth-kicker">Legal</p>
-            <h1 className="auth-title" id="privacy-policy-title">Privacy Policy</h1>
+            <Link className="auth-link" to="/">Back</Link>
           </header>
 
-          <div className="auth-form">
-            <p className="auth-subtitle">
-              This page is a document skeleton. The final legal text should be reviewed before release.
+          <div className="cm-panel-body flex flex-col gap-4">
+            <p className="label">Legal</p>
+            <h1 className="cm-section-title" id="privacy-policy-title">Privacy Policy</h1>
+
+            <h2>Overview</h2>
+            <p className="text-secondary">
+              ChessMate uses personal data only to provide the features of the application.
+              This draft is based on the current project scope and must be reviewed again before the final release.
             </p>
 
-            <ol className="cm-list">
-              {privacySections.map((section) => (
-                <li className="cm-list-row" key={section}>
-                  <i className="ti ti-file-text text-accent" aria-hidden="true" />
-                  <span className="text-primary">{section}</span>
-                </li>
-              ))}
-            </ol>
+            <h2>Data we collect</h2>
+            <p className="text-secondary">
+              The app may store account data such as username, email, password hash, session data,
+              rating, friends, friend requests, and game history. If chat, avatars, uploads, or logs are added,
+              this policy must also describe how that data is handled.
+            </p>
+
+            <h2>How we use data</h2>
+            <p className="text-secondary">
+              We use this data to create and protect accounts, keep users signed in, show profiles,
+              manage friends and friend requests, record games, display match history, update leaderboard data,
+              and support real-time app features.
+            </p>
+
+            <h2>Passwords and sessions</h2>
+            <p className="text-secondary">
+              Passwords must be stored as hashes, not as plain text. Session cookies may be used
+              to keep users signed in, protect private routes, and authenticate socket connections.
+            </p>
+
+            <h2>External services</h2>
+            <p className="text-secondary">
+              The current project does not show a final external service integration. If OAuth,
+              email sending, analytics, cloud storage, monitoring, hosting providers, or other external APIs are added,
+              this policy must explain which services are used and what data is shared with them.
+            </p>
+
+            <h2>Final review</h2>
+            <p className="text-secondary">
+              Before release, this file must be checked against the final backend, database schema,
+              stored user data, authentication flow, chat behavior, uploads, logs, and external services.
+            </p>
+
+            <LegalFooter />
           </div>
-
-          <LegalFooter />
-
-          <footer className="auth-footer">
-            <Link className="auth-link" to="/">Back to ChessMate</Link>
-          </footer>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   )
 }
