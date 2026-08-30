@@ -65,22 +65,35 @@ function registerGameHandlers({
 		to,
 		promotion,
 		} = {}) => {
-			// Ignore any playerId supplied by the client.
-			// GameService validates the move using the authenticated socket user.
-			const game = await gameService.makeMove({
-				gameId,
-				playerId,
-				from,
-				to,
-				promotion,
-			});
-
-			// Broadcast only the authoritative snapshot returned by GameService.
-			// Both players in the room receive the same resulting position.
-			io.to(`game:${gameId}`).emit(
-				'game:state',
-				game,
-			);
+			try {
+				// Ignore any playerId supplied by the client.
+				// GameService validates the move using the authenticated socket user.
+				const game = await gameService.makeMove({
+					gameId,
+					playerId,
+					from,
+					to,
+					promotion,
+				});
+	
+				// Broadcast only the authoritative snapshot returned by GameService.
+				// Both players in the room receive the same resulting position.
+				io.to(`game:${gameId}`).emit(
+					'game:state',
+					game,
+				);
+			} catch (error) {
+				// Send move validation failures only to the requesting client.
+				// No room broadcast occurs because the server state did not change.
+				const message =
+				error instanceof Error
+					? error.message
+					: 'Unable to make the move';
+				
+				socket.emit('game:error', {
+					message,
+				});
+			}
 		},
 	);
 }
