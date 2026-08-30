@@ -98,18 +98,31 @@ function registerGameHandlers({
 	);
 
 	socket.on('game:resign', async ({ gameId } = {}) => {
-		// Ignore any playerId supplied by the client.
-		// GameService resigns only the authenticated socket user.
-		const game = await gameService.resignGame({
-			gameId,
-			playerId,
-		});
-
-		// Broadcast the final authoritative result to both participants.
-		io.to(`game:${gameId}`).emit(
-			'game:state',
-			game,
-		);
+		try {
+			// Ignore any playerId supplied by the client.
+			// GameService resigns only the authenticated socket user.
+			const game = await gameService.resignGame({
+				gameId,
+				playerId,
+			});
+	
+			// Broadcast the final authoritative result to both participants.
+			io.to(`game:${gameId}`).emit(
+				'game:state',
+				game,
+			);
+		} catch (error) {
+			// Send resignation failures only to the requesting client.
+			// No room broadcast occurs because the game state did not change.
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Unable to resign from the game';
+				
+			socket.emit('game:error', {
+				message,
+			});
+		}
 	});
 }
 
