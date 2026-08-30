@@ -4,7 +4,7 @@ import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
 import UserProfileModal from '../components/UserProfileModal'
-import { getFriends } from '../api/friendshipApi'
+import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
 import { useAuth } from '../context/AuthContext.jsx'
 import './App.css'
@@ -122,6 +122,14 @@ function Profile() {
 
   function handleOpenFriendProfile(friendship) {
 	setSelectedFriend(toModalPlayer(friendship.user))
+  }
+
+  async function handleRemoveFriend(player) {
+	await removeFriend(player.id)
+	setFriends((current) => (
+	  current.filter((friendship) => friendship.user.id !== player.id)
+	))
+	setSelectedFriend(null)
   }
 
   if (!user) {
@@ -244,6 +252,7 @@ function Profile() {
 	  {selectedFriend && (
 		<UserProfileModal
 		  player={selectedFriend}
+		  onRemoveFriend={handleRemoveFriend}
 		  onClose={() => setSelectedFriend(null)}
 		/>
 	  )}

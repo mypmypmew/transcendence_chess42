@@ -488,7 +488,11 @@ export default function Friends() {
       </div>
 
 	  {selectedFriend && (
-	    <UserProfileModal player={selectedFriend} onClose={() => setSelectedFriend(null)} />
+	    <UserProfileModal
+        player={selectedFriend}
+        onRemoveFriend={(player) => handleRemoveFriend(player.id)}
+        onClose={() => setSelectedFriend(null)}
+      />
 	  )}
     </AppLayout>
   )

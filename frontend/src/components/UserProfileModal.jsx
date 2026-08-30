@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
@@ -54,8 +55,41 @@ function getOpponent(match, profileOwner) {
   return match.white === profileOwner ? match.black : match.white
 }
 
-function UserProfileModal({ player, onClose }) {
+function UserProfileModal({
+  player,
+  onClose,
+  onAddFriend,
+  onRemoveFriend,
+}) {
   const matchHistory = getMockMatchHistory(player.nickname)
+  const [pendingAction, setPendingAction] = useState(null)
+  const [actionError, setActionError] = useState(null)
+  const hasBackendUserId = Number.isInteger(player.id) && player.id > 0
+  const friendAction = player.isFriend ? onRemoveFriend : onAddFriend
+  const friendActionLabel = player.isFriend ? 'Remove friend' : 'Add friend'
+  const isFriendActionPending = pendingAction === 'friend'
+  const isFriendActionDisabled = (
+    !hasBackendUserId
+    || !friendAction
+    || pendingAction !== null
+  )
+
+  async function runAction(actionName, action) {
+    if (!action || !hasBackendUserId) {
+      return
+    }
+
+    setPendingAction(actionName)
+    setActionError(null)
+
+    try {
+      await action(player)
+    } catch (error) {
+      setActionError(error.message)
+    } finally {
+      setPendingAction(null)
+    }
+  }
 
   return (
     <div className="cm-modal cm-modal--nested" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
@@ -75,6 +109,13 @@ function UserProfileModal({ player, onClose }) {
         </div>
 
         <div className="cm-panel-body">
+          {actionError && (
+            <div className="alert alert-error visible" role="alert">
+              <i className="ti ti-alert-circle" aria-hidden="true" />
+              {actionError}
+            </div>
+          )}
+
           <div className="cm-list" aria-label={`${player.nickname} match history`}>
             {matchHistory.map((match) => {
               const result = getMatchResult(match, player.nickname)
@@ -100,8 +141,13 @@ function UserProfileModal({ player, onClose }) {
             <Link className="btn btn-ghost" to="/game-lobby" onClick={onClose}>
               Challenge
             </Link>
-            <button className="btn btn-ghost" type="button">
-              {player.isFriend ? 'Remove friend' : 'Add friend'}
+            <button
+              className="btn btn-ghost"
+              type="button"
+              disabled={isFriendActionDisabled}
+              onClick={() => runAction('friend', friendAction)}
+            >
+              {isFriendActionPending ? 'Updating...' : friendActionLabel}
             </button>
           </div>
         </div>
