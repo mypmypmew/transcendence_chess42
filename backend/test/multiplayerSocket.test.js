@@ -27,7 +27,7 @@ function waitForEvent(socket, eventName) {
 	});
 }
 
-test('matches two authenticated Socket.IO clients', async (t) => {
+test('matches two clients and synchronizes a legal move', async (t) => {
 	let nextGameId = 1;
 
 	const fakeGameRepository = {
@@ -148,4 +148,60 @@ test('matches two authenticated Socket.IO clients', async (t) => {
 	assert.equal(whiteGame.blackId, 2);
 	assert.equal(whiteGame.status, 'IN_PROGRESS');
 
+	// Register state listeners before asking both clients to join the game.
+	const whiteInitialState = waitForEvent(
+		whiteClient,
+		'game:state',
+	);
+
+	const blackInitialState = waitForEvent(
+		blackClient,
+		'game:state',
+	);
+
+	whiteClient.emit('game:join', { gameId: whiteGame.gameId });
+	blackClient.emit('game:join', { gameId: blackGame.gameId });
+
+	const [
+		initialStateForWhite,
+		initialStateForBlack,
+	] = await Promise.all([
+		whiteInitialState,
+		blackInitialState,
+	]);
+
+	// Both players must receive the same initial server position.
+	assert.deepEqual(initialStateForWhite, initialStateForBlack);
+	assert.equal(initialStateForWhite.turn, 'w');
+
+	const whiteMoveState = waitForEvent(
+		whiteClient,
+		'game:state',
+	);
+
+	const blackMoveState = waitForEvent(
+		blackClient,
+		'game:state',
+	);
+
+	// The client sends only the game and chess move data.
+	// The backend derives playerId from the authenticated socket.
+	whiteClient.emit('game:move', {
+		gameId: whiteGame.gameId,
+		from: 'e2',
+		to: 'e4',
+	});
+
+	const [
+		stateAfterMoveForWhite,
+		stateAfterMoveForBlack,
+	] = await Promise.all([
+		whiteMoveState,
+		blackMoveState,
+	]);
+
+	// The game room must receive one identical authoritative result.
+	assert.deepEqual(stateAfterMoveForWhite, stateAfterMoveForBlack);
+	assert.equal(stateAfterMoveForWhite.turn, 'b');
+	assert.notEqual(stateAfterMoveForWhite.fen, initialStateForWhite.fen);
 });
