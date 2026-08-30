@@ -83,3 +83,74 @@ test('joins an authenticated participant to the game room', async () => {
 		},
 	]);
 });
+
+test('rejects a user who is not part of the game', async () => {
+	const handlers = new Map();
+	const joinedRooms = [];
+	const emittedEvents = [];
+
+	const game = {
+		gameId: 42,
+		whiteId: 1,
+		blackId: 2,
+		turn: 'w',
+		status: 'IN_PROGRESS',
+	};
+
+	const fakeSocket = {
+		data: { userId: 3 },
+
+		on(eventName, handler) {
+			handlers.set(eventName, handler);
+		},
+
+		join(roomName) {
+			joinedRooms.push(roomName);
+		},
+
+		emit(eventName, payload) {
+			emittedEvents.push({
+				eventName,
+				payload,
+			});
+		},
+	};
+
+	const fakeIo = {
+		to() {
+			throw new Error('Room broadcast was not expected');
+		},
+	};
+
+	const fakeGameService = {
+		getGame() {
+			return game;
+		},
+	};
+
+	registerGameHandlers({
+		io: fakeIo,
+		socket: fakeSocket,
+		gameService: fakeGameService,
+	});
+
+	const joinHandler = handlers.get('game:join');
+
+	// User 3 is authenticated but is not white or black in this game.
+	await joinHandler({
+		gameId: 42,
+	});
+
+	// Unauthorized users must never enter the shared game room.
+	assert.deepEqual(joinedRooms, []);
+	
+	// Return a namespaced error that the frontend can display.
+	assert.deepEqual(emittedEvents, [
+		{
+			eventName: 'game:error',
+			payload: {
+				message: 'Player is not part of this game',
+			},	
+		},
+	]);
+});
