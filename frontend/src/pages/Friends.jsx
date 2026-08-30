@@ -12,13 +12,14 @@ import {
 } from '../api/friendshipApi.js'
 import { searchUsers } from '../api/userApi.js'
 
-function toModalPlayer(user) {
+function toModalPlayer(user, options = {}) {
   return {
     id: user.id,
     avatar: user.avatar || null,
     nickname: user.username,
     rating: user.rating,
-    isFriend: true,
+    isFriend: options.isFriend ?? true,
+    hasPendingFriendRequest: options.hasPendingFriendRequest ?? false,
   }
 }
 
@@ -135,6 +136,26 @@ export default function Friends() {
     setSelectedFriend(toModalPlayer(friendship.user))
   }
 
+  const handleOpenSearchProfile = (user) => {
+    setSelectedFriend(toModalPlayer(user, {
+      isFriend: friendUserIds.includes(user.id),
+      hasPendingFriendRequest: outgoingRecipientIds.includes(user.id),
+    }))
+  }
+
+  const handleOpenIncomingRequestProfile = (request) => {
+    setSelectedFriend(toModalPlayer(request.requester, {
+      isFriend: false,
+    }))
+  }
+
+  const handleOpenOutgoingRequestProfile = (request) => {
+    setSelectedFriend(toModalPlayer(request.recipient, {
+      isFriend: false,
+      hasPendingFriendRequest: true,
+    }))
+  }
+
   const handleRemoveFriend = async (friendUserId) => {
     setRemovingFriendIds((current) => [...current, friendUserId])
     setPageError(null)
@@ -174,7 +195,7 @@ export default function Friends() {
     }
   }
 
-  const handleSendFriendRequest = async (user) => {
+  const handleSendFriendRequest = async (user, options = {}) => {
     setSendingRequestIds((current) => [...current, user.id])
     setSearchError(null)
 
@@ -182,9 +203,17 @@ export default function Friends() {
       const data = await sendFriendRequest(user.id)
       if (data?.request) {
         setOutgoingRequests((current) => [...current, data.request])
+        setSelectedFriend((current) => (
+          current?.id === user.id
+            ? { ...current, hasPendingFriendRequest: true }
+            : current
+        ))
       }
     } catch (error) {
       setSearchError(error.message)
+      if (options.throwOnError) {
+        throw error
+      }
     } finally {
       setSendingRequestIds((current) => current.filter((id) => id !== user.id))
     }
@@ -303,7 +332,13 @@ export default function Friends() {
                         />
 
                         <div>
-                          <div className="text-primary">{user.username}</div>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            type="button"
+                            onClick={() => handleOpenSearchProfile(user)}
+                          >
+                            {user.username}
+                          </button>
                           <div className="flex items-center gap-2">
                             <i className="ti ti-trophy text-accent" aria-hidden="true" />
                             <span className="text-muted">{user.rating}</span>
@@ -356,7 +391,13 @@ export default function Friends() {
                         className="avatar avatar-md"
                       />
                       <div>
-                        <div className="text-primary">{request.requester.username}</div>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          type="button"
+                          onClick={() => handleOpenIncomingRequestProfile(request)}
+                        >
+                          {request.requester.username}
+                        </button>
                         <div className="flex items-center gap-2">
                           <i className="ti ti-trophy text-accent" aria-hidden="true" />
                           <span className="text-muted">{request.requester.rating}</span>
@@ -393,7 +434,13 @@ export default function Friends() {
                       className="avatar avatar-md"
                     />
                     <div>
-                      <div className="text-primary">{request.recipient.username}</div>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        type="button"
+                        onClick={() => handleOpenOutgoingRequestProfile(request)}
+                      >
+                        {request.recipient.username}
+                      </button>
                       <div className="flex items-center gap-2">
                         <i className="ti ti-trophy text-accent" aria-hidden="true" />
                         <span className="text-muted">{request.recipient.rating}</span>
@@ -490,6 +537,7 @@ export default function Friends() {
 	  {selectedFriend && (
 	    <UserProfileModal
         player={selectedFriend}
+        onAddFriend={(player) => handleSendFriendRequest(player, { throwOnError: true })}
         onRemoveFriend={(player) => handleRemoveFriend(player.id)}
         onClose={() => setSelectedFriend(null)}
       />
