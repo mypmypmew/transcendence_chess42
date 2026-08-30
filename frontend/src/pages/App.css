@@ -396,6 +396,8 @@ body {
 }
 
 .cm-list-row {
+  appearance: none;
+  width: 100%;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -405,6 +407,21 @@ body {
   background: rgba(10, 22, 35, 0.68);
   border: 1px solid var(--border-subtle);
   color: var(--text-on-dark);
+  font: inherit;
+  text-align: left;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base);
+}
+
+button.cm-list-row {
+  cursor: pointer;
+}
+
+button.cm-list-row:hover,
+.cm-list-row.active {
+  background: rgba(212, 160, 55, 0.14);
+  border-color: var(--accent-border);
 }
 
 .cm-avatar-photo {

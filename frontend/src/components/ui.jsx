@@ -13,6 +13,7 @@ const designTokens = {
       textMuted: '#aab6c7',
       success: '#6cc56f',
       danger: '#ff7b7b',
+      border: 'rgba(148, 163, 184, 0.22)',
     },
     light: {
       background: '#f5f2eb',
@@ -25,12 +26,39 @@ const designTokens = {
       textMuted: '#738196',
       success: '#2f7d48',
       danger: '#b24545',
+      border: 'rgba(88, 103, 124, 0.22)',
     },
   },
   typography: {
     ui: "'Inter', system-ui, sans-serif",
     display: "'Cormorant Garant', Georgia, serif",
     mono: 'ui-monospace, Consolas, monospace',
+    scale: {
+      xs: '11px',
+      sm: '12px',
+      base: '13px',
+      md: '14px',
+      lg: '16px',
+      xl: '18px',
+      '2xl': '22px',
+      '3xl': '26px',
+    },
+  },
+  radii: {
+    sm: '4px',
+    md: '6px',
+    lg: '10px',
+    xl: '12px',
+    pill: '999px',
+  },
+  spacing: {
+    1: '4px',
+    2: '8px',
+    3: '12px',
+    4: '16px',
+    5: '20px',
+    6: '24px',
+    8: '32px',
   },
   icons: {
     alert: 'alert-circle',
@@ -125,6 +153,75 @@ export function IconButton({
   )
 }
 
+export function Input({ className = '', hasError = false, isValid = false, ...props }) {
+  const classes = [
+    'input',
+    hasError ? 'error' : '',
+    isValid ? 'valid' : '',
+    className,
+  ].filter(Boolean).join(' ')
+
+  return <input className={classes} {...props} />
+}
+
+export function InputIconButton({
+  'aria-label': ariaLabel,
+  className = '',
+  decorative = false,
+  icon,
+  title = ariaLabel,
+  ...props
+}) {
+  if (decorative) {
+    return (
+      <span className={['input-icon-btn', className].filter(Boolean).join(' ')} aria-hidden="true">
+        <Icon name={icon} />
+      </span>
+    )
+  }
+
+  return (
+    <button
+      aria-label={ariaLabel}
+      className={['input-icon-btn', className].filter(Boolean).join(' ')}
+      title={title}
+      type="button"
+      {...props}
+    >
+      <Icon name={icon} />
+    </button>
+  )
+}
+
+export function FormField({
+  children,
+  className = '',
+  error,
+  errorId,
+  label,
+  labelFor,
+  ...props
+}) {
+  return (
+    <div className={['field', className].filter(Boolean).join(' ')} {...props}>
+      {label && (
+        <label className="field-label" htmlFor={labelFor}>
+          {label}
+        </label>
+      )}
+      {children}
+      <div className={['field-error', error ? 'visible' : ''].filter(Boolean).join(' ')} id={errorId}>
+        {error && (
+          <>
+            <Icon name="alert-circle" />
+            <span>{error}</span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function Badge({ children, className = '', variant = 'accent', ...props }) {
   const classes = ['badge', `badge-${variant}`, className].filter(Boolean).join(' ')
 
@@ -202,6 +299,14 @@ export function PanelBody({ as: Component = 'div', children, className = '', ...
   )
 }
 
+export function Toolbar({ children, className = '', ...props }) {
+  return (
+    <div className={['cm-toolbar', className].filter(Boolean).join(' ')} {...props}>
+      {children}
+    </div>
+  )
+}
+
 export function ActionCard({ as: Component = 'a', children, className = '', ...props }) {
   return (
     <Component className={['cm-action-card', className].filter(Boolean).join(' ')} {...props}>
@@ -224,6 +329,36 @@ export function ListRow({ as: Component = 'div', children, className = '', ...pr
     <Component className={['cm-list-row', className].filter(Boolean).join(' ')} {...props}>
       {children}
     </Component>
+  )
+}
+
+export function Tabs({ children, className = '', ...props }) {
+  return (
+    <div className={['cm-tabs', className].filter(Boolean).join(' ')} role="tablist" {...props}>
+      {children}
+    </div>
+  )
+}
+
+export function Tab({ active = false, children, className = '', ...props }) {
+  return (
+    <button
+      aria-selected={active}
+      className={['cm-tab', active ? 'active' : '', className].filter(Boolean).join(' ')}
+      role="tab"
+      type="button"
+      {...props}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function Table({ children, className = '', ...props }) {
+  return (
+    <table className={['cm-table', className].filter(Boolean).join(' ')} {...props}>
+      {children}
+    </table>
   )
 }
 
