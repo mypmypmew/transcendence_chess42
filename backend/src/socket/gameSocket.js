@@ -58,6 +58,31 @@ function registerGameHandlers({
 			});
 		}
 	});
+
+	socket.on('game:move', async ({
+		gameId,
+		from,
+		to,
+		promotion,
+		} = {}) => {
+			// Ignore any playerId supplied by the client.
+			// GameService validates the move using the authenticated socket user.
+			const game = await gameService.makeMove({
+				gameId,
+				playerId,
+				from,
+				to,
+				promotion,
+			});
+
+			// Broadcast only the authoritative snapshot returned by GameService.
+			// Both players in the room receive the same resulting position.
+			io.to(`game:${gameId}`).emit(
+				'game:state',
+				game,
+			);
+		},
+	);
 }
 
 module.exports = {
