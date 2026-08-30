@@ -1,5 +1,12 @@
 import './Modal.css'
-import { Button, EmptyState, IconButton, Panel, PanelBody, PanelHeader } from './ui.jsx'
+import {
+  Button,
+  EmptyState,
+  IconButton,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from './ui.jsx'
 
 function getGameOverContent(gameOverInfo) {
   if (gameOverInfo?.type === 'checkmate') {

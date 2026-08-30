@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import GameOverModal from './GameOverModal.jsx'
-import { Button, Icon, Panel } from './ui.jsx'
+import {
+  Button,
+  Icon,
+  Panel,
+} from './ui.jsx'
 
 const PROMOTION_OPTIONS = [
   { value: 'q', label: 'Queen' },
