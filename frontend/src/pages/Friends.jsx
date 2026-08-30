@@ -20,6 +20,7 @@ function toModalPlayer(user, options = {}) {
     rating: user.rating,
     isFriend: options.isFriend ?? true,
     hasPendingFriendRequest: options.hasPendingFriendRequest ?? false,
+    friendActionLabel: options.friendActionLabel,
   }
 }
 
@@ -146,6 +147,8 @@ export default function Friends() {
   const handleOpenIncomingRequestProfile = (request) => {
     setSelectedFriend(toModalPlayer(request.requester, {
       isFriend: false,
+      hasPendingFriendRequest: true,
+      friendActionLabel: 'Request received',
     }))
   }
 
@@ -153,6 +156,7 @@ export default function Friends() {
     setSelectedFriend(toModalPlayer(request.recipient, {
       isFriend: false,
       hasPendingFriendRequest: true,
+      friendActionLabel: 'Request sent',
     }))
   }
 
@@ -205,7 +209,11 @@ export default function Friends() {
         setOutgoingRequests((current) => [...current, data.request])
         setSelectedFriend((current) => (
           current?.id === user.id
-            ? { ...current, hasPendingFriendRequest: true }
+            ? {
+                ...current,
+                hasPendingFriendRequest: true,
+                friendActionLabel: 'Request sent',
+              }
             : current
         ))
       }
@@ -489,13 +497,13 @@ export default function Friends() {
                     />
                     
                     <div>
-                      <div 
-                        className="text-primary"
-                        style={{ cursor: 'pointer' }}
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        type="button"
                         onClick={() => handleOpenProfile(friendship)}
                       >
                         {friendship.user.username}
-                      </div>
+                      </button>
                       <div className="flex items-center gap-2">
                         <i className="ti ti-trophy text-accent" aria-hidden="true" />
                         <span className="text-muted">{friendship.user.rating}</span>

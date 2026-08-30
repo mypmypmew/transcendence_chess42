@@ -68,7 +68,7 @@ function UserProfileModal({
   const hasPendingFriendRequest = player.hasPendingFriendRequest === true
   const friendAction = player.isFriend ? onRemoveFriend : onAddFriend
   const friendActionLabel = hasPendingFriendRequest
-    ? 'Request sent'
+    ? player.friendActionLabel || 'Request sent'
     : player.isFriend ? 'Remove friend' : 'Add friend'
   const isFriendActionPending = pendingAction === 'friend'
   const isFriendActionDisabled = (
