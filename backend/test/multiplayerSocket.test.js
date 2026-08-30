@@ -282,4 +282,40 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		stateAfterMoveForBlack,
 	);
 	assert.equal(restoredState.turn, 'b');
+
+	const whiteFinalStateEvent = waitForEvent(
+		whiteClient,
+		'game:state',
+	);
+
+	const blackFinalStateEvent = waitForEvent(
+		reconnectedBlackClient,
+		'game:state',
+	);
+
+	// The reconnected black player resigns from the active game.
+	reconnectedBlackClient.emit('game:resign', {
+		gameId: blackGame.gameId,
+
+		// This forged value must be ignored by the backend.
+		playerId: 1,
+	});
+
+	const [
+		finalStateForWhite,
+		finalStateForBlack,
+	] = await Promise.all([
+		whiteFinalStateEvent,
+		blackFinalStateEvent,
+	]);
+
+	// Both connected participants receive the same completed game.
+	assert.deepEqual(finalStateForWhite, finalStateForBlack);
+	assert.equal(finalStateForWhite.status, 'COMPLETED');
+	assert.equal(finalStateForWhite.result, 'WHITE_WIN');
+	assert.equal(finalStateForWhite.winnerId, 1);
+	assert.match(
+		finalStateForWhite.pgn,
+		/\[Result "1-0"\]/,
+	);
 });
