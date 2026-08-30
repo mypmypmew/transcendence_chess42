@@ -98,6 +98,9 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 	// Store a replacement client created during the reconnect scenario.
 	let reconnectedBlackClient = null;
 
+	// Store a third authenticated client used to test game access control.
+	let outsiderClient = null;
+
 	// Always close clients and the temporary server after the test.
 	t.after(async () => {
 		whiteClient.disconnect();
@@ -105,6 +108,9 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 
 		if (reconnectedBlackClient)
 			reconnectedBlackClient.disconnect();
+
+		if (outsiderClient)
+			outsiderClient.disconnect();
 
 		await new Promise((resolve) => {
 			io.close(resolve);
@@ -317,5 +323,34 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 	assert.match(
 		finalStateForWhite.pgn,
 		/\[Result "1-0"\]/,
+	);
+
+	outsiderClient = createClient(serverUrl, {
+		auth: { userId: 3 },
+		transports: ['websocket'],
+		forceNew: true,
+	});
+
+	await waitForEvent(
+		outsiderClient,
+		'connect',
+	);
+
+	const accessErrorEvent = waitForEvent(
+		outsiderClient,
+		'game:error',
+	);
+
+	// User 3 is authenticated but is not a participant in game 1.
+	outsiderClient.emit('game:join', {
+		gameId: whiteGame.gameId,
+	});
+
+	const accessError = await accessErrorEvent;
+
+	// Authentication alone must not grant access to another user's game.
+	assert.equal(
+		accessError.message,
+		'Player is not part of this game',
 	);
 });
