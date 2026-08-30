@@ -194,6 +194,22 @@ export function PanelHeader({ action, children, className = '', eyebrow, title, 
   )
 }
 
+export function PanelBody({ as: Component = 'div', children, className = '', ...props }) {
+  return (
+    <Component className={['cm-panel-body', className].filter(Boolean).join(' ')} {...props}>
+      {children}
+    </Component>
+  )
+}
+
+export function ActionCard({ as: Component = 'a', children, className = '', ...props }) {
+  return (
+    <Component className={['cm-action-card', className].filter(Boolean).join(' ')} {...props}>
+      {children}
+    </Component>
+  )
+}
+
 export function StatCell({ label, value, ...props }) {
   return (
     <div className="stat-cell" {...props}>
@@ -208,5 +224,13 @@ export function ListRow({ as: Component = 'div', children, className = '', ...pr
     <Component className={['cm-list-row', className].filter(Boolean).join(' ')} {...props}>
       {children}
     </Component>
+  )
+}
+
+export function MessageBubble({ children, isMine = false, ...props }) {
+  return (
+    <div className={isMine ? 'cm-message mine' : 'cm-message'} {...props}>
+      {children}
+    </div>
   )
 }

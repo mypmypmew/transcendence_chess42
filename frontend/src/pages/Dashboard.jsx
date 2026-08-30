@@ -2,25 +2,34 @@ import { Link } from 'react-router-dom'
 
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout'
+import {
+  ActionCard,
+  Badge,
+  Button,
+  Icon,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  StatCell,
+} from '../components/ui.jsx'
 import './App.css'
 
 const recentGames = [
-  { opponent: 'Artemis', result: 'Win', rating: '+12', time: '2 hours ago', badge: 'badge-win' },
-  { opponent: 'BishopBrain', result: 'Draw', rating: '0', time: 'Yesterday', badge: 'badge-draw' },
-  { opponent: 'CastleGuard', result: 'Loss', rating: '-8', time: '2 days ago', badge: 'badge-loss' },
+  { opponent: 'Artemis', result: 'Win', rating: '+12', time: '2 hours ago', variant: 'win' },
+  { opponent: 'BishopBrain', result: 'Draw', rating: '0', time: 'Yesterday', variant: 'draw' },
+  { opponent: 'CastleGuard', result: 'Loss', rating: '-8', time: '2 days ago', variant: 'loss' },
 ]
 
 function Dashboard() {
   const actions = (
     <>
-      <Link className="btn btn-ghost" to="/game">
-        <i className="ti ti-target-arrow" aria-hidden="true" />
+      <Button as={Link} icon="target-arrow" to="/game" variant="ghost">
         Think
-      </Link>
-      <Link className="btn btn-ghost" to="/leaderboard">
-        <i className="ti ti-trophy" aria-hidden="true" />
+      </Button>
+      <Button as={Link} icon="trophy" to="/leaderboard" variant="ghost">
         Compete
-      </Link>
+      </Button>
     </>
   )
 
@@ -36,30 +45,22 @@ function Dashboard() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link className="btn btn-primary" to="/game">Play now</Link>
-            <Link className="btn btn-ghost" to="/leaderboard">View rankings</Link>
+            <Button as={Link} to="/game">Play now</Button>
+            <Button as={Link} to="/leaderboard" variant="ghost">View rankings</Button>
           </div>
         </section>
 
-        <section className="cm-panel" aria-labelledby="rating-title">
-          <div className="cm-panel-header">
-            <h2 className="cm-section-title" id="rating-title">Rating</h2>
-            <span className="badge badge-accent">Rapid</span>
-          </div>
-          <div className="cm-panel-body">
+        <Panel aria-labelledby="rating-title">
+          <PanelHeader
+            action={<Badge>Rapid</Badge>}
+            title="Rating"
+            titleId="rating-title"
+          />
+          <PanelBody>
             <div className="cm-stat-grid">
-              <div className="stat-cell">
-                <div className="stat-num">1768</div>
-                <div className="stat-lbl">Rating</div>
-              </div>
-              <div className="stat-cell">
-                <div className="stat-num">312</div>
-                <div className="stat-lbl">Games</div>
-              </div>
-              <div className="stat-cell">
-                <div className="stat-num">61%</div>
-                <div className="stat-lbl">Win rate</div>
-              </div>
+              <StatCell label="Rating" value="1768" />
+              <StatCell label="Games" value="312" />
+              <StatCell label="Win rate" value="61%" />
             </div>
             <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
               <p className="label">Weekly progress</p>
@@ -77,58 +78,53 @@ function Dashboard() {
                 ))}
               </div>
             </div>
-          </div>
-        </section>
+          </PanelBody>
+        </Panel>
 
-        <section className="cm-panel">
-          <div className="cm-panel-header">
-            <h2 className="cm-section-title">Training</h2>
-            <span className="cm-muted">Today</span>
-          </div>
-          <div className="cm-panel-body cm-action-grid">
-            <Link className="cm-action-card" to="/game">
-              <i className="ti ti-chess-rook" aria-hidden="true" />
+        <Panel>
+          <PanelHeader action={<span className="cm-muted">Today</span>} title="Training" />
+          <PanelBody className="cm-action-grid">
+            <ActionCard as={Link} to="/game">
+              <Icon name="chess-rook" />
               <h3>Quick Play</h3>
               <p className="cm-muted">Instant match with default settings</p>
-            </Link>
-            <Link className="cm-action-card" to="/dashboard">
-              <i className="ti ti-puzzle" aria-hidden="true" />
+            </ActionCard>
+            <ActionCard as={Link} to="/dashboard">
+              <Icon name="puzzle" />
               <h3>Puzzles - Experimental</h3>
               <p className="cm-muted">Sharpen tactics</p>
-            </Link>
-            <Link className="cm-action-card" to="/dashboard">
-              <i className="ti ti-book" aria-hidden="true" />
+            </ActionCard>
+            <ActionCard as={Link} to="/dashboard">
+              <Icon name="book" />
               <h3>Lessons - Experimental</h3>
               <p className="cm-muted">Learn positions</p>
-            </Link>
-            <Link className="cm-action-card" to="/dashboard">
-              <i className="ti ti-award" aria-hidden="true" />
+            </ActionCard>
+            <ActionCard as={Link} to="/dashboard">
+              <Icon name="award" />
               <h3>Tournaments - Experimental</h3>
               <p className="cm-muted">Join and compete</p>
-            </Link>
-          </div>
-        </section>
+            </ActionCard>
+          </PanelBody>
+        </Panel>
 
-        <section className="cm-panel">
-          <div className="cm-panel-header">
-            <h2 className="cm-section-title">Recent games</h2>
-          </div>
-          <div className="cm-panel-body cm-list">
+        <Panel>
+          <PanelHeader title="Recent games" />
+          <PanelBody className="cm-list">
             {recentGames.map((game) => (
-              <div className="cm-list-row" key={game.opponent}>
+              <ListRow key={game.opponent}>
                 <Avatar avatar={null} name={game.opponent} className="avatar avatar-md" aria-hidden="true" />
                 <div className="min-w-0">
                   <p className="text-primary truncate">vs {game.opponent}</p>
                   <p className="cm-muted">{game.time}</p>
                 </div>
                 <div className="text-right">
-                  <span className={`badge ${game.badge}`}>{game.result}</span>
+                  <Badge variant={game.variant}>{game.result}</Badge>
                   <p className="cm-muted">{game.rating}</p>
                 </div>
-              </div>
+              </ListRow>
             ))}
-          </div>
-        </section>
+          </PanelBody>
+        </Panel>
       </div>
     </AppLayout>
   )

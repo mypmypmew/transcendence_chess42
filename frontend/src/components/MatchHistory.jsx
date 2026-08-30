@@ -1,8 +1,10 @@
+import { Badge, EmptyState, Icon, ListRow, Panel, PanelBody, PanelHeader } from './ui.jsx'
+
 const resultConfig = {
-  win: { label: 'Win', badge: 'badge badge-win' },
-  loss: { label: 'Loss', badge: 'badge badge-loss' },
-  draw: { label: 'Draw', badge: 'badge badge-draw' },
-  unknown: { label: 'Pending', badge: 'badge badge-accent' },
+  win: { label: 'Win', variant: 'win' },
+  loss: { label: 'Loss', variant: 'loss' },
+  draw: { label: 'Draw', variant: 'draw' },
+  unknown: { label: 'Pending', variant: 'accent' },
 }
 
 function formatDate(isoDate) {
@@ -54,22 +56,21 @@ function MatchHistory({
   isLoading = false,
 }) {
   return (
-    <section className="cm-panel" aria-labelledby="history-title">
-      <div className="cm-panel-header">
-        <div>
-          <p className="label">Games</p>
-          <h2 className="cm-section-title" id="history-title">Match history</h2>
-        </div>
-        <span className="badge badge-accent">{games.length}</span>
-      </div>
+    <Panel aria-labelledby="history-title">
+      <PanelHeader
+        action={<Badge>{games.length}</Badge>}
+        eyebrow="Games"
+        title="Match history"
+        titleId="history-title"
+      />
 
-      <div className="cm-panel-body cm-list">
+      <PanelBody className="cm-list">
         {isLoading ? (
           <p className="cm-muted">Loading matches…</p>
         ) : error ? (
           <p className="cm-muted">{error}</p>
         ) : games.length === 0 ? (
-          <p className="cm-muted">No matches yet</p>
+          <EmptyState title="No matches yet" />
         ) : (
           games.map((game) => {
             const opponent = getOpponent(game, currentUserId)
@@ -77,8 +78,8 @@ function MatchHistory({
             const config = resultConfig[result]
 
             return (
-              <article className="cm-list-row" key={game.id}>
-                <i className="ti ti-chess text-accent" aria-hidden="true" />
+              <ListRow as="article" key={game.id}>
+                <Icon className="text-accent" name="chess" />
                 <div className="min-w-0">
                   <p className="text-primary truncate">vs {opponent.username}</p>
                   <p className="cm-muted">
@@ -88,13 +89,13 @@ function MatchHistory({
                     <p className="cm-muted">Ended {formatDate(game.endedAt)}</p>
                   )}
                 </div>
-                <span className={config.badge}>{config.label}</span>
-              </article>
+                <Badge variant={config.variant}>{config.label}</Badge>
+              </ListRow>
             )
           })
         )}
-      </div>
-    </section>
+      </PanelBody>
+    </Panel>
   )
 }
 
