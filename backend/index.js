@@ -7,6 +7,7 @@ const socketAuth = require('./src/middlewares/socketAuth');
 const { GameService } = require('./src/services/gameService');
 const { MatchmakingService } = require('./src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
+const { registerGameHandlers } = require('./src/socket/gameSocket');
 let app = express();
 let PORT = 3000;
 const http = require('http');
@@ -39,6 +40,13 @@ io.on('connection', (socket) => {
     io,
     socket,
     matchmakingService,
+  });
+
+  // Connect this authenticated socket to the shared authoritative game state.
+  registerGameHandlers({
+    io,
+    socket,
+    gameService,
   });
 
   socket.on('client:ping', () => {
