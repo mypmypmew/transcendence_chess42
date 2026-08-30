@@ -95,10 +95,16 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		transports: ['websocket'],
 	});
 
+	// Store a replacement client created during the reconnect scenario.
+	let reconnectedBlackClient = null;
+
 	// Always close clients and the temporary server after the test.
 	t.after(async () => {
 		whiteClient.disconnect();
 		blackClient.disconnect();
+
+		if (reconnectedBlackClient)
+			reconnectedBlackClient.disconnect();
 
 		await new Promise((resolve) => {
 			io.close(resolve);
@@ -192,6 +198,19 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		to: 'e4',
 	});
 
+	const [
+		stateAfterMoveForWhite,
+		stateAfterMoveForBlack,
+	] = await Promise.all([
+		whiteMoveState,
+		blackMoveState,
+	]);
+
+	// The game room must receive one identical authoritative result.
+	assert.deepEqual(stateAfterMoveForWhite, stateAfterMoveForBlack);
+	assert.equal(stateAfterMoveForWhite.turn, 'b');
+	assert.notEqual(stateAfterMoveForWhite.fen, initialStateForWhite.fen);
+
 	// White attempts to move again while the server expects black.
 	const outOfTurnErrorEvent = waitForEvent(
 		whiteClient,
@@ -212,7 +231,7 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		/turn/i,
 	);
 
-	// Black now attempts on illegal move from e7 directly to e4.
+	// Black now attempts an illegal move from e7 directly to e4.
 	const illegalMoveErrorEvent = waitForEvent(
 		blackClient,
 		'game:error',
@@ -229,16 +248,38 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 	// chess.js validation must reject the move without changing the position.
 	assert.equal(illegalMoveError.message, 'Illegal move');
 
-	const [
-		stateAfterMoveForWhite,
-		stateAfterMoveForBlack,
-	] = await Promise.all([
-		whiteMoveState,
-		blackMoveState,
-	]);
+	// Simulate a temporary network interruption after the first legal move.
+	blackClient.disconnect();
 
-	// The game room must receive one identical authoritative result.
-	assert.deepEqual(stateAfterMoveForWhite, stateAfterMoveForBlack);
-	assert.equal(stateAfterMoveForWhite.turn, 'b');
-	assert.notEqual(stateAfterMoveForWhite.fen, initialStateForWhite.fen);
+	reconnectedBlackClient = createClient(serverUrl, {
+		auth: { userId: 2 },
+		transports: ['websocket'],
+
+		// Force a completely new Socket.IO connection for this user.
+		forceNew: true,
+	});
+
+	await waitForEvent(
+		reconnectedBlackClient,
+		'connect',
+	);
+
+	const restoredStateEvent = waitForEvent(
+		reconnectedBlackClient,
+		'game:state',
+	);
+
+	// The reconnected frontend repeats game:join using its current route gameId.
+	reconnectedBlackClient.emit('game:join', {
+		gameId: blackGame.gameId,
+	});
+
+	const restoredState = await restoredStateEvent;
+
+	// The backend keeps the authoritative game in memory during client disconnects.
+	assert.deepEqual(
+		restoredState,
+		stateAfterMoveForBlack,
+	);
+	assert.equal(restoredState.turn, 'b');
 });
