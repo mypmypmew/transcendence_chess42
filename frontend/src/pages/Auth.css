@@ -12,6 +12,7 @@
   background-repeat: no-repeat;
 }
 
+.auth-scene::after {
   content: "";
   position: absolute;
   inset: 0;
