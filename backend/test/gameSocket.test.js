@@ -412,7 +412,7 @@ test('broadcasts the final state after an authenticated resignation', async () =
 		{
 			roomName: 'game:42',
 			eventName: 'game:state',
-			payload: updatedGame,
+			payload: finishedGame,
 		},
 	]);
 });
