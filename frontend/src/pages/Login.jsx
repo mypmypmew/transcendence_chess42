@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import LegalFooter from '../components/LegalFooter.jsx'
 import ThemeToggle from '../components/ThemeToggle.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -172,6 +173,8 @@ function Login() {
             <span>New here?</span>
             <Link className="auth-link" to="/register">Sign up</Link>
           </footer>
+
+          <LegalFooter />
         </div>
       </section>
     </main>

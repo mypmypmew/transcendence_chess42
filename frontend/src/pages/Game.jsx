@@ -14,7 +14,7 @@ function Game() {
   } = useChessGame()
 
   return (
-    <AppLayout eyebrow="Game Screen" title="Play Chess">
+    <AppLayout eyebrow="Game Screen" title="Play Chess" showLegalFooter={false}>
       <ChessGame
         fen={fen}
         status={status}

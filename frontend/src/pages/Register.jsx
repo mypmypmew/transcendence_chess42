@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import LegalFooter from '../components/LegalFooter.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -302,6 +303,8 @@ function Register() {
             <span>Already have an account?</span>
             <Link className="auth-link" to="/login">Sign in</Link>
           </footer>
+
+          <LegalFooter />
         </div>
       </section>
     </main>

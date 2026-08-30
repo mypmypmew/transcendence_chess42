@@ -93,7 +93,7 @@ function Chat() {
     setMessageText('')
   }
   return (
-    <AppLayout eyebrow="Messages" title="Chat">
+    <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
 		<div className="cm-page-grid chat">
         <section className="cm-panel" aria-labelledby="chat-list-title">
           <div className="cm-panel-header">

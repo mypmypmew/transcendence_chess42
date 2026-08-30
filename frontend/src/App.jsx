@@ -11,6 +11,8 @@ import Profile from './pages/Profile'
 import Friends from './pages/Friends'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings'
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'
+import TermsOfService from './pages/legal/TermsOfService'
 
 function AuthLoadingScreen() {
   return (
@@ -66,6 +68,8 @@ function App() {
 
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/game-lobby" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
         <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
