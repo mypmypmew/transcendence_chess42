@@ -31,31 +31,44 @@ function registerMatchmakingHandlers({io, socket, matchmakingService,} = {}) {
 	socket.join(`user:${playerId}`);
 
 	socket.on('matchmaking:join', async () => {
-		// Never accept userId from the client payload.
-		// Use only the identity that socketAuth stored on this connection.
-		const result = await matchmakingService.join(playerId);
+		try {
+			// Never accept userId from the client payload.
+			// Use only the identity that socketAuth stored on this connection.
+			const result = await matchmakingService.join(playerId);
+	
+			// Tell the current client that it remains in the matchmaking queue.
+			if (result.status === 'WAITING') {
+				socket.emit('matchmaking:waiting');
+	
+				return;
+			}
 
-		// Tell the current client that it remains in the matchmaking queue.
-		if (result.status === 'WAITING') {
-			socket.emit('matchmaking:waiting');
-
-			return;
-		}
-
-		// Broadcast the authoritative game snapshot to both personal rooms.
-		// This also notifies the first playerId, whose original join request finished earlier with the WAITING status
-		if (result.status === 'MATCHED') {
-			const { game } = result;
-
-			io.to(`user:${game.whiteId}`).emit(
-				'matchmaking:matched',
-				game,
-			);
-
-			io.to(`user:${game.blackId}`).emit(
-				'matchmaking:matched',
-				game,
-			);
+			// Broadcast the authoritative game snapshot to both personal rooms.
+			// This also notifies the first playerId, whose original join request finished earlier with the WAITING status.
+			if (result.status === 'MATCHED') {
+				const { game } = result;
+	
+				io.to(`user:${game.whiteId}`).emit(
+					'matchmaking:matched',
+					game,
+				);
+	
+				io.to(`user:${game.blackId}`).emit(
+					'matchmaking:matched',
+					game,
+				);
+			}
+		} catch (error) {
+			// Convert service failures into a namespaced Socket.IO event.
+			// This prevents rejected handler promises from becoming unhandled errors.
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Unable to join matchmaking';
+			
+			socket.emit('matchmaking:error', {
+				message,
+			});
 		}
 	});
 
