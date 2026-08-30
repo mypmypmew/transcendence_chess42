@@ -2,7 +2,14 @@ import { useMemo, useState } from 'react'
 
 import Avatar from './Avatar.jsx'
 import UserProfileModal from './UserProfileModal.jsx'
-import { Button, EmptyState, IconButton, Panel, PanelBody, PanelHeader } from './ui.jsx'
+import {
+  Button,
+  EmptyState,
+  IconButton,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from './ui.jsx'
 import './Modal.css'
 const players = [
   { avatar: null, nickname: 'Serhii', rating: 1812, games: 200, isFriend: true },

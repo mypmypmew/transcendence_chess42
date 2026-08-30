@@ -2,7 +2,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
-import { Alert, Badge, Button, Icon, IconButton, ListRow, Panel, PanelBody, PanelHeader } from './ui.jsx'
+import {
+  Alert,
+  Badge,
+  Button,
+  Icon,
+  IconButton,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from './ui.jsx'
 
 function getMockMatchHistory(profileOwner) {
   // TODO: Replace the mock with backend match history.

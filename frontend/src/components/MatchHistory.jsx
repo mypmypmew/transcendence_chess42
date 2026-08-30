@@ -1,4 +1,12 @@
-import { Badge, EmptyState, Icon, ListRow, Panel, PanelBody, PanelHeader } from './ui.jsx'
+import {
+  Badge,
+  EmptyState,
+  Icon,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from './ui.jsx'
 
 const resultConfig = {
   win: { label: 'Win', variant: 'win' },
