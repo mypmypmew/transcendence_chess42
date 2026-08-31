@@ -55,9 +55,22 @@ async function findConversationsByUserId(userId) {
   });
 }
 
+async function findMessagesByConversationId(conversationId) {
+  return prisma.message.findMany({
+    where: { conversationId },
+    include: {
+      sender: PUBLIC_USER_SELECT,
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+}
+
+
+
 module.exports = {
   findConversationByPair,
   createConversation,
   findConversationById,
   findConversationsByUserId,
+  findMessagesByConversationId, 
 };
