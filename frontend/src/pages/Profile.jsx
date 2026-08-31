@@ -4,6 +4,17 @@ import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
 import UserProfileModal from '../components/UserProfileModal'
+import {
+  Alert,
+  Badge,
+  Button,
+  EmptyState,
+  Icon,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from '../components/ui.jsx'
 import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -142,8 +153,8 @@ function Profile() {
 	  title="My profile"
 	>
 	  <div className="cm-profile-grid">
-		<section className="cm-panel" aria-labelledby="profile-title">
-		  <div className="cm-panel-body flex flex-col items-center gap-5 text-center">
+		<Panel aria-labelledby="profile-title">
+		  <PanelBody className="flex flex-col items-center gap-5 text-center">
 			<input
 			  accept="image/*"
 			  hidden
@@ -165,28 +176,27 @@ function Profile() {
 			</div>
 
 			<div className="cm-list" aria-label="Profile details">
-			  <div className="cm-list-row">
-				<i className="ti ti-chart-bar text-accent" aria-hidden="true" />
+			  <ListRow>
+				<Icon className="text-accent" name="chart-bar" />
 				<span className="cm-muted">Rating</span>
 				<strong className="text-primary">{user.rating}</strong>
-			  </div>
-			  <div className="cm-list-row">
-				<i className="ti ti-mail text-accent" aria-hidden="true" />
+			  </ListRow>
+			  <ListRow>
+				<Icon className="text-accent" name="mail" />
 				<span className="cm-muted">Email</span>
 				<strong className="text-primary truncate">{user.email}</strong>
-			  </div>
+			  </ListRow>
 			</div>
 
 			{avatarPreview && (
 			  <p className="cm-muted">New avatar selected</p>
 			)}
 
-			<button className="btn btn-primary" type="button" onClick={openAvatarPicker}>
-			  <i className="ti ti-camera" aria-hidden="true" />
+			<Button icon="camera" type="button" onClick={openAvatarPicker}>
 			  Change avatar
-			</button>
-		  </div>
-		</section>
+			</Button>
+		  </PanelBody>
+		</Panel>
 
 		<MatchHistory
 		  games={games}
@@ -195,36 +205,28 @@ function Profile() {
 		  isLoading={isHistoryLoading}
 		/>
 
-		<section className="cm-panel" aria-labelledby="friends-title">
-		  <div className="cm-panel-header">
-			<div>
-			  <p className="label">Community</p>
-			  <h2 className="cm-section-title" id="friends-title">Friends list</h2>
-			</div>
-			<span className="badge badge-accent">{friends.length}</span>
-		  </div>
+		<Panel aria-labelledby="friends-title">
+		  <PanelHeader
+			action={<Badge>{friends.length}</Badge>}
+			eyebrow="Community"
+			title="Friends list"
+			titleId="friends-title"
+		  />
 
-		  <div className="cm-panel-body">
+		  <PanelBody>
 			{friendsError && (
-			  <div className="alert alert-error visible" role="alert">
-				<i className="ti ti-alert-circle" aria-hidden="true" />
-				{friendsError}
-			  </div>
+			  <Alert>{friendsError}</Alert>
 			)}
 
 			{isFriendsLoading ? (
-			  <div className="empty-state">
-				<p>Loading friends...</p>
-			  </div>
+			  <EmptyState title="Loading friends..." />
 			) : friends.length === 0 ? (
-			  <div className="empty-state">
-				<p>No friends yet</p>
-			  </div>
+			  <EmptyState title="No friends yet" />
 			) : (
 			  <div className="cm-list">
 				{friends.map((friendship) => (
-				  <button
-					className="cm-list-row"
+				  <ListRow
+					as="button"
 					key={friendship.friendshipId}
 					type="button"
 					onClick={() => handleOpenFriendProfile(friendship)}
@@ -240,13 +242,13 @@ function Profile() {
 					  <p className="cm-muted">Rating {friendship.user.rating}</p>
 					</div>
 
-					<i className="ti ti-chevron-right cm-muted" aria-hidden="true" />
-				  </button>
+					<Icon className="cm-muted" name="chevron-right" />
+				  </ListRow>
 				))}
 			  </div>
 			)}
-		  </div>
-		</section>
+		  </PanelBody>
+		</Panel>
 	  </div>
 
 	  {selectedFriend && (

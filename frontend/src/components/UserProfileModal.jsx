@@ -2,6 +2,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
+import {
+  Alert,
+  Badge,
+  Button,
+  Icon,
+  IconButton,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from './ui.jsx'
 
 function getMockMatchHistory(profileOwner) {
   // TODO: Replace the mock with backend match history.
@@ -41,14 +52,14 @@ function getMatchResult(match, profileOwner) {
 
 function getResultBadgeClass(result) {
   if (result === 'Win') {
-    return 'badge badge-win'
+    return 'win'
   }
 
   if (result === 'Loss') {
-    return 'badge badge-loss'
+    return 'loss'
   }
 
-  return 'badge badge-draw'
+  return 'draw'
 }
 
 function getOpponent(match, profileOwner) {
@@ -98,8 +109,10 @@ function UserProfileModal({
   return (
     <div className="cm-modal cm-modal--nested" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
       <button className="cm-modal__backdrop" type="button" aria-label="Close profile modal" onClick={onClose} />
-      <div className="cm-panel cm-modal__content cm-modal__content--sm">
-        <div className="cm-panel-header">
+      <Panel as="div" className="cm-modal__content cm-modal__content--sm">
+        <PanelHeader
+          action={<IconButton aria-label="Close profile modal" icon="x" onClick={onClose} />}
+        >
           <div className="flex items-center gap-3">
             <Avatar avatar={player.avatar} name={player.nickname} className="avatar avatar-md" aria-hidden="true" />
             <div>
@@ -107,17 +120,11 @@ function UserProfileModal({
               <p className="cm-muted">Rating {player.rating}</p>
             </div>
           </div>
-          <button className="btn btn-ghost btn-icon" type="button" aria-label="Close profile modal" onClick={onClose}>
-            <i className="ti ti-x" aria-hidden="true" />
-          </button>
-        </div>
+        </PanelHeader>
 
-        <div className="cm-panel-body">
+        <PanelBody>
           {actionError && (
-            <div className="alert alert-error visible" role="alert">
-              <i className="ti ti-alert-circle" aria-hidden="true" />
-              {actionError}
-            </div>
+            <Alert>{actionError}</Alert>
           )}
 
           <div className="cm-list" aria-label={`${player.nickname} match history`}>
@@ -126,36 +133,36 @@ function UserProfileModal({
               const opponent = getOpponent(match, player.nickname)
 
               return (
-                <article className="cm-list-row" key={match.id}>
-                  <i className="ti ti-chess-rook text-accent" aria-hidden="true" />
+                <ListRow as="article" key={match.id}>
+                  <Icon className="text-accent" name="chess-rook" />
                   <div className="min-w-0">
                     <p className="text-primary truncate">vs {opponent}</p>
                     <p className="cm-muted">{match.moves} moves</p>
                   </div>
-                  <span className={getResultBadgeClass(result)}>{result}</span>
-                </article>
+                  <Badge variant={getResultBadgeClass(result)}>{result}</Badge>
+                </ListRow>
               )
             })}
           </div>
 		  
 		  <div className="cm-modal__actions">
-            <Link className="btn btn-primary" to="/chat" onClick={onClose}>
+            <Button as={Link} to="/chat" onClick={onClose}>
               Message
-            </Link>
-            <Link className="btn btn-ghost" to="/game-lobby" onClick={onClose}>
+            </Button>
+            <Button as={Link} to="/game-lobby" variant="ghost" onClick={onClose}>
               Challenge
-            </Link>
-            <button
-              className="btn btn-ghost"
+            </Button>
+            <Button
               type="button"
               disabled={isFriendActionDisabled}
+              variant="ghost"
               onClick={() => runAction('friend', friendAction)}
             >
               {isFriendActionPending ? 'Updating...' : friendActionLabel}
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
+        </PanelBody>
+      </Panel>
     </div>
   )
 }

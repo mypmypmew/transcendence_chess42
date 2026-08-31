@@ -1,23 +1,24 @@
 import { useTheme } from '../context/ThemeContext.jsx'
+import { Button } from './ui.jsx'
 
 function ThemeToggle({ className = '' }) {
   const { theme, isLightTheme, toggleTheme } = useTheme()
-  const iconClass = isLightTheme ? 'ti ti-sun' : 'ti ti-moon'
+  const icon = isLightTheme ? 'sun' : 'moon'
   const nextThemeLabel = isLightTheme ? 'dark' : 'light'
   const label = `Switch to ${nextThemeLabel} theme`
-  const classes = `btn btn-ghost theme-toggle ${className}`.trim()
 
   return (
-	<button
-	  className={classes}
+	<Button
+	  className={`theme-toggle ${className}`.trim()}
+	  icon={icon}
 	  type="button"
 	  onClick={toggleTheme}
 	  aria-label={label}
 	  title={label}
+	  variant="ghost"
 	>
-	  <i className={iconClass} aria-hidden="true" />
 	  <span>{theme}</span>
-	</button>
+	</Button>
   )
 }
 
