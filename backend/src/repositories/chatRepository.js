@@ -1,5 +1,13 @@
 const prisma = require('../db/prisma');
 
+const PUBLIC_USER_SELECT = {
+  select: {
+    id: true,
+    username: true,
+    rating: true,
+  },
+};
+
 function canonicalPair(firstUserId, secondUserId) {
   if (firstUserId < secondUserId) {
     return { userAId: firstUserId, userBId: secondUserId };
@@ -31,8 +39,25 @@ async function findConversationById(conversationId) {
   });
 }
 
+async function findConversationsByUserId(userId) {
+  return prisma.conversation.findMany({
+    where: {
+      OR: [
+        { userAId: userId },
+        { userBId: userId },
+      ],
+    },
+    include: {
+      userA: PUBLIC_USER_SELECT,
+      userB: PUBLIC_USER_SELECT,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
 module.exports = {
   findConversationByPair,
   createConversation,
   findConversationById,
+  findConversationsByUserId,
 };
