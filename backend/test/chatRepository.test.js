@@ -80,3 +80,22 @@ test('message history is ordered oldest first with public senders', async () => 
     prisma.message.findMany = originalFindMany;
   }
 });
+
+test('message creation returns the sender for broadcasting', async () => {
+  const originalCreate = prisma.message.create;
+  let query;
+
+  prisma.message.create = async (receivedQuery) => {
+    query = receivedQuery;
+    return { id: 1 };
+  };
+
+  try {
+    await chatRepository.createMessage({ conversationId: 12, senderId: 5, body: 'hello' });
+
+    assert.deepEqual(query.data, { conversationId: 12, senderId: 5, body: 'hello' });
+    assert.deepEqual(query.include.sender.select, { id: true, username: true, rating: true });
+  } finally {
+    prisma.message.create = originalCreate;
+  }
+});
