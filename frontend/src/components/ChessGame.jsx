@@ -45,15 +45,24 @@ function ChessGame({
   isGameOver,
   gameOverInfo,
   playerColor,
+  isPlayerTurn = true,
   boardOrientation = 'white',
   isWaitingForServer = false,
+  socketStatus = 'connected',
+  showRestart = true,
   onMove,
   onResign,
   onRestart,
 }) {
   const [isModalDismissed, setIsModalDismissed] = useState(false)
   const [pendingPromotion, setPendingPromotion] = useState(null)
-  const isBoardDisabled = isGameOver || pendingPromotion !== null || isWaitingForServer
+  // Disable interaction until the authenticated player is allowed to send a move.
+  const isBoardDisabled = 
+    isGameOver ||
+    pendingPromotion !== null ||
+    isWaitingForServer ||
+    !isPlayerTurn ||
+    socketStatus !== 'connected'
   const normalizedOrientation = normalizeBoardOrientation(boardOrientation)
   const playerColorCode = colorCode(playerColor)
 
@@ -71,6 +80,18 @@ function ChessGame({
     }
 
     return onMove(sourceSquare, targetSquare)
+  }
+
+  function canDragPiece({ piece }) {
+    if (isBoardDisabled) {
+      return false
+    }
+
+    // Allow the player to drag only pieces that match the color assigned by the backend.
+    return (
+      !playerColorCode ||
+      piece?.pieceType?.startsWith(playerColorCode)
+    )
   }
 
   function handlePromotionChoice(promotion) {
@@ -94,6 +115,7 @@ function ChessGame({
     position: fen,
     boardOrientation: normalizedOrientation,
     onPieceDrop: handlePieceDrop,
+    canDragPiece,
     allowDragging: !isBoardDisabled,
   }
 
@@ -103,7 +125,7 @@ function ChessGame({
         {playerColorCode ? (
           <Button
             type="button"
-            disabled={isGameOver || isWaitingForServer}
+            disabled={isGameOver || isWaitingForServer || socketStatus !== 'connected'}
             variant="ghost"
             onClick={() => onResign(playerColorCode)}
           >
@@ -131,9 +153,11 @@ function ChessGame({
           </>
         )}
 
+        {showRestart && (
         <Button type="button" disabled={isWaitingForServer} variant="ghost" onClick={handleRestart}>
           Restart
         </Button>
+        )}
       </div>
 
       <div className="cm-board-layout">
