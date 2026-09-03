@@ -1,14 +1,36 @@
 import { useEffect, useState } from 'react'
 import { useSocket } from '../context/SocketContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+
+function getPlayerColor(game, userId) {
+	// Match the authenticated user with the color assigned by the backend.
+	if (game?.whiteId === userId) {
+		return 'w'
+	}
+
+	if (game?.blackId === userId) {
+		return 'b'
+	}
+
+	return null
+}
 
 function useMultiplayerGame(gameId) {
+	const { user } = useAuth()
 	const { socket, status: socketStatus } = useSocket()
 	const [game, setGame] = useState(null)
 	const [gameError, setGameError] = useState(null)
 	// Block repeated actions while the backend validates the previous request.
 	const [isWaitingForServer, setIsWaitingForServer] = useState(false)
-
 	const isValidGameId = Number.isInteger(gameId) && gameId > 0
+	const playerColor = getPlayerColor(game, user?.id)
+	// Show the board from the side assigned to the authenticated player.
+	const boardOrientation = playerColor === 'b' ? 'black' : 'white'
+	// Enable moves only when the server reports this player's turn.
+	const isPlayerTurn =
+		game?.status === 'IN_PROGRESS' &&
+		game.turn === playerColor
+	const isGameOver = game?.status === 'COMPLETED'
 
 	useEffect(() => {
 		if (!isValidGameId) {
@@ -107,6 +129,10 @@ function useMultiplayerGame(gameId) {
 		isLoading: isValidGameId && game === null && gameError === null,
 		isWaitingForServer,
 		socketStatus,
+		playerColor,
+		boardOrientation,
+		isPlayerTurn,
+		isGameOver,
 		makeMove,
 		resignGame,
 	}
