@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Chess } from 'chess.js'
 import { useSocket } from '../context/SocketContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -13,6 +14,94 @@ function getPlayerColor(game, userId) {
 	}
 
 	return null
+}
+
+function createPosition(fen) {
+	if (!fen) {
+		return null
+	}
+
+	try {
+		// Read the authoritative FEN only for UI messages without changing the server state.
+		return new Chess(fen)
+	} catch {
+		return null
+	}
+}
+
+function getWinnerLabel(result) {
+	if (result === 'WHITE_WIN') {
+		return 'White'
+	}
+
+	if (result === 'BLACK_WIN') {
+		return 'Black'
+	}
+
+	return null
+}
+
+function getGameOverInfo(game) {
+	if (game?.status !== 'COMPLETED') {
+		return null
+	}
+
+	const position = createPosition(game.fen)
+
+	if (game.result === 'DRAW') {
+		return {
+			type: position?.isStalemate() ? 'stalemate' : 'draw',
+		}
+	}
+
+	const winner = getWinnerLabel(game.result)
+
+	if (!winner) {
+		return null
+	}
+
+	// A completed win without checkmate is currently produced by resignation.
+	return {
+		type: position?.isCheckmate() ? 'checkmate' : 'resignation',
+		winner,
+	}
+}
+
+function getDisplayStatus(game, playerColor, socketStatus) {
+	if (!game) {
+		return socketStatus === 'connected'
+			? 'Loading game...'
+			: 'Connecting...'
+	}
+
+	const gameOverInfo = getGameOverInfo(game)
+
+	if (gameOverInfo?.type === 'stalemate') {
+		return 'Stalemate'
+	}
+
+	if (gameOverInfo?.type === 'draw') {
+		return 'Draw'
+	}
+
+	if (gameOverInfo?.winner) {
+		return `${gameOverInfo.winner} wins`
+	}
+
+	if (socketStatus !== 'connected') {
+		return 'Connection lost'
+	}
+
+	const turnLabel =
+		game.turn === playerColor
+			? 'Your turn'
+			: "Opponent's turn"
+
+	const position = createPosition(game.fen)
+
+	return position?.isCheck()
+		? `${turnLabel} - check`
+		: turnLabel
 }
 
 function useMultiplayerGame(gameId) {
@@ -31,6 +120,8 @@ function useMultiplayerGame(gameId) {
 		game?.status === 'IN_PROGRESS' &&
 		game.turn === playerColor
 	const isGameOver = game?.status === 'COMPLETED'
+	const gameOverInfo = getGameOverInfo(game)
+	const displayStatus = getDisplayStatus(game, playerColor, socketStatus)
 
 	useEffect(() => {
 		if (!isValidGameId) {
@@ -133,6 +224,8 @@ function useMultiplayerGame(gameId) {
 		boardOrientation,
 		isPlayerTurn,
 		isGameOver,
+		gameOverInfo,
+		displayStatus,
 		makeMove,
 		resignGame,
 	}
