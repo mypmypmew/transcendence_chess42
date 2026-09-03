@@ -48,6 +48,16 @@ function useMatchmaking() {
 		}
 	}, [socket, navigate])
 
+	useEffect(() => {
+		return () => {
+			// Remove this user from matchmaking when the lobby is closed or replaced by the game page.
+			// The backend safely ignores this event if the user was already matched or cancelled.
+			if (socket.connected) {
+				socket.emit('matchmaking:leave')
+			}
+		}
+	}, [socket])
+
 	function startSearch() {
 		// Do not emit matchmaking events before the authenticated socket is connected.
 		if (!socket.connected) {
