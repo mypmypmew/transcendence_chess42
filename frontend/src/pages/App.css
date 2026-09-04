@@ -471,6 +471,13 @@ button.cm-list-row:hover,
   height: 100%;
 }
 
+/* Override react-chessboard's pointer cursor for pieces the current player cannot move. */
+.cm-chessboard-wrapper[data-board-disabled='true'] [data-piece],
+.cm-chessboard-wrapper[data-player-color='w'] [data-piece^='b'],
+.cm-chessboard-wrapper[data-player-color='b'] [data-piece^='w'] {
+  cursor: default !important;
+}
+
 .cm-table {
   width: 100%;
   border-collapse: collapse;
