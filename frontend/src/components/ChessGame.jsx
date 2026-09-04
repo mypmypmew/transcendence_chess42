@@ -193,7 +193,7 @@ function ChessGame({
         )}
 
         <Panel className="cm-game-card cm-chessboard-card">
-          <div className="cm-chessboard-wrapper">
+          <div className="cm-chessboard-wrapper" data-board-disabled={isBoardDisabled} data-player-color={playerColorCode}>
             <Chessboard options={chessboardOptions} />
           </div>
         </Panel>
