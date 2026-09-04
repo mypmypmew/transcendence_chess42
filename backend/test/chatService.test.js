@@ -74,3 +74,36 @@ test('getMessages rejects a non-participant with 404', async (t) => {
 
   assert.equal(findMessages.mock.callCount(), 0);
 });
+
+test('openConversation rejects a self-conversation and invalid ids', async (t) => {
+  const create = t.mock.method(chatRepository, 'createConversation', async () => ({ id: 1 }));
+
+  for (const badId of [ALICE.id, 0, -1, 1.5, 'abc', null]) {
+    await assert.rejects(
+      chatService.openConversation(ALICE.id, badId),
+      (err) => err.status === 400,
+    );
+  }
+
+  assert.equal(create.mock.callCount(), 0);
+});
+
+test('openConversation reuses an existing conversation', async (t) => {
+  t.mock.method(chatRepository, 'findConversationByPair', async () => fakeConversation());
+  const create = t.mock.method(chatRepository, 'createConversation', async () => ({ id: 99 }));
+
+  const conversation = await chatService.openConversation(ALICE.id, BOB.id);
+
+  assert.equal(conversation.id, 12);
+  assert.equal(create.mock.callCount(), 0);
+});
+
+test('listConversations returns the other participant', async (t) => {
+  t.mock.method(chatRepository, 'findConversationsByUserId', async () => [fakeConversation()]);
+
+  const asAlice = await chatService.listConversations(ALICE.id);
+  const asBob = await chatService.listConversations(BOB.id);
+
+  assert.equal(asAlice[0].user.username, 'bob');
+  assert.equal(asBob[0].user.username, 'alice');
+});
