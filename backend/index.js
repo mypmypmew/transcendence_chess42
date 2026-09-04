@@ -3,6 +3,7 @@ let cors = require('cors');
 let cookieParser = require('cookie-parser');
 let authRoutes = require('./src/routes/authRoutes');
 const gameRoutes = require('./src/routes/gameRoutes');
+const chatRoutes = require('./src/routes/chatRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
 let app = express();
 let PORT = 3000;
@@ -38,6 +39,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/conversations', chatRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
