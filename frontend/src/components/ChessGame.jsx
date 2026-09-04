@@ -151,6 +151,42 @@ function ChessGame({
     return onMove(sourceSquare, targetSquare)
   }
 
+  function handleSquareClick({ piece, square}) {
+    if (isBoardDisabled) {
+      setSelectedSquare(null)
+      return
+    }
+
+    // A second click on a highlighted square submits the selected legal move.
+    if (selectedSquare && legalMoveSquares.includes(square)) {
+      const chess = new Chess(fen)
+      const selectedPiece = chess.get(selectedSquare)
+
+      setSelectedSquare(null)
+
+      // Open the existing promotion selector when a pawn reachesits final rank.
+      if (selectedPiece?.type === 'p' &&
+        ((selectedPiece.color === 'w' && square[1] === '8') ||
+        (selectedPiece.color === 'b' && square[1] === '1'))
+      ) {
+        setPendingPromotion({
+          sourceSquare: selectedSquare,
+          targetSquare: square,
+        })
+        return
+      }
+
+      onMove(selectedSquare, square)
+      return
+    }
+
+    // Clicking another own piece replaces the current selection and its hints.
+    handlePieceSelection({
+      piece,
+      square,
+    })
+  }
+
   function canDragPiece({ piece }) {
     if (isBoardDisabled) {
       return false
@@ -184,11 +220,11 @@ function ChessGame({
     position: fen,
     boardOrientation: normalizedOrientation,
     onPieceDrop: handlePieceDrop,
-    canDragPiece,
-    onPieceClick: handlePieceSelection,
+    onSquareClick: handleSquareClick,
     onPieceDrag: handlePieceSelection,
-    squareStyles: moveHintStyles,
+    canDragPiece,
     allowDragging: !isBoardDisabled,
+    squareStyles: moveHintStyles,
   }
 
   return (
