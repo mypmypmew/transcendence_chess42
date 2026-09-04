@@ -7,20 +7,27 @@ function conversationRoom(conversationId) {
 
 function registerChatHandlers(io, socket) {
     socket.on('chat:join', async (conversationId, callback) => {
-        const conversation = await chatRepository.findConversationById(conversationId);
-        
-        if (!conversation) {
-            return callback({ error: 'Conversation not found' });
-        }
+        try {
+            const conversation = await chatRepository.findConversationById(conversationId);
 
-        const userId = socket.data.userId;
+            if (!conversation) {
+                return callback({ error: 'Conversation not found' });
+            }
 
-        if (conversation.userAId !== userId && conversation.userBId !== userId) {
-            return callback({ error: 'Conversation not found' });
+            const userId = socket.data.userId;
+
+            if (conversation.userAId !== userId && conversation.userBId !== userId) {
+                return callback({ error: 'Conversation not found' });
+            }
+
+            socket.join(conversationRoom(conversationId));
+            callback({ ok: true });
+        } catch (err) {
+            console.error('chat:join failed:', err);
+            callback({ error: 'Could not join conversation' });
         }
-        socket.join(conversationRoom(conversationId));
-        callback({ ok: true });
     });
+
     socket.on('chat:message', async (payload, callback) => {
         try {
             const conversationId = payload.conversationId;
