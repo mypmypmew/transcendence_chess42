@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Chess } from 'chess.js'
 import { Chessboard } from 'react-chessboard'
 import GameOverModal from './GameOverModal.jsx'
 import {
@@ -39,6 +40,37 @@ function isPromotionMove(piece, targetSquare) {
   )
 }
 
+function getLegalMoveSquares(fen, sourceSquare, playerColorCode) {
+  if (!fen || !sourceSquare || !playerColorCode) {
+    return []
+  }
+
+  try {
+    // Recreate the current server position only to calculate visual move hints.
+    // The backend remains authoritative and validates every submittedmove again.
+    const chess = new Chess(fen)
+    const selectedPiece = chess.get(sourceSquare)
+
+    // Show hints only for the current player's piece when it is their turn.
+    if (!selectedPiece ||
+      selectedPiece.color !== playerColorCode ||
+      chess.turn() !== playerColorCode
+    ) {
+      return []
+    }
+
+    return chess
+      .moves({
+        square: sourceSquare,
+        verbose: true,
+      })
+      .map((move) => move.to)
+  } catch {
+    // Ignore an invalid or temporarily unavailable position instead of breaking the board.
+    return []
+  }
+}
+
 function ChessGame({
   fen,
   status,
@@ -56,6 +88,8 @@ function ChessGame({
 }) {
   const [isModalDismissed, setIsModalDismissed] = useState(false)
   const [pendingPromotion, setPendingPromotion] = useState(null)
+  // Remember the selected source square so all legal destinations can be highlighted.
+  const [selectedSquare, setSelectedSquare] = useState(null)
   // Disable interaction until the authenticated player is allowed to send a move.
   const isBoardDisabled = 
     isGameOver ||
@@ -65,8 +99,43 @@ function ChessGame({
     socketStatus !== 'connected'
   const normalizedOrientation = normalizeBoardOrientation(boardOrientation)
   const playerColorCode = colorCode(playerColor)
+  const legalMoveSquares = getLegalMoveSquares(
+    fen,
+    selectedSquare,
+    playerColorCode,
+  )
+
+  const moveHintStyles = legalMoveSquares.reduce(
+    (styles, square) => ({
+      ...styles,
+      [square]: {
+        background:
+          'radial-gradient(circle, rgba(118, 150, 86, 0.75) 0 22%, transparent 24%)',
+      },
+    }),
+    legalMoveSquares.length > 0
+      ? {
+          [selectedSquare]: {
+            boxShadow: 'inset 0 0 0 4px rgba(118, 150, 86, 0.8)',
+          },
+        }
+      : {},
+  )
+
+  function handlePieceSelection({ piece, square }) {
+    if (isBoardDisabled || !piece?.pieceType?.startsWith(playerColorCode)) {
+      setSelectedSquare(null)
+      return
+    }
+
+    // Selecting or dragging an available piece reveals all of its legal destinations.
+    setSelectedSquare(square)
+  }
 
   function handlePieceDrop({ piece, sourceSquare, targetSquare }) {
+    // Remove old hints after the player finishes the drag attempt.
+    setSelectedSquare(null)
+    
     if (isBoardDisabled || !targetSquare) {
       return false
     }
@@ -116,6 +185,9 @@ function ChessGame({
     boardOrientation: normalizedOrientation,
     onPieceDrop: handlePieceDrop,
     canDragPiece,
+    onPieceClick: handlePieceSelection,
+    onPieceDrag: handlePieceSelection,
+    squareStyles: moveHintStyles,
     allowDragging: !isBoardDisabled,
   }
 
