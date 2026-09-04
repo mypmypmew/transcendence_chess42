@@ -32,6 +32,11 @@ function Game() {
     navigate('/game-lobby')
   }
 
+  function returnToDashboard() {
+    // Leave the finished game while keeping the normal authenticated navigation flow.
+    navigate('/dashboard')
+  }
+
   if (isLoading) {
     return (
       <AppLayout eyebrow="Game Screen" title="Multiplayer Chess" showLegalFooter={false}>
@@ -91,6 +96,7 @@ function Game() {
         onMove={makeMove}
         onResign={resignGame}
         onRestart={returnToLobby}
+        onExit={returnToDashboard}
       />
     </AppLayout>
   )
