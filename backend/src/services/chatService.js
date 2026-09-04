@@ -44,7 +44,26 @@ async function openConversation(userId, otherUserId) {
   return chatRepository.createConversation(userId, otherUserId);
 }
 
+async function getMessages(userId, conversationId) {
+  if (!Number.isInteger(conversationId) || conversationId <= 0) {
+    throw httpError(404, 'Conversation not found');
+  }
+
+  const conversation = await chatRepository.findConversationById(conversationId);
+
+  if (!conversation) {
+    throw httpError(404, 'Conversation not found');
+  }
+
+  if (conversation.userAId !== userId && conversation.userBId !== userId) {
+    throw httpError(404, 'Conversation not found');
+  }
+
+  return chatRepository.findMessagesByConversationId(conversationId);
+}
+
 module.exports = {
   listConversations,
   openConversation,
+  getMessages,
 };
