@@ -26,6 +26,25 @@ async function listConversations(userId) {
   return conversations.map((conversation) => toConversationSummary(conversation, userId));
 }
 
+async function openConversation(userId, otherUserId) {
+  if (!Number.isInteger(otherUserId) || otherUserId <= 0) {
+    throw httpError(400, 'A valid user id is required');
+  }
+
+  if (otherUserId === userId) {
+    throw httpError(400, 'Cannot open a conversation with yourself');
+  }
+
+  const existing = await chatRepository.findConversationByPair(userId, otherUserId);
+
+  if (existing) {
+    return existing;
+  }
+
+  return chatRepository.createConversation(userId, otherUserId);
+}
+
 module.exports = {
   listConversations,
+  openConversation,
 };
