@@ -47,7 +47,7 @@ function getLegalMoveSquares(fen, sourceSquare, playerColorCode) {
 
   try {
     // Recreate the current server position only to calculate visual move hints.
-    // The backend remains authoritative and validates every submittedmove again.
+    // The backend remains authoritative and validates every submitted move again.
     const chess = new Chess(fen)
     const selectedPiece = chess.get(sourceSquare)
 
@@ -308,7 +308,7 @@ function ChessGame({
         </Panel>
       </div>
 
-      {isGameOver && !isModalDismissed && (
+      {isGameOver && isModalDismissed && (
         <div className="flex gap-3" aria-label="Finished game navigation">
           {/* Keep navigation available after the player closes the game-over modal. */}
           <Button icon="refresh" type="button" onClick={handleRestart}>
