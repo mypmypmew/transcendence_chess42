@@ -50,3 +50,27 @@ test('sendMessage trims the stored body', async (t) => {
 
   assert.equal(createMessage.mock.calls[0].arguments[0].body, 'hello');
 });
+
+test('sendMessage rejects a non-participant with 404', async (t) => {
+  t.mock.method(chatRepository, 'findConversationById', async () => fakeConversation());
+  const createMessage = t.mock.method(chatRepository, 'createMessage', async () => ({ id: 1 }));
+
+  await assert.rejects(
+    chatService.sendMessage(999, 12, 'hello'),
+    (err) => err.status === 404,
+  );
+
+  assert.equal(createMessage.mock.callCount(), 0);
+});
+
+test('getMessages rejects a non-participant with 404', async (t) => {
+  t.mock.method(chatRepository, 'findConversationById', async () => fakeConversation());
+  const findMessages = t.mock.method(chatRepository, 'findMessagesByConversationId', async () => []);
+
+  await assert.rejects(
+    chatService.getMessages(999, 12),
+    (err) => err.status === 404,
+  );
+
+  assert.equal(findMessages.mock.callCount(), 0);
+});
