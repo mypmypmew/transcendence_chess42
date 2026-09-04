@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Chess } from 'chess.js'
 import { useSocket } from '../context/SocketContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { getGame as getGameDetails } from '../api/gameApi.js'
 
 function getPlayerColor(game, userId) {
 	// Match the authenticated user with the color assigned by the backend.
@@ -11,6 +12,23 @@ function getPlayerColor(game, userId) {
 
 	if (game?.blackId === userId) {
 		return 'b'
+	}
+
+	return null
+}
+
+function getOpponent(gameDetails, userId) {
+	if (!gameDetails || !userId) {
+		return null
+	}
+
+	// Select the other participant relative to the authenticated player.
+	if (gameDetails.white?.id === userId) {
+		return gameDetails.black
+	}
+
+	if (gameDetails.black?.id === userId) {
+		return gameDetails.white
 	}
 
 	return null
@@ -109,10 +127,14 @@ function useMultiplayerGame(gameId) {
 	const { socket, status: socketStatus } = useSocket()
 	const [game, setGame] = useState(null)
 	const [gameError, setGameError] = useState(null)
+	// Keep participant details separate from the frequently updated Socket.IO snapshot.
+	const [gameDetails, setGameDetails] = useState(null)
+	const [gameDetailsError, setGameDetailsError] = useState(null)
 	// Block repeated actions while the backend validates the previous request.
 	const [isWaitingForServer, setIsWaitingForServer] = useState(false)
 	const isValidGameId = Number.isInteger(gameId) && gameId > 0
 	const playerColor = getPlayerColor(game, user?.id)
+	const opponent = getOpponent(gameDetails, user?.id)
 	// Show the board from the side assigned to the authenticated player.
 	const boardOrientation = playerColor === 'b' ? 'black' : 'white'
 	// Enable moves only when the server reports this player's turn.
@@ -122,6 +144,40 @@ function useMultiplayerGame(gameId) {
 	const isGameOver = game?.status === 'COMPLETED'
 	const gameOverInfo = getGameOverInfo(game)
 	const displayStatus = getDisplayStatus(game, playerColor, socketStatus)
+
+	useEffect(() => {
+		if (!isValidGameId) {
+			return undefined
+		}
+
+		let isCancelled = false
+
+		async function loadGameDetails() {
+			try {
+				// REST supplies stable participant details that are not repeated in socket snapshots.
+				const response = await getGameDetails(gameId)
+
+				if (!isCancelled) {
+					setGameDetails(response.game)
+					setGameDetailsError(null)
+				}
+			} catch (error) {
+				if (!isCancelled) {
+					setGameDetails(null)
+					setGameDetailsError(
+						error?.message || 'Unable to load opponent details'
+					)
+				}
+			}
+		}
+
+		loadGameDetails()
+
+		// Ignore a late response after leaving this game route.
+		return () => {
+			isCancelled = true
+		}
+	}, [gameId, isValidGameId])
 
 	useEffect(() => {
 		if (!isValidGameId) {
@@ -216,6 +272,9 @@ function useMultiplayerGame(gameId) {
 
 	return {
 		game,
+		gameDetails,
+		opponent,
+		gameDetailsError,
 		gameError: isValidGameId ? gameError : 'Invalid game ID',
 		isLoading: isValidGameId && game === null && gameError === null,
 		isWaitingForServer,
