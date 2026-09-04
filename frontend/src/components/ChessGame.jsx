@@ -85,6 +85,7 @@ function ChessGame({
   onMove,
   onResign,
   onRestart,
+  onExit,
 }) {
   const [isModalDismissed, setIsModalDismissed] = useState(false)
   const [pendingPromotion, setPendingPromotion] = useState(null)
@@ -306,6 +307,21 @@ function ChessGame({
           </div>
         </Panel>
       </div>
+
+      {isGameOver && !isModalDismissed && (
+        <div className="flex gap-3" aria-label="Finished game navigation">
+          {/* Keep navigation available after the player closes the game-over modal. */}
+          <Button icon="refresh" type="button" onClick={handleRestart}>
+            Play again
+          </Button>
+
+          {onExit && (
+            <Button type="button" variant="ghost" onClick={onExit}>
+              Back to dashboard
+            </Button>
+          )}
+        </div>
+      )}
 
       {isGameOver && !isModalDismissed && (
         <GameOverModal
