@@ -349,6 +349,7 @@ function ChessGame({
           gameOverInfo={gameOverInfo}
           onClose={() => setIsModalDismissed(true)}
           onRestart={handleRestart}
+          onExit={onExit}
         />
       )}
     </>
