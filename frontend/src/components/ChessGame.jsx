@@ -272,54 +272,55 @@ function ChessGame({
       </div>
 
       <div className="cm-board-layout">
-        <Panel className="cm-game-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="label">Game status</p>
-              <h2 className="cm-section-title">{status}</h2>
-            </div>
-
-            {/* Keep opponent details close to the board without adding another full-width panel. */}
-            {opponent !== undefined && (
-              <div>
-                <p className="label">Opponent</p>
-                {opponent ? (
-                  <>
-                    <h2 className="cm-section-title">{opponent.username}</h2>
-                    <p className="text-muted">Rating: {opponent.rating}</p>
-                  </>
-                ) : (
-                  <p className="text-muted">
-                    {opponentError || 'Loading...'}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <Icon className="text-accent" name="chess-knight" />
-          </div>
-        </Panel>
-
-        {pendingPromotion && !isGameOver && (
+        <div className="flex flex-col gap-3">
           <Panel className="cm-game-card">
-            <p className="label">Pawn promotion</p>
-            <h2 className="cm-section-title">Choose a piece</h2>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="label">Game status</p>
+                <h2 className="cm-section-title">{status}</h2>
+              </div>
 
-            <div className="flex gap-3">
-              {PROMOTION_OPTIONS.map((option) => (
-                <Button
-                  type="button"
-                  key={option.value}
-                  disabled={isWaitingForServer}
-                  variant="ghost"
-                  onClick={() => handlePromotionChoice(option.value)}
-                >
-                  {option.label}
-                </Button>
-              ))}
+              <Icon className="text-accent" name="chess-knight" />
             </div>
           </Panel>
-        )}
+
+          <Panel className="cm-game-card">
+            {/* Display public opponent details in a separate compact card. */}
+            <p className="label">Opponent</p>
+            {opponent ? (
+              <>
+                <h2 className="cm-section-title">{opponent.username}</h2>
+                <p className="text-muted">Rating: {opponent.rating}</p>
+              </>
+            ) : (
+              <p className="text-muted">
+                {opponentError || 'Loading...'}
+              </p>
+            )}
+          </Panel>
+          
+          {pendingPromotion && !isGameOver && (
+            <Panel className="cm-game-card">
+              <p className="label">Pawn promotion</p>
+              <h2 className="cm-section-title">Choose a piece</h2>
+
+              <div className="flex gap-3">
+                {PROMOTION_OPTIONS.map((option) => (
+                  <Button
+                    type="button"
+                    key={option.value}
+                    disabled={isWaitingForServer}
+                    variant="ghost"
+                    onClick={() => handlePromotionChoice(option.value)}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </Panel>
+          )}
+        </div>
+
 
         <Panel className="cm-game-card cm-chessboard-card">
           <div className="cm-chessboard-wrapper" data-board-disabled={isBoardDisabled} data-player-color={playerColorCode}>
