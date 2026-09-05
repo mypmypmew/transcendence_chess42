@@ -55,3 +55,31 @@ test('chat:join adds a participant to the conversation room', async (t) => {
   assert.equal(reply.ok, true);
   assert.deepEqual(socket.joinedRooms, ['conversation:12']);
 });
+
+test('chat:message persists then broadcasts to the conversation room', async (t) => {
+  const persisted = { id: 5, conversationId: 12, senderId: 7, body: 'hello' };
+  const sendMessage = t.mock.method(chatService, 'sendMessage', async () => persisted);
+
+  const emitted = [];
+  const io = {
+    to(room) {
+      return {
+        emit(event, payload) {
+          emitted.push({ room, event, payload });
+        },
+      };
+    },
+  };
+
+  const socket = fakeSocket(7);
+  registerChatHandlers(io, socket);
+
+  let reply;
+  await socket.emitTo('chat:message', { conversationId: 12, body: 'hello' }, (received) => {
+    reply = received;
+  });
+
+  assert.deepEqual(sendMessage.mock.calls[0].arguments, [7, 12, 'hello']);
+  assert.deepEqual(emitted, [{ room: 'conversation:12', event: 'chat:message', payload: persisted }]);
+  assert.equal(reply.ok, true);
+});
