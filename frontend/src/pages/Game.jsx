@@ -14,6 +14,8 @@ function Game() {
   const {
     game,
     gameError,
+    opponent,
+    gameDetailsError,
     isLoading,
     isWaitingForServer,
     socketStatus,
@@ -81,6 +83,26 @@ function Game() {
           </div>
         </section>
       )}
+
+      <section className="cm-panel" aria-live="polite">
+        <div className="cm-panel-body">
+          {/* Show public opponent data loaded from the existing authenticated game endpoint. */}
+          {opponent ? (
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="label">Opponent</p>
+                <h2 className="cm-section-title">{opponent.username}</h2>
+              </div>
+
+              <p className="text-muted">Rating: {opponent.rating}</p>
+            </div>
+          ) : (
+            <p className="text-muted">
+              {gameDetailsError || 'Loading opponent details...'}
+            </p>
+          )}
+        </div>
+      </section>
       
       <ChessGame
         fen={game.fen}
