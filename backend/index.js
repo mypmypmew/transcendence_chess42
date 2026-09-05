@@ -5,6 +5,7 @@ let authRoutes = require('./src/routes/authRoutes');
 const gameRoutes = require('./src/routes/gameRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
+const registerChatHandlers = require('./src/sockets/chatSocket'); 
 let app = express();
 let PORT = 3000;
 const http = require('http');
@@ -23,6 +24,8 @@ io.use(socketAuth);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id} (user ${socket.data.userId})`);
+
+  registerChatHandlers(io, socket);
 
   socket.on('client:ping', () => {
     socket.emit('server:pong');
