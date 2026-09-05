@@ -76,6 +76,8 @@ function ChessGame({
   status,
   isGameOver,
   gameOverInfo,
+  opponent,
+  opponentError,
   playerColor,
   isPlayerTurn = true,
   boardOrientation = 'white',
@@ -276,6 +278,24 @@ function ChessGame({
               <p className="label">Game status</p>
               <h2 className="cm-section-title">{status}</h2>
             </div>
+
+            {/* Keep opponent details close to the board without adding another full-width panel. */}
+            {opponent !== undefined && (
+              <div>
+                <p className="label">Opponent</p>
+                {opponent ? (
+                  <>
+                    <h2 className="cm-section-title">{opponent.username}</h2>
+                    <p className="text-muted">Rating: {opponent.rating}</p>
+                  </>
+                ) : (
+                  <p className="text-muted">
+                    {opponentError || 'Loading...'}
+                  </p>
+                )}
+              </div>
+            )}
+
             <Icon className="text-accent" name="chess-knight" />
           </div>
         </Panel>
