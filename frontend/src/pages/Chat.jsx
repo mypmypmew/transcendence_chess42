@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getMessages, listConversations } from '../api/chatApi.js'
+import { getMessages, listConversations, openConversation } from '../api/chatApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
 import Avatar from '../components/Avatar.jsx'
@@ -69,6 +69,7 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [messages, setMessages] = useState([])
+  const [newUserId, setNewUserId] = useState('')
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
 
@@ -161,6 +162,27 @@ function Chat() {
     }
   }, [socket, activeConversationId])
 
+   async function handleOpenConversation(event) { 
+    event.preventDefault()
+    const parsedId = Number(newUserId)
+
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+      setLoadError('Enter a valid user id')
+      return
+    }
+
+    try {
+      const data = await openConversation(parsedId)
+      const listData = await listConversations()
+      setConversationList(listData.conversations)
+      setActiveConversationId(data.conversation.id)
+      setNewUserId('')
+      setLoadError(null)
+    } catch (error) {
+      setLoadError(error.message)
+    }
+  }
+
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
@@ -195,6 +217,21 @@ function Chat() {
               <p className="cm-muted">Existing dialogs only</p>
             </div>
           </div>
+
+          <form className="cm-panel-body flex gap-3" onSubmit={handleOpenConversation}>
+            <input
+              className="input flex-1"
+              type="text"
+              value={newUserId}
+              placeholder="User id"
+              aria-label="User id to message"
+              onChange={(event) => setNewUserId(event.target.value)}
+            />
+            <button className="btn btn-primary" type="submit" disabled={!newUserId.trim()}>
+              Start
+            </button>
+          </form>
+
           <div className="cm-panel-body">
             {isLoading && (
               <div className="empty-state">
