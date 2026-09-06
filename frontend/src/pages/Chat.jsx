@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { listConversations } from '../api/chatApi.js'
+import { getMessages, listConversations } from '../api/chatApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
+
+
 const conversations = [
   {
     id: 1,
@@ -64,6 +66,7 @@ function Chat() {
   const [conversationList, setConversationList] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
+  const [messages, setMessages] = useState([])
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
 
@@ -93,6 +96,34 @@ function Chat() {
       cancelled = true
     }
   }, [])
+
+    useEffect(() => {
+    if (!activeConversationId) {
+      setMessages([])
+      return
+    }
+
+    let cancelled = false
+
+    async function loadMessages() {
+      try {
+        const data = await getMessages(activeConversationId)
+        if (!cancelled) {
+          setMessages(data.messages)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error.message)
+        }
+      }
+    }
+
+    loadMessages()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeConversationId])
 
   function handleCloseConversation() {
     setActiveConversationId(null)
@@ -177,10 +208,10 @@ function Chat() {
             <>
               <div className="cm-panel-header">
                 <div className="flex items-center gap-3">
-                  <Avatar avatar={activeConversation.contact.avatar} name={activeConversation.contact.nickname} className="avatar avatar-md" />
+                  <Avatar avatar={null} name={activeConversation.user.username} className="avatar avatar-md" />
                   <div>
-                    <h2 className="cm-section-title" id="chat-active-title">{activeConversation.contact.nickname}</h2>
-                    <p className="cm-muted">{activeConversation.contact.status}</p>
+                    <h2 className="cm-section-title" id="chat-active-title">{activeConversation.user.username}</h2>
+                    <p className="cm-muted">Rating {activeConversation.user.rating}</p>
                   </div>
                 </div>
                 <button className="btn btn-ghost btn-icon" type="button" aria-label="Close conversation" onClick={handleCloseConversation}>
@@ -189,9 +220,9 @@ function Chat() {
               </div>
               <div className="cm-panel-body">
                 <div className="cm-message-list">
-                  {activeConversation.messages.map((message) => (
-                    <div className={message.sender === 'me' ? 'cm-message mine' : 'cm-message'} key={message.id}>
-                      {message.text}
+                  {messages.map((message) => (
+                    <div className={message.senderId === user.id ? 'cm-message mine' : 'cm-message'} key={message.id}>
+                      {message.body}
                     </div>
                   ))}
                 </div>
