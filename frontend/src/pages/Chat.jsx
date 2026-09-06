@@ -6,60 +6,7 @@ import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
 
 
-const conversations = [
-  {
-    id: 1,
-    contact: {
-      nickname: 'Serhii',
-      avatar: null,
-      status: 'online',
-    },
-    lastMessage: 'Ready for a rematch?',
-    messages: [
-      { id: 1, sender: 'contact', text: 'Good game!' },
-      { id: 2, sender: 'me', text: 'Thanks, that endgame was close.' },
-      { id: 3, sender: 'contact', text: 'Ready for a rematch?' },
-    ],
-  },
-  {
-    id: 2,
-    contact: {
-      nickname: 'Taulant',
-      avatar: null,
-      status: 'offline',
-    },
-    lastMessage: 'Let’s play later today.',
-    messages: [
-      { id: 1, sender: 'contact', text: 'Let’s play later today.' },
-      { id: 2, sender: 'me', text: 'Sure, send me a challenge when you are online.' },
-    ],
-  },
-  {
-    id: 3,
-    contact: {
-      nickname: 'Tatiana',
-      avatar: null,
-      status: 'online',
-    },
-    lastMessage: 'Nice tactic in the middle game.',
-    messages: [
-      { id: 1, sender: 'contact', text: 'Nice tactic in the middle game.' },
-      { id: 2, sender: 'me', text: 'Thank you, I almost missed it.' },
-    ],
-  },
-  {
-    id: 4,
-    contact: {
-      nickname: 'Alima',
-      avatar: null,
-      status: 'offline',
-    },
-    lastMessage: 'See you in the lobby.',
-    messages: [
-      { id: 1, sender: 'contact', text: 'See you in the lobby.' },
-    ],
-  },
-]
+
 function Chat() {
   const { user } = useAuth()
   const { socket } = useSocket() 
