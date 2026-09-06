@@ -143,6 +143,24 @@ function Chat() {
     }
   }, [socket, activeConversationId])
 
+    useEffect(() => {
+    function handleReconnect() {
+      if (!activeConversationId) {
+        return
+      }
+      socket.emit('chat:join', activeConversationId, () => {})
+      getMessages(activeConversationId)
+        .then((data) => setMessages(data.messages))
+        .catch((error) => setLoadError(error.message))
+    }
+
+    socket.on('connect', handleReconnect)
+
+    return () => {
+      socket.off('connect', handleReconnect)
+    }
+  }, [socket, activeConversationId])
+
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
