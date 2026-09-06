@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getMessages, listConversations } from '../api/chatApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useSocket } from '../context/SocketContext.jsx'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
 
@@ -61,6 +62,7 @@ const conversations = [
 ]
 function Chat() {
   const { user } = useAuth()
+  const { socket } = useSocket() 
   const [activeConversationId, setActiveConversationId] = useState(null)
   const [messageText, setMessageText] = useState('')
   const [conversationList, setConversationList] = useState([])
@@ -102,6 +104,7 @@ function Chat() {
       setMessages([])
       return
     }
+    socket.emit('chat:join', activeConversationId, () => {})
 
     let cancelled = false
 
@@ -125,35 +128,43 @@ function Chat() {
     }
   }, [activeConversationId])
 
+    useEffect(() => {
+    function handleIncomingMessage(message) {
+      if (message.conversationId !== activeConversationId) {
+        return
+      }
+      setMessages((current) => [...current, message])
+    }
+
+    socket.on('chat:message', handleIncomingMessage)
+
+    return () => {
+      socket.off('chat:message', handleIncomingMessage)
+    }
+  }, [socket, activeConversationId])
+
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
   }
+
   function handleSendMessage(event) {
     event.preventDefault()
     const trimmedMessage = messageText.trim()
-    if (!trimmedMessage || !activeConversation) {
+    if (!trimmedMessage || !activeConversationId) {
       return
     }
-    setConversationList((currentConversations) =>
-      currentConversations.map((conversation) => {
-        if (conversation.id !== activeConversation.id) {
-          return conversation
+
+    socket.emit(
+      'chat:message',
+      { conversationId: activeConversationId, body: trimmedMessage },
+      (reply) => {
+        if (reply.error) {
+          setLoadError(reply.error)
         }
-        return {
-          ...conversation,
-          lastMessage: trimmedMessage,
-          messages: [
-            ...conversation.messages,
-            {
-              id: Date.now(),
-              sender: 'me',
-              text: trimmedMessage,
-            },
-          ],
-        }
-      })
+      },
     )
+
     setMessageText('')
   }
   return (
