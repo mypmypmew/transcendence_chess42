@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { listConversations } from '../api/chatApi.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
 const conversations = [
@@ -56,11 +58,42 @@ const conversations = [
   },
 ]
 function Chat() {
+  const { user } = useAuth()
   const [activeConversationId, setActiveConversationId] = useState(null)
   const [messageText, setMessageText] = useState('')
-  const [conversationList, setConversationList] = useState(conversations)
+  const [conversationList, setConversationList] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadConversations() {
+      try {
+        const data = await listConversations()
+        if (!cancelled) {
+          setConversationList(data.conversations)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error.message)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadConversations()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
@@ -119,10 +152,10 @@ function Chat() {
                     type="button"
                     onClick={() => setActiveConversationId(conversation.id)}
                   >
-                    <Avatar avatar={conversation.contact.avatar} name={conversation.contact.nickname} className="avatar avatar-md" />
+                    <Avatar avatar={null} name={conversation.user.username} className="avatar avatar-md" />
                     <div className="min-w-0">
-                      <strong className="text-primary">{conversation.contact.nickname}</strong>
-                      <p className="cm-muted">{conversation.lastMessage}</p>
+                      <strong className="text-primary">{conversation.user.username}</strong>
+                      <p className="cm-muted">Rating {conversation.user.rating}</p>
                     </div>
                   </button>
                 ))}
