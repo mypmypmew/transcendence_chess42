@@ -178,14 +178,25 @@ function Chat() {
             </div>
           </div>
           <div className="cm-panel-body">
-            {!hasConversations && (
+            {isLoading && (
+              <div className="empty-state">
+                <p className="text-primary">Loading conversations...</p>
+              </div>
+            )}
+            {!isLoading && loadError && (
+              <div className="empty-state">
+                <p className="text-primary">Could not load conversations</p>
+                <span className="text-muted">{loadError}</span>
+              </div>
+            )}
+            {!isLoading && !loadError && !hasConversations && (
               <div className="empty-state">
                 <i className="ti ti-message-circle" aria-hidden="true" />
                 <p className="text-primary">No conversations yet</p>
                 <span className="text-muted">Message someone from your friends list.</span>
               </div>
             )}
-            {hasConversations && (
+            {!isLoading && !loadError && hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
                   <button
