@@ -36,15 +36,24 @@ function useMatchmaking() {
 			)
 		}
 
+		function handleDisconnect() {
+			setIsSearching(false)
+			setMatchmakingError(
+				'Connection lost. Please start matchmaking again',
+			)
+		}
+
 		socket.on('matchmaking:waiting', handleWaiting)
 		socket.on('matchmaking:matched', handleMatched)
 		socket.on('matchmaking:error', handleMatchmakingError)
+		socket.on('disconnect', handleDisconnect)
 
 		// Remove only this hook's listeners when the lobby is unmounted.
 		return () => {
 			socket.off('matchmaking:waiting', handleWaiting)
 			socket.off('matchmaking:matched', handleMatched)
 			socket.off('matchmaking:error', handleMatchmakingError)
+			socket.off('disconnect', handleDisconnect)
 		}
 	}, [socket, navigate])
 

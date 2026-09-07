@@ -1,4 +1,4 @@
-import AppLayout from '../components/Applayout.jsx'
+import AppLayout from '../components/AppLayout.jsx'
 import useMatchmaking from '../hooks/useMatchmaking.js'
 
 function getConnectionLabel(socketStatus) {
