@@ -9,7 +9,8 @@ import { useAuth } from '../context/AuthContext.jsx'
 
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-  { to: '/game', label: 'Game', icon: 'chess-rook' },
+  // Open matchmaking before navigating the player to a server-created game.
+  { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
   { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
   { to: '/profile', label: 'Profile', icon: 'user-circle' },

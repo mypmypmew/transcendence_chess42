@@ -37,7 +37,7 @@ function getGameOverContent(gameOverInfo) {
   }
 }
 
-function GameOverModal({ gameOverInfo, onClose, onRestart }) {
+function GameOverModal({ gameOverInfo, onClose, onRestart, onExit }) {
   const { icon, title, message } = getGameOverContent(gameOverInfo)
 
   return (
@@ -62,9 +62,17 @@ function GameOverModal({ gameOverInfo, onClose, onRestart }) {
           <Button icon="refresh" type="button" onClick={onRestart}>
             Play again
           </Button>
+
           <Button type="button" variant="ghost" onClick={onClose}>
             Review board
           </Button>
+
+          {/* Allow the player to leave a completed game directly from the result modal. */}
+          {onExit && (
+            <Button type="button" variant="ghost" onClick={onExit}>
+              Back to dashboard
+            </Button>
+          )}
         </div>
       </Panel>
     </div>

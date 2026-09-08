@@ -1,12 +1,16 @@
-const { randomUUID } = require('node:crypto');
 const { Chess } = require('chess.js');
 
+// Use the real persistence layer by default while allowing tests to inject a fake repository
+const defaultGameRepository = require('../repositories/gameRepository');
+
 class GameService {
-  constructor() {
+  // Dependency injection keeps database access replaceable and makes unit tests independent of Prisma
+  constructor({ gameRepository = defaultGameRepository } = {}) {
+    this.gameRepository = gameRepository;
     this.games = new Map();
   }
 
-  createGame({ whiteId, blackId }) {
+  async createGame({ whiteId, blackId }) {
     if (!Number.isInteger(whiteId) || whiteId <= 0) {
       throw new TypeError('whiteId must be a positive integer');
     }
@@ -19,7 +23,17 @@ class GameService {
       throw new Error('White and black players must be different users');
     }
 
-    const gameId = randomUUID();
+    // Create the database record before storing the active game in memory.
+    // Prisma generates the permanent numeric ID shared by the database,
+    // Socket.IO events and frontend routes.
+    const persistedGame = await this.gameRepository.createGame({
+      whiteId,
+      blackId,
+    });
+
+    // Use Prisma's ID instead of generating a separate in-memory UUID.
+    // This prevents the same game from having two unrelated identifiers.
+    const gameId = persistedGame.id;
 
     const game = {
       gameId,
@@ -50,9 +64,11 @@ class GameService {
     };
   }
 
-    _getGameOrThrow(gameId) {
-    if (typeof gameId !== 'string' || gameId.trim() === '') {
-      throw new TypeError('gameId must be a non-empty string');
+  _getGameOrThrow(gameId) {
+    // Prisma generates positive integer IDs for Game records.
+    // Validate the ID before using it as a key in the active games map.
+    if (!Number.isInteger(gameId) || gameId <= 0) {
+      throw new TypeError('gameId must be a positive integer');
     }
 
     const game = this.games.get(gameId);
@@ -70,7 +86,7 @@ class GameService {
     return this.toSnapshot(game);
   }
 
-    makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
+  async makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
     const game = this._getGameOrThrow(gameId);
 
     if (game.status !== 'IN_PROGRESS') {
@@ -117,6 +133,15 @@ class GameService {
 
     this._updateGameResult(game);
 
+    // Persist only when the accepted move completes the game.
+    // Normal in-progress moves remain in memory and do not write to the database.
+    if (game.status === 'COMPLETED') {
+      await this.gameRepository.finishGame(game.gameId, {
+        result: game.result,
+        pgn: game.chess.pgn(),
+      });
+    }
+
     return this.toSnapshot(game);
   }
 
@@ -145,7 +170,7 @@ class GameService {
     }
   }
 
-    resignGame({ gameId, playerId }) {
+    async resignGame({ gameId, playerId }) {
     const game = this._getGameOrThrow(gameId);
 
     if (game.status !== 'IN_PROGRESS') {
@@ -169,6 +194,13 @@ class GameService {
     } else {
       throw new Error('Player is not part of this game');
     }
+
+    // Persist the completed game so its result survives a backend restart.
+    // The repository derives winnerId from the result and stores the final PGN.
+    await this.gameRepository.finishGame(game.gameId, {
+      result: game.result,
+      pgn: game.chess.pgn(),
+    });
 
     return this.toSnapshot(game);
   }

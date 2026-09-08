@@ -72,7 +72,10 @@ function App() {
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/game-lobby" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
-        <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+        {/* Redirect old game links to matchmaking instead of starting a local game. */}
+        <Route path="/game" element={<ProtectedRoute><Navigate to="/game-lobby" replace /></ProtectedRoute>} />
+        {/* Keep the server-generated game ID in the URL so reconnect can restore the correct game. */}
+        <Route path="/game/:gameId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
         <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}

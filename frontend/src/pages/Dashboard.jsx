@@ -24,7 +24,7 @@ const recentGames = [
 function Dashboard() {
   const actions = (
     <>
-      <Button as={Link} icon="target-arrow" to="/game" variant="ghost">
+      <Button as={Link} icon="target-arrow" to="/game-lobby" variant="ghost">
         Think
       </Button>
       <Button as={Link} icon="trophy" to="/leaderboard" variant="ghost">
@@ -45,7 +45,7 @@ function Dashboard() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button as={Link} to="/game">Play now</Button>
+            <Button as={Link} to="/game-lobby">Play now</Button>
             <Button as={Link} to="/leaderboard" variant="ghost">View rankings</Button>
           </div>
         </section>
@@ -84,7 +84,7 @@ function Dashboard() {
         <Panel>
           <PanelHeader action={<span className="cm-muted">Today</span>} title="Training" />
           <PanelBody className="cm-action-grid">
-            <ActionCard as={Link} to="/game">
+            <ActionCard as={Link} to="/game-lobby">
               <Icon name="chess-rook" />
               <h3>Quick Play</h3>
               <p className="cm-muted">Instant match with default settings</p>
