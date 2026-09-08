@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout'
 import {
   ActionCard,
+  Alert,
   Badge,
   Button,
   Icon,
@@ -14,6 +16,8 @@ import {
   StatCell,
 } from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { getGames } from '../api/gameApi.js'
+import { getGameStatistics } from '../utils/gameStatistics.js'
 import './App.css'
 
 const recentGames = [
@@ -25,6 +29,60 @@ const recentGames = [
 function Dashboard() {
   // Use the signed-in account as the source of the displayed rating.
   const { user } = useAuth()
+  const userId = user?.id
+  const [history, setHistory] = useState(null)
+
+  // Load history for the current account and ignore outdated responses.
+  useEffect(() => {
+    if (!userId) {
+      return
+    }
+
+    let isActive = true
+
+    async function loadGames() {
+      try {
+        const data = await getGames()
+
+        // An invalid response must not appear as an empty game history.
+        if (!Array.isArray(data?.games)) {
+          throw new Error('Unable to load game statistics.')
+        }
+
+        if (isActive) {
+          setHistory({
+            userId,
+            games: data.games,
+            error: null,
+          })
+        }
+      } catch (error) {
+        if (isActive) {
+          setHistory({
+            userId,
+            games: [],
+            error: error.message || 'Unable to load game statistics.',
+          })
+        }
+      }
+    }
+
+    loadGames()
+
+    return () => {
+      isActive = false
+    }
+  }, [userId])
+
+  // Never display a previous account's history while loading a new one.
+  const currentHistory = history?.userId === userId ? history : null
+  const isHistoryLoading = Boolean(userId) && currentHistory === null
+  const historyError = currentHistory?.error ?? null
+
+  // Calculate statistics only after a successful response.
+  const statistics = currentHistory && !historyError
+    ? getGameStatistics(currentHistory.games, userId)
+    : null
 
   const actions = (
     <>
@@ -60,11 +118,28 @@ function Dashboard() {
             titleId="rating-title"
           />
           <PanelBody>
+            {/* Keep unavailable statistics distinct from a successfully loaded empty history. */}
             <div className="cm-stat-grid">
               <StatCell label="Rating" value={user?.rating ?? '-'} />
-              <StatCell label="Games" value="312" />
-              <StatCell label="Win rate" value="61%" />
+              <StatCell label="Games" value={statistics?.totalGames ?? '-'} />
+              <StatCell
+                label="Win rate"
+                value={statistics && statistics.winRate !== null
+                  ? `${statistics.winRate}%`
+                  : '-'}
+              />
             </div>
+
+            {isHistoryLoading && (
+              <p className="cm-muted" role="status">
+                Loading game statistics...
+              </p>
+            )}
+
+            {historyError && (
+              <Alert>{historyError}</Alert>
+            )}
+
             <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
               <p className="label">Weekly progress</p>
               <div className="flex items-end gap-2" aria-hidden="true" style={{ height: 92, marginTop: 'var(--space-3)' }}>
