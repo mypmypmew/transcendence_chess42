@@ -48,12 +48,13 @@ function getGameResult(game, currentUserId) {
 }
 
 /**
- * MatchHistory — personal account game history.
+ * MatchHistory — shared game history for Profile and Dashboard.
  * Props:
  *  - games: backend game list from GET /api/games
  *  - currentUserId: authenticated user id
  *  - error: request error message
  *  - isLoading: shows a loading placeholder instead of the list
+ *  - title: panel heading; defaults to the existing Profile heading
  *
  * Rows are not clickable in this version (no game details view yet).
  */
@@ -62,13 +63,14 @@ function MatchHistory({
   currentUserId,
   error = null,
   isLoading = false,
+  title = 'Match history'
 }) {
   return (
     <Panel aria-labelledby="history-title">
       <PanelHeader
         action={<Badge>{games.length}</Badge>}
         eyebrow="Games"
-        title="Match history"
+        title={title}
         titleId="history-title"
       />
 
