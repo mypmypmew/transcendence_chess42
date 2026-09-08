@@ -13,6 +13,7 @@ import {
   PanelHeader,
   StatCell,
 } from '../components/ui.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import './App.css'
 
 const recentGames = [
@@ -22,6 +23,9 @@ const recentGames = [
 ]
 
 function Dashboard() {
+  // Use the signed-in account as the source of the displayed rating.
+  const { user } = useAuth()
+
   const actions = (
     <>
       <Button as={Link} icon="target-arrow" to="/game-lobby" variant="ghost">
@@ -52,13 +56,12 @@ function Dashboard() {
 
         <Panel aria-labelledby="rating-title">
           <PanelHeader
-            action={<Badge>Rapid</Badge>}
             title="Rating"
             titleId="rating-title"
           />
           <PanelBody>
             <div className="cm-stat-grid">
-              <StatCell label="Rating" value="1768" />
+              <StatCell label="Rating" value={user?.rating ?? '-'} />
               <StatCell label="Games" value="312" />
               <StatCell label="Win rate" value="61%" />
             </div>
