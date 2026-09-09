@@ -15,7 +15,7 @@ import {
 } from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getGames } from '../api/gameApi.js'
-import { getGameStatistics } from '../utils/gameStatistics.js'
+import { getGameStatistics, getWeeklyActivity } from '../utils/gameStatistics.js'
 import './App.css'
 
 function Dashboard() {
@@ -76,6 +76,17 @@ function Dashboard() {
     ? getGameStatistics(currentHistory.games, userId)
     : null
 
+  // Use the full history so weekly activity is not limited to five recent games.
+  const weeklyActivity = currentHistory && !historyError
+    ? getWeeklyActivity(currentHistory.games, userId)
+    : null
+
+  // Keep an empty week at zero and avoid division by zero when scaling bars.
+  const maxDailyGames = Math.max(
+    1,
+    ...(weeklyActivity?.map((day) => day.count) ?? []),
+  )
+
   const actions = (
     <>
       <Button as={Link} icon="target-arrow" to="/game-lobby" variant="ghost">
@@ -132,22 +143,37 @@ function Dashboard() {
               <Alert>{historyError}</Alert>
             )}
 
-            <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
-              <p className="label">Weekly progress</p>
-              <div className="flex items-end gap-2" aria-hidden="true" style={{ height: 92, marginTop: 'var(--space-3)' }}>
-                {[34, 42, 36, 52, 58, 68, 76, 88].map((height, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      height: `${height}%`,
-                      flex: 1,
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
-                    }}
-                  />
-                ))}
+            {/* Render real daily counts only after history has loaded successfully. */}
+            {weeklyActivity && (
+              <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
+                <p className="label">Completed games over 7 days</p>
+                <div className="flex gap-2" style={{ marginTop: 'var(--space-3)' }}>
+                  {weeklyActivity.map((day) => (
+                    <div className="flex-1 min-w-0 text-center" key={day.date}>
+                      <p className="text-primary">{day.count}</p>
+
+                      {/* Bar height reflects the count; zero games produce no filled bar. */}
+                      <div className="flex items-end" aria-hidden="true" style={{ height: 92 }}>
+                        <span
+                          className="flex-1"
+                          style={{
+                            height: `${(day.count / maxDailyGames) * 100}%`,
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
+                          }}
+                        />
+                      </div>
+
+                      <p className="cm-muted">
+                        <time dateTime={new Date(day.date).toLocaleDateString('en-CA')}>
+                          {day.label}
+                        </time>
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </PanelBody>
         </Panel>
 
