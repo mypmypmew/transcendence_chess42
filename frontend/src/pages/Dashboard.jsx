@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import Avatar from '../components/Avatar.jsx'
+import MatchHistory from '../components/MatchHistory.jsx'
 import AppLayout from '../components/AppLayout'
 import {
   ActionCard,
   Alert,
-  Badge,
   Button,
   Icon,
-  ListRow,
   Panel,
   PanelBody,
   PanelHeader,
@@ -19,12 +17,6 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { getGames } from '../api/gameApi.js'
 import { getGameStatistics } from '../utils/gameStatistics.js'
 import './App.css'
-
-const recentGames = [
-  { opponent: 'Artemis', result: 'Win', rating: '+12', time: '2 hours ago', variant: 'win' },
-  { opponent: 'BishopBrain', result: 'Draw', rating: '0', time: 'Yesterday', variant: 'draw' },
-  { opponent: 'CastleGuard', result: 'Loss', rating: '-8', time: '2 days ago', variant: 'loss' },
-]
 
 function Dashboard() {
   // Use the signed-in account as the source of the displayed rating.
@@ -185,24 +177,14 @@ function Dashboard() {
           </PanelBody>
         </Panel>
 
-        <Panel>
-          <PanelHeader title="Recent games" />
-          <PanelBody className="cm-list">
-            {recentGames.map((game) => (
-              <ListRow key={game.opponent}>
-                <Avatar avatar={null} name={game.opponent} className="avatar avatar-md" aria-hidden="true" />
-                <div className="min-w-0">
-                  <p className="text-primary truncate">vs {game.opponent}</p>
-                  <p className="cm-muted">{game.time}</p>
-                </div>
-                <div className="text-right">
-                  <Badge variant={game.variant}>{game.result}</Badge>
-                  <p className="cm-muted">{game.rating}</p>
-                </div>
-              </ListRow>
-            ))}
-          </PanelBody>
-        </Panel>
+        {/* Reuse the existing history panel for the five latest completed games. */}
+        <MatchHistory
+          title="Recent games"
+          games={statistics?.recentGames ?? []}
+          currentUserId={userId}
+          isLoading={isHistoryLoading}
+          error={historyError}
+        />
       </div>
     </AppLayout>
   )
