@@ -15,7 +15,7 @@ function getGameStatistics(games, userId) {
 	const winRate = totalGames === 0
 		? null
 		: Math.round((wins / totalGames) * 100)
-	
+
 	// Select the five latest finishes without changing the original array.
 	// Use the game ID to break ties when completion times are equal.
 	const recentGames = [...completedGames]
@@ -24,7 +24,7 @@ function getGameStatistics(games, userId) {
 			|| b.id - a.id
 		))
 		.slice(0, 5)
-	
+
 	return {
 		totalGames,
 		wins,
@@ -66,7 +66,7 @@ function getWeeklyActivity(games, userId, now = new Date()) {
 		}
 
 		const endedAt = new Date(game.endedAt)
-	
+
 		// Ignore invalid timestamps and finishes that are still in the future.
 		if (Number.isNaN(endedAt.getTime()) || endedAt > now) {
 			continue

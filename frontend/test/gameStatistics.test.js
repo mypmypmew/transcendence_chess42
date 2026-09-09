@@ -286,9 +286,9 @@ test('keeps late finishes on the correct day around clock changes', () => {
 				endedAt: new Date(2026, month, day + 1, 0, 30).toISOString(),
 			}),
 		]
-	
+
 		const days = getWeeklyActivity(games, 7, now)
-	
+
 		assert.deepEqual(days.map((entry) => entry.count), [0, 0, 0, 0, 0, 2, 1])
 	}
 })
