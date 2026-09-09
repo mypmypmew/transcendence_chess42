@@ -534,8 +534,9 @@ button.cm-list-row:hover,
 
 .cm-stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
+  /* Give match history more room while keeping profile and friends compact. */
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr);
+  gap: var(--space-5);
 }
 
 .cm-chat-shell {
