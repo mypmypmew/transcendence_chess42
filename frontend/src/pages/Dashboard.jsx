@@ -164,11 +164,7 @@ function Dashboard() {
                         />
                       </div>
 
-                      <p className="cm-muted">
-                        <time dateTime={new Date(day.date).toLocaleDateString('en-CA')}>
-                          {day.label}
-                        </time>
-                      </p>
+                      <p className="cm-muted">{day.label}</p>
                     </div>
                   ))}
                 </div>
