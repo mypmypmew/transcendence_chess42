@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { getGameStatistics } from '../src/utils/gameStatistics.js'
+import { getGameStatistics, getWeeklyActivity } from '../src/utils/gameStatistics.js'
 
 // Build independent game records using the existing API response shape.
 function createGame(overrides = {}) {
@@ -138,4 +138,157 @@ test('selects five latest finishes without changing the input', () => {
 	assert.equal(statistics.wins, 7)
 	assert.equal(statistics.winRate, 100)
 	assert.deepEqual(games, originalGames)
+})
+
+// Use local dates so the tests follow the same calendar as the browser.
+test('returns seven chronological days including empty days', () => {
+	const now = new Date(2026, 8, 9, 12)
+	const days = getWeeklyActivity([], 7, now)
+
+	assert.deepEqual(days.map((day) => day.date),
+		[
+			new Date(2026, 8, 3).getTime(),
+			new Date(2026, 8, 4).getTime(),
+			new Date(2026, 8, 5).getTime(),
+			new Date(2026, 8, 6).getTime(),
+			new Date(2026, 8, 7).getTime(),
+			new Date(2026, 8, 8).getTime(),
+			new Date(2026, 8, 9).getTime(),
+		],
+	)
+	assert.deepEqual(days.map((day) => day.label),
+		[ 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed' ],
+	)
+	assert.deepEqual(days.map((day) => day.count), [0, 0, 0, 0, 0, 0, 0])
+})
+
+// Midnoght belongs to the new day; the first day of the window is inclusive.
+test('groups finishes by local day and respects the seven-day boundary', () => {
+	const now = new Date(2026, 8, 9, 12)
+	const games = [
+		createGame({
+			id: 1,
+			endedAt: new Date(2026, 8, 2, 23, 59, 59, 999).toISOString(),
+		}),
+		createGame({
+			id: 2,
+			endedAt: new Date(2026, 8, 3).toISOString(),
+		}),
+		createGame({
+			id: 3,
+			endedAt: new Date(2026, 8, 8, 23, 59, 59, 999).toISOString(),
+		}),
+		createGame({
+			id: 4,
+			endedAt: new Date(2026, 8, 9).toISOString(),
+		}),
+		createGame({
+			id: 5,
+			endedAt: now.toISOString(),
+		}),
+	]
+
+	const days = getWeeklyActivity(games, 7, now)
+
+	assert.deepEqual(days.map((day) => day.count), [1, 0, 0, 0, 0, 1, 2])
+})
+
+// Only completed games involving this user contribute to activity.
+test('excludes unfinished, unrelated and invalid finishes', () => {
+	const now = new Date(2026, 8, 9, 12)
+	const endedAt = new Date(2026, 8, 9, 10).toISOString()
+	const games = [
+		createGame({ id: 1, endedAt }),
+		createGame({
+			id: 2,
+			endedAt,
+			white: { id: 8, username: 'WhitePlayer' },
+			black: { id: 7, username: 'BlackPlayer' },
+			result: 'BLACK_WIN',
+			winnerId: 7,
+		}),
+		createGame({
+			id: 3,
+			endedAt,
+			status: 'IN_PROGRESS',
+			result: null,
+			winnerId: null,
+		}),
+		createGame({
+			id: 4,
+			endedAt,
+			status: 'CANCELLED',
+			result: null,
+			winnerId: null,
+		}),
+		createGame({
+			id: 5,
+			endedAt: now.toISOString(),
+			white: { id: 8, username: 'WhitePlayer' },
+			black: { id: 9, username: 'BlackPlayer' },
+			winnerId: 8,
+		}),
+		createGame({ id: 6, endedAt: null }),
+		createGame({ id: 7, endedAt: 'invalid-date' }),
+		createGame({
+			id: 8,
+			endedAt: new Date(2026, 8, 9, 13).toISOString(),
+		}),
+		createGame({
+			id: 9,
+			endedAt: new Date(2026, 8, 10).toISOString(),
+		}),
+	]
+	const originalGames = structuredClone(games)
+
+	const days = getWeeklyActivity(games, 7, now)
+
+	assert.deepEqual(days.map((day) => day.count), [0, 0, 0, 0, 0, 0, 2])
+	assert.deepEqual(games, originalGames)
+})
+
+// Calendar days must remain correct across month and year boundaries.
+test('includes the previous year when the seven-day window crosses January', () => {
+	const now = new Date(2027, 0, 3, 12)
+	const games = [
+		createGame({
+			id: 1,
+			endedAt: new Date(2026, 11, 28).toISOString(),
+		}),
+		createGame({
+			id: 2,
+			endedAt: new Date(2027, 0, 1, 10).toISOString(),
+		}),
+	]
+
+	const days = getWeeklyActivity(games, 7, now)
+
+	assert.equal(days[0].date, new Date(2026, 11, 28).getTime())
+	assert.equal(days[6].date, new Date(2027, 0, 3).getTime())
+	assert.deepEqual(days.map((day) => day.count), [1, 0, 0, 0, 1, 0, 0])
+})
+
+// In Europe/Berlin these dates include the spring and autumn clock changes.
+test('keeps late finishes on the correct day around clock changes', () => {
+	for (const [month, day] of [[2, 29], [9, 25]]) {
+		const now = new Date(2026, month, day + 1, 12)
+		const games = [
+			createGame({
+				id: 1,
+				endedAt: new Date(2026, month, day, 0, 30).toISOString(),
+			}),
+			createGame({
+				id: 2,
+				endedAt: new Date(2026, month, day, 23, 30).toISOString(),
+			}),
+			createGame({
+				id: 3,
+				endedAt: new Date(2026, month, day + 1, 0, 30).toISOString(),
+			}),
+		]
+	
+		const days = getWeeklyActivity(games, 7, now)
+	
+		assert.deepEqual(days.map((entry) => entry.count), [0, 0, 0, 0, 0, 2, 1])
+	}
 })
