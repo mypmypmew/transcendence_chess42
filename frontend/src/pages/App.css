@@ -706,6 +706,19 @@ html[data-theme='light'] .stat-cell {
   background: var(--bg-elevated);
 }
 
+/* Keep tabs readable on light panels and distinguish the selected tab. */
+html[data-theme='light'] .cm-tab {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+html[data-theme='light'] .cm-tab.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
 /* Use light surfaces and matching text colors for data rows and action cards. */
 html[data-theme='light'] .cm-list-row,
 html[data-theme='light'] .cm-action-card,
