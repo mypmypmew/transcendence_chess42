@@ -701,6 +701,11 @@ html[data-theme='light'] .surface {
   border-radius: var(--radius-lg);
 }
 
+/* Keep statistic cells white inside the tinted light-theme panel. */
+html[data-theme='light'] .stat-cell {
+  background: var(--bg-elevated);
+}
+
 /* Use light surfaces and matching text colors for data rows and action cards. */
 html[data-theme='light'] .cm-list-row,
 html[data-theme='light'] .cm-action-card,
