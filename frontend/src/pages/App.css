@@ -687,12 +687,18 @@ html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
   color: var(--accent-hover);
 }
 
-html[data-theme='light'] .surface,
 html[data-theme='light'] .cm-panel,
 html[data-theme='light'] .cm-sidebar {
   background: rgba(255, 250, 240, 0.78);
   border-color: var(--border);
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
+}
+
+/* Give the nested chart a white surface and the same corners as match rows. */
+html[data-theme='light'] .surface {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-lg);
 }
 
 /* Use light surfaces and matching text colors for data rows and action cards. */
