@@ -1,27 +1,92 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import Avatar from '../components/Avatar.jsx'
+import MatchHistory from '../components/MatchHistory.jsx'
 import AppLayout from '../components/AppLayout'
 import {
   ActionCard,
-  Badge,
+  Alert,
   Button,
   Icon,
-  ListRow,
   Panel,
   PanelBody,
   PanelHeader,
   StatCell,
 } from '../components/ui.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { getGames } from '../api/gameApi.js'
+import { getGameStatistics, getWeeklyActivity } from '../utils/gameStatistics.js'
 import './App.css'
 
-const recentGames = [
-  { opponent: 'Artemis', result: 'Win', rating: '+12', time: '2 hours ago', variant: 'win' },
-  { opponent: 'BishopBrain', result: 'Draw', rating: '0', time: 'Yesterday', variant: 'draw' },
-  { opponent: 'CastleGuard', result: 'Loss', rating: '-8', time: '2 days ago', variant: 'loss' },
-]
-
 function Dashboard() {
+  // Use the signed-in account as the source of the displayed rating.
+  const { user } = useAuth()
+  const userId = user?.id
+  const [history, setHistory] = useState(null)
+
+  // Load history for the current account and ignore outdated responses.
+  useEffect(() => {
+    if (!userId) {
+      return
+    }
+
+    let isActive = true
+
+    async function loadGames() {
+      try {
+        const data = await getGames()
+
+        // An invalid response must not appear as an empty game history.
+        if (!Array.isArray(data?.games)) {
+          throw new Error('Unable to load game statistics.')
+        }
+
+        if (isActive) {
+          setHistory({
+            userId,
+            games: data.games,
+            error: null,
+          })
+        }
+      } catch (error) {
+        if (isActive) {
+          setHistory({
+            userId,
+            games: [],
+            error: error.message || 'Unable to load game statistics.',
+          })
+        }
+      }
+    }
+
+    loadGames()
+
+    return () => {
+      isActive = false
+    }
+  }, [userId])
+
+  // Never display a previous account's history while loading a new one.
+  const currentHistory = history?.userId === userId ? history : null
+  const isHistoryLoading = Boolean(userId) && currentHistory === null
+  const historyError = currentHistory?.error ?? null
+
+  // Calculate statistics only after a successful response.
+  const statistics = currentHistory && !historyError
+    ? getGameStatistics(currentHistory.games, userId)
+    : null
+
+  // Use the full history so weekly activity is not limited to five recent games.
+  const weeklyActivity = currentHistory && !historyError
+    ? getWeeklyActivity(currentHistory.games, userId)
+    : null
+
+  // Keep an empty week at zero and avoid division by zero when scaling bars.
+  const maxDailyGames = Math.max(
+    1,
+    ...(weeklyActivity?.map((day) => day.count) ?? []),
+  )
+
   const actions = (
     <>
       <Button as={Link} icon="target-arrow" to="/game-lobby" variant="ghost">
@@ -52,32 +117,59 @@ function Dashboard() {
 
         <Panel aria-labelledby="rating-title">
           <PanelHeader
-            action={<Badge>Rapid</Badge>}
             title="Rating"
             titleId="rating-title"
           />
           <PanelBody>
+            {/* Keep unavailable statistics distinct from a successfully loaded empty history. */}
             <div className="cm-stat-grid">
-              <StatCell label="Rating" value="1768" />
-              <StatCell label="Games" value="312" />
-              <StatCell label="Win rate" value="61%" />
+              <StatCell label="Rating" value={user?.rating ?? '-'} />
+              <StatCell label="Games" value={statistics?.totalGames ?? '-'} />
+              <StatCell
+                label="Win rate"
+                value={statistics && statistics.winRate !== null
+                  ? `${statistics.winRate}%`
+                  : '-'}
+              />
             </div>
-            <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
-              <p className="label">Weekly progress</p>
-              <div className="flex items-end gap-2" aria-hidden="true" style={{ height: 92, marginTop: 'var(--space-3)' }}>
-                {[34, 42, 36, 52, 58, 68, 76, 88].map((height, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      height: `${height}%`,
-                      flex: 1,
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
-                    }}
-                  />
-                ))}
+
+            {isHistoryLoading && (
+              <p className="cm-muted" role="status">
+                Loading game statistics...
+              </p>
+            )}
+
+            {historyError && (
+              <Alert>{historyError}</Alert>
+            )}
+
+            {/* Render real daily counts only after history has loaded successfully. */}
+            {weeklyActivity && (
+              <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
+                <p className="label">Completed games over 7 days</p>
+                <div className="flex gap-2" style={{ marginTop: 'var(--space-3)' }}>
+                  {weeklyActivity.map((day) => (
+                    <div className="flex-1 min-w-0 text-center" key={day.date}>
+                      <p className="text-primary">{day.count}</p>
+
+                      {/* Bar height reflects the count; zero games produce no filled bar. */}
+                      <div className="flex items-end" aria-hidden="true" style={{ height: 92 }}>
+                        <span
+                          className="flex-1"
+                          style={{
+                            height: `${(day.count / maxDailyGames) * 100}%`,
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
+                          }}
+                        />
+                      </div>
+
+                      <p className="cm-muted">{day.label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </PanelBody>
         </Panel>
 
@@ -107,24 +199,14 @@ function Dashboard() {
           </PanelBody>
         </Panel>
 
-        <Panel>
-          <PanelHeader title="Recent games" />
-          <PanelBody className="cm-list">
-            {recentGames.map((game) => (
-              <ListRow key={game.opponent}>
-                <Avatar avatar={null} name={game.opponent} className="avatar avatar-md" aria-hidden="true" />
-                <div className="min-w-0">
-                  <p className="text-primary truncate">vs {game.opponent}</p>
-                  <p className="cm-muted">{game.time}</p>
-                </div>
-                <div className="text-right">
-                  <Badge variant={game.variant}>{game.result}</Badge>
-                  <p className="cm-muted">{game.rating}</p>
-                </div>
-              </ListRow>
-            ))}
-          </PanelBody>
-        </Panel>
+        {/* Reuse the existing history panel for the five latest completed games. */}
+        <MatchHistory
+          title="Recent games"
+          games={statistics?.recentGames ?? []}
+          currentUserId={userId}
+          isLoading={isHistoryLoading}
+          error={historyError}
+        />
       </div>
     </AppLayout>
   )

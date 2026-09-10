@@ -528,7 +528,8 @@ button.cm-list-row:hover,
 
 .cm-profile-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(240px, 1fr) minmax(320px, 2fr);
+  /* Give match history more room while keeping profile and friends compact. */
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr);
   gap: var(--space-5);
 }
 

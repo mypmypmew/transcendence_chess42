@@ -48,12 +48,13 @@ function getGameResult(game, currentUserId) {
 }
 
 /**
- * MatchHistory — personal account game history.
+ * MatchHistory — shared game history for Profile and Dashboard.
  * Props:
  *  - games: backend game list from GET /api/games
  *  - currentUserId: authenticated user id
  *  - error: request error message
  *  - isLoading: shows a loading placeholder instead of the list
+ *  - title: panel heading; defaults to the existing Profile heading
  *
  * Rows are not clickable in this version (no game details view yet).
  */
@@ -62,13 +63,14 @@ function MatchHistory({
   currentUserId,
   error = null,
   isLoading = false,
+  title = 'Match history'
 }) {
   return (
     <Panel aria-labelledby="history-title">
       <PanelHeader
         action={<Badge>{games.length}</Badge>}
         eyebrow="Games"
-        title="Match history"
+        title={title}
         titleId="history-title"
       />
 
@@ -89,13 +91,18 @@ function MatchHistory({
               <ListRow as="article" key={game.id}>
                 <Icon className="text-accent" name="chess" />
                 <div className="min-w-0">
-                  <p className="text-primary truncate">vs {opponent.username}</p>
-                  <p className="cm-muted">
-                    Rating {opponent.rating} · {game.status} · {formatDate(game.createdAt)}
+                  {/* Separate the opponent heading from muted details and keep the prefix smaller. */}
+                  <p className="stat-num text-primary truncate">
+                    <small>vs </small>
+                    <span>{opponent.username}</span>
                   </p>
-                  {game.endedAt && (
-                    <p className="cm-muted">Ended {formatDate(game.endedAt)}</p>
-                  )}
+                  {/* Keep opponent rating separate from the game status and date. */}
+                  <p className="cm-muted">
+                    Rating {opponent.rating}
+                  </p>
+                  <p className="cm-muted">
+                    {game.status} · {formatDate(game.endedAt ?? game.createdAt)}
+                  </p>
                 </div>
                 <Badge variant={config.variant}>{config.label}</Badge>
               </ListRow>
