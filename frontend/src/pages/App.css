@@ -719,6 +719,18 @@ html[data-theme='light'] .cm-tab.active {
   border-color: var(--accent-border);
 }
 
+/* Keep incoming messages readable on light chat panels. */
+html[data-theme='light'] .cm-message {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* Distinguish outgoing messages using existing accent background. */
+html[data-theme='light'] .cm-message.mine {
+  background: var(--accent-muted);
+  color: var(--text-primary);
+}
+
 /* Use light surfaces and matching text colors for data rows and action cards. */
 html[data-theme='light'] .cm-list-row,
 html[data-theme='light'] .cm-action-card,
