@@ -87,15 +87,11 @@ function Dashboard() {
     ...(weeklyActivity?.map((day) => day.count) ?? []),
   )
 
+  // Open matchmaking directly from the dashboard's primary header action.
   const actions = (
-    <>
-      <Button as={Link} icon="target-arrow" to="/game-lobby" variant="ghost">
-        Think
-      </Button>
-      <Button as={Link} icon="trophy" to="/leaderboard" variant="ghost">
+      <Button as={Link} icon="trophy" to="/game-lobby" variant="ghost">
         Compete
       </Button>
-    </>
   )
 
   return (
