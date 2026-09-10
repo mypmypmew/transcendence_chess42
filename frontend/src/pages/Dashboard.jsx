@@ -150,14 +150,16 @@ function Dashboard() {
                 <div className="flex gap-2" style={{ marginTop: 'var(--space-3)' }}>
                   {weeklyActivity.map((day) => (
                     <div className="flex-1 min-w-0 text-center" key={day.date}>
-                      <p className="text-primary">{day.count}</p>
+                      {/* Keep each count above its bar and reserve space for the tallest label. */}
+                      <div className="flex flex-col" style={{ height: 'calc(92px + 1.5em)', justifyContent: 'flex-end' }}>
+                        <p className="text-primary">{day.count}</p>
 
-                      {/* Bar height reflects the count; zero games produce no filled bar. */}
-                      <div className="flex items-end" aria-hidden="true" style={{ height: 92 }}>
-                        <span
-                          className="flex-1"
+                        {/* Only the decorative bar is hidden from assistive technologies. */}
+                        <div
+                          aria-hidden="true"
                           style={{
-                            height: `${(day.count / maxDailyGames) * 100}%`,
+                            height: `${(day.count / maxDailyGames) * 92}px`,
+                            flexShrink: 0,
                             borderRadius: 'var(--radius-sm)',
                             background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
                           }}
