@@ -697,7 +697,8 @@ html[data-theme='light'] .cm-sidebar {
 
 /* Use light surfaces and matching text colors for data rows and action cards. */
 html[data-theme='light'] .cm-list-row,
-html[data-theme='light'] .cm-action-card {
+html[data-theme='light'] .cm-action-card,
+html[data-theme='light'] .cm-hero-card {
   --text-on-dark: var(--text-primary);
   --text-on-dark-secondary: var(--text-secondary);
   --text-on-dark-muted: var(--text-muted);
@@ -705,6 +706,11 @@ html[data-theme='light'] .cm-action-card {
   background: var(--bg-elevated);
   border-color: var(--border-subtle);
   color: var(--text-primary);
+}
+
+/* Keep the decorative knight visible but subtle on the light hero surface. */
+html[data-theme='light'] .cm-hero-card::after {
+  color: var(--accent-muted);
 }
 
 /* Keep interactive rows light when hovered. */
