@@ -38,16 +38,22 @@ function Chat() {
   const [conversationList, setConversationList] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
-  const [messages, setMessages] = useState([])
+  const [messageState, setMessageState] = useState({ conversationId: null, items: [] })
   const [searchTerm, setSearchTerm] = useState('')
-  const [searchResults, setSearchResults] = useState([])
+  const [searchState, setSearchState] = useState({ term: '', results: [] })
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
-  const [isMessagesLoading, setIsMessagesLoading] = useState(false)
-  const [messagesError, setMessagesError] = useState(null)
+  // const [isMessagesLoading, setIsMessagesLoading] = useState(false)
+  const [messagesErrorState, setMessagesErrorState] = useState({ conversationId: null, message: null })
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
   const isSearching = searchTerm.trim().length >= 2
+  const messages = messageState.conversationId === activeConversationId ? messageState.items : []
+  const searchResults = searchState.term === searchTerm.trim() ? searchState.results : []
+  const messagesError = messagesErrorState.conversationId === activeConversationId ? messagesErrorState.message : null
+  const isMessagesLoading = activeConversationId !== null
+    && messageState.conversationId !== activeConversationId
+    && messagesError === null
 
   useEffect(() => {
     let cancelled = false
@@ -80,7 +86,7 @@ function Chat() {
     const trimmedSearch = searchTerm.trim()
 
     if (trimmedSearch.length < 2) {
-      setSearchResults([])
+      // setSearchResults([])
       return
     }
 
@@ -96,11 +102,11 @@ function Chat() {
         const data = await searchUsers(trimmedSearch)
 
         if (!isCancelled) {
-          setSearchResults(Array.isArray(data?.users) ? data.users : [])
+            setSearchState({ term: trimmedSearch, results: Array.isArray(data?.users) ? data.users : [] })
         }
       } catch (error) {
         if (!isCancelled) {
-          setSearchResults([])
+          setSearchState({ term: trimmedSearch, results: [] })
           setSearchError(error.message)
         }
       } finally {
@@ -117,48 +123,61 @@ function Chat() {
   }, [searchTerm])
 
     useEffect(() => {
-    setMessages([])
-    setMessagesError(null)
 
     if (!activeConversationId) {
       return
     }
 
-    setIsMessagesLoading(true)
-    socket.emit('chat:join', activeConversationId, () => {})
-
+    const conversationId = activeConversationId
     let cancelled = false
 
-    async function loadMessages() {
+    // setIsMessagesLoading(true)
+
+    socket.emit('chat:join', conversationId, async (joinReply) => {
+      if (cancelled) {
+        return
+      }
+
+      if (joinReply?.error) {
+        setMessagesErrorState({ conversationId, message: joinReply.error })
+        // setIsMessagesLoading(false)
+        return
+      }
+
       try {
-        const data = await getMessages(activeConversationId)
+        const data = await getMessages(conversationId)
         if (!cancelled) {
-          setMessages((current) => mergeMessages(current, data.messages))
+          setMessageState((current) => {
+            const base = current.conversationId === conversationId ? current.items : []
+            return { conversationId, items: mergeMessages(base, data.messages) }
+          })
         }
       } catch (error) {
         if (!cancelled) {
-          setMessagesError(error.message)
+          setMessagesErrorState({ conversationId, message: error.message })
         }
-      } finally {
-        if (!cancelled) {
-          setIsMessagesLoading(false)
-        }
-      }
-    }
-
-    loadMessages()
+      } 
+      //finally {
+      //   if (!cancelled) {
+      //     setIsMessagesLoading(false)
+      //   }
+      // }
+    })
 
     return () => {
       cancelled = true
     }
   }, [socket, activeConversationId])
 
-  useEffect(() => {
+    useEffect(() => {
     function handleIncomingMessage(message) {
       if (message.conversationId !== activeConversationId) {
         return
       }
-      setMessages((current) => mergeMessages(current, [message]))
+      setMessageState((current) => {
+        const base = current.conversationId === activeConversationId ? current.items : []
+        return { conversationId: activeConversationId, items: mergeMessages(base, [message]) }
+      })
     }
 
     socket.on('chat:message', handleIncomingMessage)
@@ -168,20 +187,45 @@ function Chat() {
     }
   }, [socket, activeConversationId])
 
-  useEffect(() => {
+    useEffect(() => {
+    if (!activeConversationId) {
+      return
+    }
+
+    const conversationId = activeConversationId
+    let cancelled = false
+
     function handleReconnect() {
-      if (!activeConversationId) {
-        return
-      }
-      socket.emit('chat:join', activeConversationId, () => {})
-      getMessages(activeConversationId)
-        .then((data) => setMessages((current) => mergeMessages(current, data.messages)))
-        .catch((error) => setMessagesError(error.message))
+      socket.emit('chat:join', conversationId, async (joinReply) => {
+        if (cancelled) {
+          return
+        }
+
+        if (joinReply?.error) {
+            setMessagesErrorState({ conversationId, message: joinReply.error })
+          return
+        }
+
+        try {
+          const data = await getMessages(conversationId)
+          if (!cancelled) {
+            setMessageState((current) => {
+              const base = current.conversationId === conversationId ? current.items : []
+              return { conversationId, items: mergeMessages(base, data.messages) }
+            })
+          }
+        } catch (error) {
+          if (!cancelled) {
+            setMessagesErrorState({ conversationId, message: error.message })
+          }
+        }
+      })
     }
 
     socket.on('connect', handleReconnect)
 
     return () => {
+      cancelled = true
       socket.off('connect', handleReconnect)
     }
   }, [socket, activeConversationId])
@@ -193,7 +237,7 @@ function Chat() {
       setConversationList(listData.conversations)
       setActiveConversationId(data.conversation.id)
       setSearchTerm('')
-      setSearchResults([])
+      setSearchState({ term: '', results: [] })
       setLoadError(null)
     } catch (error) {
       setLoadError(error.message)
