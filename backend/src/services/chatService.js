@@ -1,4 +1,5 @@
 const chatRepository = require('../repositories/chatRepository');
+const userRepository = require('../repositories/userRepository');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -35,13 +36,26 @@ async function openConversation(userId, otherUserId) {
     throw httpError(400, 'Cannot open a conversation with yourself');
   }
 
+  const recipient = await userRepository.findPublicUserById(otherUserId);
+
+  if (!recipient) {
+    throw httpError(404, 'User not found');
+  }
+
   const existing = await chatRepository.findConversationByPair(userId, otherUserId);
 
   if (existing) {
     return existing;
   }
 
-  return chatRepository.createConversation(userId, otherUserId);
+  try {
+    return await chatRepository.createConversation(userId, otherUserId);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return chatRepository.findConversationByPair(userId, otherUserId);
+    }
+    throw error;
+  }
 }
 
 async function getMessages(userId, conversationId) {

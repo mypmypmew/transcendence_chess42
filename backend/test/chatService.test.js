@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const chatRepository = require('../src/repositories/chatRepository');
+const userRepository = require('../src/repositories/userRepository');
 const chatService = require('../src/services/chatService');
 
 const ALICE = { id: 3, username: 'alice', rating: 1200 };
@@ -88,7 +89,20 @@ test('openConversation rejects a self-conversation and invalid ids', async (t) =
   assert.equal(create.mock.callCount(), 0);
 });
 
+test('openConversation rejects an unknown recipient', async (t) => {
+  t.mock.method(userRepository, 'findPublicUserById', async () => null);
+  const create = t.mock.method(chatRepository, 'createConversation', async () => ({ id: 99 }));
+
+  await assert.rejects(
+    chatService.openConversation(ALICE.id, 999),
+    (err) => err.status === 404,
+  );
+
+  assert.equal(create.mock.callCount(), 0);
+});
+
 test('openConversation reuses an existing conversation', async (t) => {
+  t.mock.method(userRepository, 'findPublicUserById', async () => BOB);
   t.mock.method(chatRepository, 'findConversationByPair', async () => fakeConversation());
   const create = t.mock.method(chatRepository, 'createConversation', async () => ({ id: 99 }));
 
@@ -96,6 +110,29 @@ test('openConversation reuses an existing conversation', async (t) => {
 
   assert.equal(conversation.id, 12);
   assert.equal(create.mock.callCount(), 0);
+});
+
+test('openConversation recovers from a concurrent create', async (t) => {
+  t.mock.method(userRepository, 'findPublicUserById', async () => BOB);
+
+  let pairLookups = 0;
+  t.mock.method(chatRepository, 'findConversationByPair', async () => {
+    pairLookups += 1;
+    if (pairLookups === 1) {
+      return null;
+    }
+    return fakeConversation();
+  });
+  t.mock.method(chatRepository, 'createConversation', async () => {
+    const error = new Error('Unique constraint failed');
+    error.code = 'P2002';
+    throw error;
+  });
+
+  const conversation = await chatService.openConversation(ALICE.id, BOB.id);
+
+  assert.equal(conversation.id, 12);
+  assert.equal(pairLookups, 2);
 });
 
 test('listConversations returns the other participant', async (t) => {
