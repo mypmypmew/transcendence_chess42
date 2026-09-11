@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import MatchHistory from '../components/MatchHistory.jsx'
+import ChessGuideModal from '../components/ChessGuideModal.jsx'
 import AppLayout from '../components/AppLayout'
 import {
   ActionCard,
@@ -23,6 +24,9 @@ function Dashboard() {
   const { user } = useAuth()
   const userId = user?.id
   const [history, setHistory] = useState(null)
+
+  // Open the shared rules reference without leaving the dashboard.
+  const [isGuideOpen, setIsGuideOpen] = useState(false)
 
   // Load history for the current account and ignore outdated responses.
   useEffect(() => {
@@ -184,10 +188,10 @@ function Dashboard() {
               <h3>Puzzles - Experimental</h3>
               <p className="cm-muted">Sharpen tactics</p>
             </ActionCard>
-            <ActionCard as={Link} to="/dashboard">
+            <ActionCard as="button" type="button" aria-haspopup="dialog" onClick={() => setIsGuideOpen(true)} style={{ textAlign: 'left', lineHeight: 'inherit' }}>
               <Icon name="book" />
-              <h3>Lessons - Experimental</h3>
-              <p className="cm-muted">Learn positions</p>
+              <h3>Chess guide</h3>
+              <p className="cm-muted">Learn the rules and piece moves</p>
             </ActionCard>
             <ActionCard as={Link} to="/dashboard">
               <Icon name="award" />
@@ -206,6 +210,11 @@ function Dashboard() {
           error={historyError}
         />
       </div>
+
+      {/* Mount the guide only while open so closing restores the opener's focus. */}
+      {isGuideOpen && (
+        <ChessGuideModal onClose={() => setIsGuideOpen(false)} />
+      )}
     </AppLayout>
   )
 }
