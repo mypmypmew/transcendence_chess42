@@ -565,7 +565,21 @@ button.cm-list-row:hover,
   color: var(--text-on-dark);
 }
 
+/* Keep the content-level friend action hidden on desktop. */
+.cm-friends-content-action {
+  display: none;
+}
+
 @media (max-width: 1120px) {
+  /* Move the friend action from the header to the page content. */
+  .cm-friends-header-action {
+    display: none;
+  }
+
+  .cm-friends-content-action {
+    display: flex;
+  }
+
   .cm-main-grid,
   .cm-page-grid.two,
   .cm-page-grid.three,
