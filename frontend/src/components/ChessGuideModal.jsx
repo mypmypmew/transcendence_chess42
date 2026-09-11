@@ -79,16 +79,17 @@ function ChessGuideModal({ onClose }) {
 				</PanelHeader>
 
 				<PanelBody className="flex flex-col gap-5">
-					{/* Present the shared rules without extra cards or interactive lessons. */}
-					{chessGuideSections.map((section) => (
-						<section key={section.id} aria-labelledby={`${titleId}-${section.id}`} className="flex flex-col gap-3">
-							<h3 id={`${titleId}-${section.id}`} className="cm-section-title">
-								{section.title}
-							</h3>
+					{/* Native disclosure controls support mouse, touch and keyboard. */}
+					{chessGuideSections.map((section, index) => (
+						<details key={section.id} className="cm-guide-section" open={index === 0}>
+							<summary className="cm-guide-summary">
+								<h3 className="cm-section-title">{section.title}</h3>
+							</summary>
 
 							<dl className="flex flex-col gap-3">
 								{section.items.map((item) => (
 									<div key={item.title}>
+										{/* Preserve the agreed player-name style for item headings. */}
 										<dt className="stat-num text-primary">
 											{item.title}
 										</dt>
@@ -96,7 +97,7 @@ function ChessGuideModal({ onClose }) {
 									</div>
 								))}
 							</dl>
-						</section>
+						</details>
 					))}
 
 					<div className="flex justify-center">
