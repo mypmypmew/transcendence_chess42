@@ -294,7 +294,7 @@ export default function Friends() {
             Add Friend
           </Button>
         </div>
-        
+
         {pageError && (
           <Alert>
             {pageError}
