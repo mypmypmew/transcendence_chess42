@@ -282,12 +282,19 @@ export default function Friends() {
       title="Friends"
       showLegalFooter={false}
       actions={
-        <Button onClick={handleAddFriend}>
+        <Button className="cm-friends-header-action" type="button" onClick={handleAddFriend} aria-expanded={isSearchOpen}>
           Add Friend
         </Button>
       }
     >
       <div className="cm-page-grid">
+        {/* Place the compact-layout action below navigation and before the panels. */}
+        <div className="cm-friends-content-action">
+          <Button type="button" onClick={handleAddFriend} aria-expanded={isSearchOpen}>
+            Add Friend
+          </Button>
+        </div>
+        
         {pageError && (
           <Alert>
             {pageError}
