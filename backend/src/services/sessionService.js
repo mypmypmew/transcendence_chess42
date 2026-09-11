@@ -13,8 +13,8 @@ async function createSession(userId, res) {
 
   res.cookie(SESSION_COOKIE, id, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: SESSION_TTL_MS,
     path: '/',
   });
