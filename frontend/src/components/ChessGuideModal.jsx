@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { chessGuideSections } from '../utils/chessGuide.js'
 import {
 	Button,
+	Icon,
 	IconButton,
 	Panel,
 	PanelBody,
@@ -89,9 +90,12 @@ function ChessGuideModal({ onClose }) {
 							<dl className="flex flex-col gap-3">
 								{section.items.map((item) => (
 									<div key={item.title}>
-										{/* Preserve the agreed player-name style for item headings. */}
-										<dt className="stat-num text-primary">
-											{item.title}
+										{/* Pair piece names with existing decorative icons and preserve heading typography. */}
+										<dt className="stat-num text-primary flex items-center gap-2">
+											{item.icon && (
+												<Icon name={item.icon} className="flex-shrink-0" style={{ fontSize: 20 }} />
+											)}
+											<span>{item.title}</span>
 										</dt>
 										<dd className="cm-muted">{item.text}</dd>
 									</div>
