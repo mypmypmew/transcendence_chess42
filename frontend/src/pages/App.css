@@ -677,6 +677,20 @@ html[data-theme='light'] .input {
   border-color: var(--border-surface);
 }
 
+/* Preserve visible focus and validation borders in light mode. */
+html[data-theme='light'] .input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+html[data-theme='light'] .input.error {
+  border-color: var(--color-danger);
+}
+
+html[data-theme='light'] .input.valid {
+  border-color: var(--color-win);
+}
+
 html[data-theme='light'] .btn-ghost {
   background: rgba(255, 255, 255, 0.7);
   color: var(--text-secondary);
@@ -687,7 +701,6 @@ html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
   color: var(--accent-hover);
 }
 
-html[data-theme='light'] .surface,
 html[data-theme='light'] .cm-panel,
 html[data-theme='light'] .cm-sidebar {
   background: rgba(255, 250, 240, 0.78);
@@ -695,10 +708,77 @@ html[data-theme='light'] .cm-sidebar {
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
 
+/* Give the nested chart a white surface and the same corners as match rows. */
+html[data-theme='light'] .surface {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+/* Keep statistic cells white inside the tinted light-theme panel. */
+html[data-theme='light'] .stat-cell {
+  background: var(--bg-elevated);
+}
+
+/* Keep tabs readable on light panels and distinguish the selected tab. */
+html[data-theme='light'] .cm-tab {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+html[data-theme='light'] .cm-tab.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+/* Keep incoming messages readable on light chat panels. */
+html[data-theme='light'] .cm-message {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* Distinguish outgoing messages using existing accent background. */
+html[data-theme='light'] .cm-message.mine {
+  background: var(--accent-muted);
+  color: var(--text-primary);
+}
+
+/* Use light surfaces and matching text colors for data rows and action cards. */
+html[data-theme='light'] .cm-list-row,
+html[data-theme='light'] .cm-action-card,
+html[data-theme='light'] .cm-hero-card {
+  --text-on-dark: var(--text-primary);
+  --text-on-dark-secondary: var(--text-secondary);
+  --text-on-dark-muted: var(--text-muted);
+
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+/* Keep the decorative knight visible but subtle on the light hero surface. */
+html[data-theme='light'] .cm-hero-card::after {
+  color: var(--accent-muted);
+}
+
+/* Keep interactive rows light when hovered. */
+html[data-theme='light'] button.cm-list-row:hover {
+  background: var(--bg-surface);
+  border-color: var(--accent-border);
+}
+
+/* Match game panels to the light theme and keep their text readable. */
 html[data-theme='light'] .cm-game-card {
-  background: rgba(42, 58, 74, 0.84);
-  border-color: rgba(159, 107, 33, 0.26);
-  box-shadow: 0 18px 45px rgba(8, 20, 33, 0.18);
+  --text-on-dark: var(--text-primary);
+  --text-on-dark-secondary: var(--text-secondary);
+  --text-on-dark-muted: var(--text-muted);
+
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+  box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
 
 html[data-theme='light'] .cm-shell {
