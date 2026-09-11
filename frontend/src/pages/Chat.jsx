@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getMessages, listConversations } from '../api/chatApi.js'
+import { searchUsers } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
 import Avatar from '../components/Avatar.jsx'
@@ -25,6 +26,10 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [messages, setMessages] = useState([])
+   const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState([])   
+  const [isSearchLoading, setIsSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState(null)
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
 
