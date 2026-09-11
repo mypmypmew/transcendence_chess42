@@ -17,6 +17,19 @@ import {
   PanelHeader,
 } from '../components/ui.jsx'
 
+function mergeMessages(current, incoming) {
+  const byId = new Map()
+
+  for (const message of current) {
+    byId.set(message.id, message)
+  }
+  for (const message of incoming) {
+    byId.set(message.id, message)
+  }
+
+  return [...byId.values()].sort((a, b) => a.id - b.id)
+}
+
 function Chat() {
   const { user } = useAuth()
   const { socket } = useSocket()
@@ -30,6 +43,8 @@ function Chat() {
   const [searchResults, setSearchResults] = useState([])   
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false)
+  const [messagesError, setMessagesError] = useState(null)
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
   const isSearching = searchTerm.trim().length >= 2
@@ -101,12 +116,15 @@ function Chat() {
     }
   }, [searchTerm])
 
-  useEffect(() => {
+    useEffect(() => {
+    setMessages([])
+    setMessagesError(null)
+
     if (!activeConversationId) {
-      setMessages([])
       return
     }
 
+    setIsMessagesLoading(true)
     socket.emit('chat:join', activeConversationId, () => {})
 
     let cancelled = false
@@ -115,11 +133,15 @@ function Chat() {
       try {
         const data = await getMessages(activeConversationId)
         if (!cancelled) {
-          setMessages(data.messages)
+          setMessages((current) => mergeMessages(current, data.messages))
         }
       } catch (error) {
         if (!cancelled) {
-          setLoadError(error.message)
+          setMessagesError(error.message)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsMessagesLoading(false)
         }
       }
     }
@@ -136,7 +158,7 @@ function Chat() {
       if (message.conversationId !== activeConversationId) {
         return
       }
-      setMessages((current) => [...current, message])
+      setMessages((current) => mergeMessages(current, [message]))
     }
 
     socket.on('chat:message', handleIncomingMessage)
@@ -153,8 +175,8 @@ function Chat() {
       }
       socket.emit('chat:join', activeConversationId, () => {})
       getMessages(activeConversationId)
-        .then((data) => setMessages(data.messages))
-        .catch((error) => setLoadError(error.message))
+        .then((data) => setMessages((current) => mergeMessages(current, data.messages)))
+        .catch((error) => setMessagesError(error.message))
     }
 
     socket.on('connect', handleReconnect)
@@ -305,13 +327,32 @@ function Chat() {
                 <IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />
               </div>
               <PanelBody>
-                <div className="cm-message-list">
-                  {messages.map((message) => (
-                    <MessageBubble isMine={message.senderId === user.id} key={message.id}>
-                      {message.body}
-                    </MessageBubble>
-                  ))}
-                </div>
+                {isMessagesLoading && messages.length === 0 && (
+                  <EmptyState icon="message" title="Loading messages..." />
+                )}
+                {!isMessagesLoading && messagesError && (
+                  <EmptyState
+                    icon="message"
+                    title="Could not load messages"
+                    subtitle={messagesError}
+                  />
+                )}
+                {!isMessagesLoading && !messagesError && messages.length === 0 && (
+                  <EmptyState
+                    icon="message"
+                    title="No messages yet"
+                    subtitle="Say hello to start the conversation."
+                  />
+                )}
+                {messages.length > 0 && (
+                  <div className="cm-message-list">
+                    {messages.map((message) => (
+                      <MessageBubble isMine={message.senderId === user.id} key={message.id}>
+                        {message.body}
+                      </MessageBubble>
+                    ))}
+                  </div>
+                )}
               </PanelBody>
               <PanelBody as="form" className="flex gap-3" onSubmit={handleSendMessage}>
                 <Input
