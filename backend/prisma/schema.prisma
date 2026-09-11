@@ -32,7 +32,7 @@ model User {
 
   conversationsAsA Conversation[] @relation("ConversationUserA")
   conversationsAsB Conversation[] @relation("ConversationUserB")
-  
+
   messagesSent Message[] @relation("MessageSender")
 }
 

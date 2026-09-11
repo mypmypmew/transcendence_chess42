@@ -40,7 +40,7 @@ function Chat() {
   const [loadError, setLoadError] = useState(null)
   const [messages, setMessages] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [searchResults, setSearchResults] = useState([])   
+  const [searchResults, setSearchResults] = useState([])
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
   const [isMessagesLoading, setIsMessagesLoading] = useState(false)
