@@ -1,12 +1,17 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import AppLayout from '../components/AppLayout.jsx'
 import ChessGame from '../components/ChessGame.jsx'
+import ChessGuideModal from '../components/ChessGuideModal.jsx'
 import useMultiplayerGame from '../hooks/useMultiplayerGame.js'
 
 function Game() {
   const navigate = useNavigate()
   const { gameId: gameIdParam } = useParams()
+
+  // Keep the guide independent from the multiplayer game lifecycle.
+  const [isGuideOpen, setIsGuideOpen] = useState(false)
 
   // Route parameters are strings, but the backend accepts only positive numeric game IDs.
   const gameId = Number(gameIdParam)
@@ -99,9 +104,14 @@ function Game() {
         showRestart={false}
         onMove={makeMove}
         onResign={resignGame}
+        onOpenRules={() => setIsGuideOpen(true)}
         onRestart={returnToLobby}
         onExit={returnToDashboard}
       />
+      {/* Keep the board mounted so incoming moves continue while reading. */}
+      {isGuideOpen && (
+        <ChessGuideModal onClose={() => setIsGuideOpen(false)} />
+      )}
     </AppLayout>
   )
 }

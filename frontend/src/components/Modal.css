@@ -52,3 +52,54 @@
     justify-content: flex-end;
   }
 }
+
+/* Separate guide sections without adding nested cards. */
+.cm-guide-section + .cm-guide-section {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-5);
+}
+
+/* Keep the whole heading clickable and place its indicator on the right. */
+.cm-guide-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  list-style: none;
+  cursor: pointer;
+}
+
+.cm-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.cm-guide-summary h3 {
+  min-width: 0;
+}
+
+/* Draw a small decorative chevron that follows the open state. */
+.cm-guide-summary::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  margin-right: var(--space-1);
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: rotate(-45deg);
+}
+
+.cm-guide-section[open] > .cm-guide-summary::after {
+  transform: rotate(45deg);
+}
+
+.cm-guide-section[open] > .cm-guide-summary {
+  margin-bottom: var(--space-4);
+}
+
+/* Make keyboard navigation visible in both themes. */
+.cm-guide-summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}

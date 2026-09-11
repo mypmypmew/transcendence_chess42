@@ -86,6 +86,7 @@ function ChessGame({
   showRestart = true,
   onMove,
   onResign,
+  onOpenRules,
   onRestart,
   onExit,
 }) {
@@ -262,6 +263,14 @@ function ChessGame({
               Black resigns
             </Button>
           </>
+        )}
+
+        {/* Keep the rules reference beside the game actions. */}
+        {onOpenRules && (
+          <Button type="button" variant="ghost" aria-haspopup="dialog" onClick={onOpenRules}>
+            <span aria-hidden="true">?</span>
+            Rules
+          </Button>
         )}
 
         {showRestart && (
