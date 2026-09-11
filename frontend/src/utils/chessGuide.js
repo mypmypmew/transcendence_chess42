@@ -15,33 +15,39 @@ export const chessGuideSections = [
 		],
 	},
 
-	// Explain movement without analysing the current game position.
+	// Reuse the site's outline chess icons alongside static movement explanations.
 	{
 		id: 'pieces',
 		title: 'Pieces and movement',
 		items: [
 			{
 				title: 'King',
+				icon: 'chess-king',
 				text: 'One square in any direction, avoiding attacked squares.',
 			},
 			{
 				title: 'Queen',
+				icon: 'chess-queen',
 				text: 'Any distance along a rank, file or diagonal.',
 			},
 			{
 				title: 'Rook',
+				icon: 'chess-rook',
 				text: 'Any distance horizontally or vertically.',
 			},
 			{
 				title: 'Bishop',
+				icon: 'chess-bishop',
 				text: 'Any distance diagonally.',
 			},
 			{
 				title: 'Knight',
+				icon: 'chess-knight',
 				text: 'Two squares along one axis and one along the other. Can jump over pieces.',
 			},
 			{
 				title: 'Pawn',
+				icon: 'chess',
 				text: 'Moves forward one square; optionally two initially if both squares are empty. Captures one square diagonally forward.',
 			},
 			{
