@@ -1,7 +1,16 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import LegalFooter from '../components/LegalFooter.jsx'
 import ThemeToggle from '../components/ThemeToggle.jsx'
+import {
+  Alert,
+  Button,
+  FormField,
+  Icon,
+  Input,
+  InputIconButton,
+} from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -84,7 +93,7 @@ function Login() {
             <ThemeToggle />
 
             <div className="auth-mark" aria-hidden="true">
-              <i className="ti ti-crown" />
+              <Icon name="crown" />
             </div>
             <p className="auth-kicker">Welcome back</p>
             <h1 className="auth-title" id="login-title">Continue your next move</h1>
@@ -96,18 +105,19 @@ function Login() {
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="auth-error-slot" aria-live="polite">
               {loginError && (
-                <div className="alert alert-error visible" role="alert">
-                  <i className="ti ti-alert-circle" aria-hidden="true" />
-                  <span>{loginError}</span>
-                </div>
+                <Alert>{loginError}</Alert>
               )}
             </div>
 
-            <div className="field">
-              <label className="field-label" htmlFor="login-email">Email</label>
+            <FormField
+              error={shouldShowEmailError ? 'Email is required' : ''}
+              errorId="login-email-error"
+              label="Email"
+              labelFor="login-email"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${shouldShowEmailError ? 'error' : ''}`}
+                <Input
+                  hasError={shouldShowEmailError}
                   id="login-email"
                   name="email"
                   type="email"
@@ -120,21 +130,19 @@ function Login() {
                   aria-invalid={shouldShowEmailError}
                   aria-describedby={shouldShowEmailError ? 'login-email-error' : undefined}
                 />
-                <span className="input-icon-btn" aria-hidden="true">
-                  <i className="ti ti-mail" />
-                </span>
+                <InputIconButton decorative icon="mail" />
               </div>
-              <div className={`field-error ${shouldShowEmailError ? 'visible' : ''}`} id="login-email-error">
-                <i className="ti ti-alert-circle" aria-hidden="true" />
-                <span>Email is required</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="login-password">Password</label>
+            <FormField
+              error={shouldShowPasswordError ? 'Password is required' : ''}
+              errorId="login-password-error"
+              label="Password"
+              labelFor="login-password"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${shouldShowPasswordError ? 'error' : ''}`}
+                <Input
+                  hasError={shouldShowPasswordError}
                   id="login-password"
                   name="password"
                   type={passwordType}
@@ -146,32 +154,32 @@ function Login() {
                   aria-invalid={shouldShowPasswordError}
                   aria-describedby={shouldShowPasswordError ? 'login-password-error' : undefined}
                 />
-                <button
-                  className="input-icon-btn"
-                  type="button"
-                  onClick={togglePasswordVisibility}
+                <InputIconButton
                   aria-label={passwordLabel}
+                  icon={passwordIcon}
                   title={passwordLabel}
-                >
-                  <i className={passwordIcon} aria-hidden="true" />
-                </button>
+                  onClick={togglePasswordVisibility}
+                />
               </div>
-              <div className={`field-error ${shouldShowPasswordError ? 'visible' : ''}`} id="login-password-error">
-                <i className="ti ti-alert-circle" aria-hidden="true" />
-                <span>Password is required</span>
-              </div>
-            </div>
+            </FormField>
 
-            <button className="btn btn-primary btn-full" type="submit" disabled={isLoading}>
+            <Button
+              disabled={isLoading}
+              fullWidth
+              icon={!isLoading ? 'arrow-right' : undefined}
+              iconPosition="right"
+              type="submit"
+            >
               {isLoading ? 'Signing in…' : 'Sign in'}
-              {!isLoading && <i className="ti ti-arrow-right" aria-hidden="true" />}
-            </button>
+            </Button>
           </form>
 
           <footer className="auth-footer">
             <span>New here?</span>
             <Link className="auth-link" to="/register">Sign up</Link>
           </footer>
+
+          <LegalFooter />
         </div>
       </section>
     </main>

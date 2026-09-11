@@ -1,19 +1,25 @@
+import {
+  Badge,
+  EmptyState,
+  Icon,
+  ListRow,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from './ui.jsx'
+
 const resultConfig = {
-  win: { label: 'Win', badge: 'badge badge-win' },
-  loss: { label: 'Loss', badge: 'badge badge-loss' },
-  draw: { label: 'Draw', badge: 'badge badge-draw' },
+  win: { label: 'Win', variant: 'win' },
+  loss: { label: 'Loss', variant: 'loss' },
+  draw: { label: 'Draw', variant: 'draw' },
+  unknown: { label: 'Pending', variant: 'accent' },
 }
 
-// Mocked data — no backend connection yet.
-// Each match: opponent, result relative to the profile owner, duration and date.
-const mockMatches = [
-  { id: 1, opponent: 'Serhii', result: 'win', duration: '18:42', date: '2026-07-11T14:20:00' },
-  { id: 2, opponent: 'Taulant', result: 'loss', duration: '32:05', date: '2026-07-10T09:05:00' },
-  { id: 3, opponent: 'Tatiana', result: 'draw', duration: '45:12', date: '2026-07-08T19:40:00' },
-  { id: 4, opponent: 'Alima', result: 'win', duration: '11:57', date: '2026-07-05T21:15:00' },
-]
-
 function formatDate(isoDate) {
+  if (!isoDate) {
+    return 'In progress'
+  }
+
   return new Date(isoDate).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
@@ -21,54 +27,90 @@ function formatDate(isoDate) {
   })
 }
 
-function sortByDateDesc(matches) {
-  return [...matches].sort((a, b) => new Date(b.date) - new Date(a.date))
+function getOpponent(game, currentUserId) {
+  return game.white.id === currentUserId ? game.black : game.white
+}
+
+function getGameResult(game, currentUserId) {
+  if (!game.result) {
+    return 'unknown'
+  }
+
+  if (game.result === 'DRAW') {
+    return 'draw'
+  }
+
+  if (!game.winnerId) {
+    return 'unknown'
+  }
+
+  return game.winnerId === currentUserId ? 'win' : 'loss'
 }
 
 /**
- * MatchHistory — UI-only component (personal account sub-section).
+ * MatchHistory — shared game history for Profile and Dashboard.
  * Props:
- *  - matches: array of { id, opponent, result: 'win'|'loss'|'draw', duration, date } — defaults to mocked data
- *  - isLoading: boolean — shows a loading placeholder instead of the list
+ *  - games: backend game list from GET /api/games
+ *  - currentUserId: authenticated user id
+ *  - error: request error message
+ *  - isLoading: shows a loading placeholder instead of the list
+ *  - title: panel heading; defaults to the existing Profile heading
  *
  * Rows are not clickable in this version (no game details view yet).
  */
-function MatchHistory({ matches = mockMatches, isLoading = false }) {
-  const sortedMatches = sortByDateDesc(matches)
-
+function MatchHistory({
+  games = [],
+  currentUserId,
+  error = null,
+  isLoading = false,
+  title = 'Match history'
+}) {
   return (
-    <section className="cm-panel" aria-labelledby="history-title">
-      <div className="cm-panel-header">
-        <div>
-          <p className="label">Games</p>
-          <h2 className="cm-section-title" id="history-title">Match history</h2>
-        </div>
-        <span className="badge badge-accent">Preview</span>
-      </div>
+    <Panel aria-labelledby="history-title">
+      <PanelHeader
+        action={<Badge>{games.length}</Badge>}
+        eyebrow="Games"
+        title={title}
+        titleId="history-title"
+      />
 
-      <div className="cm-panel-body cm-list">
+      <PanelBody className="cm-list">
         {isLoading ? (
           <p className="cm-muted">Loading matches…</p>
-        ) : sortedMatches.length === 0 ? (
-          <p className="cm-muted">No matches yet</p>
+        ) : error ? (
+          <p className="cm-muted">{error}</p>
+        ) : games.length === 0 ? (
+          <EmptyState title="No matches yet" />
         ) : (
-          sortedMatches.map((match) => {
-            const config = resultConfig[match.result]
+          games.map((game) => {
+            const opponent = getOpponent(game, currentUserId)
+            const result = getGameResult(game, currentUserId)
+            const config = resultConfig[result]
 
             return (
-              <article className="cm-list-row" key={match.id}>
-                <i className="ti ti-chess text-accent" aria-hidden="true" />
+              <ListRow as="article" key={game.id}>
+                <Icon className="text-accent" name="chess" />
                 <div className="min-w-0">
-                  <p className="text-primary truncate">vs {match.opponent}</p>
-                  <p className="cm-muted">{match.duration} · {formatDate(match.date)}</p>
+                  {/* Separate the opponent heading from muted details and keep the prefix smaller. */}
+                  <p className="stat-num text-primary truncate">
+                    <small>vs </small>
+                    <span>{opponent.username}</span>
+                  </p>
+                  {/* Keep opponent rating separate from the game status and date. */}
+                  <p className="cm-muted">
+                    Rating {opponent.rating}
+                  </p>
+                  <p className="cm-muted">
+                    {game.status} · {formatDate(game.endedAt ?? game.createdAt)}
+                  </p>
                 </div>
-                <span className={config.badge}>{config.label}</span>
-              </article>
+                <Badge variant={config.variant}>{config.label}</Badge>
+              </ListRow>
             )
           })
         )}
-      </div>
-    </section>
+      </PanelBody>
+    </Panel>
   )
 }
 

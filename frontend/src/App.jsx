@@ -11,6 +11,8 @@ import Profile from './pages/Profile'
 import Friends from './pages/Friends'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings'
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'
+import TermsOfService from './pages/legal/TermsOfService'
 
 function AuthLoadingScreen() {
   return (
@@ -66,9 +68,14 @@ function App() {
 
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/game-lobby" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
-        <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+        {/* Redirect old game links to matchmaking instead of starting a local game. */}
+        <Route path="/game" element={<ProtectedRoute><Navigate to="/game-lobby" replace /></ProtectedRoute>} />
+        {/* Keep the server-generated game ID in the URL so reconnect can restore the correct game. */}
+        <Route path="/game/:gameId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
         <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}

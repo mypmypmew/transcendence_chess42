@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import LegalFooter from '../components/LegalFooter.jsx'
+import {
+  Alert,
+  Button,
+  FormField,
+  Icon,
+  Input,
+  InputIconButton,
+} from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
@@ -119,7 +128,7 @@ function Register() {
         <div className="auth-card">
           <header className="auth-card-intro">
             <div className="auth-mark" aria-hidden="true">
-              <i className="ti ti-chess-knight" />
+              <Icon name="chess-knight" />
             </div>
             <p className="auth-kicker">Join ChessMate</p>
             <h1 className="auth-title" id="register-title">Build your chess journey</h1>
@@ -131,17 +140,18 @@ function Register() {
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="auth-error-slot" aria-live="polite">
               {serverError && (
-                <div className="alert alert-error visible" role="alert">
-                  <i className="ti ti-alert-circle" aria-hidden="true" />
-                  <span>{serverError}</span>
-                </div>
+                <Alert>{serverError}</Alert>
               )}
             </div>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-name">Username</label>
-              <input
-                className={`input ${usernameError ? 'error' : ''}`}
+            <FormField
+              error={usernameError}
+              errorId="register-name-error"
+              label="Username"
+              labelFor="register-name"
+            >
+              <Input
+                hasError={Boolean(usernameError)}
                 id="register-name"
                 name="username"
                 autoComplete="username"
@@ -155,19 +165,16 @@ function Register() {
                 aria-invalid={Boolean(usernameError)}
                 aria-describedby={usernameError ? 'register-name-error' : undefined}
               />
-              <div
-                className={`field-error ${usernameError ? 'visible' : ''}`}
-                id="register-name-error"
-              >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
-                <span>{usernameError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-email">Email</label>
-              <input
-                className={`input ${emailError ? 'error' : ''}`}
+            <FormField
+              error={emailError}
+              errorId="register-email-error"
+              label="Email"
+              labelFor="register-email"
+            >
+              <Input
+                hasError={Boolean(emailError)}
                 id="register-email"
                 name="email"
                 type="email"
@@ -183,20 +190,17 @@ function Register() {
                 aria-invalid={Boolean(emailError)}
                 aria-describedby={emailError ? 'register-email-error' : undefined}
               />
-              <div
-                className={`field-error ${emailError ? 'visible' : ''}`}
-                id="register-email-error"
-              >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
-                <span>{emailError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-password">Password</label>
+            <FormField
+              error={passwordError}
+              errorId="register-password-error"
+              label="Password"
+              labelFor="register-password"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${passwordError ? 'error' : ''}`}
+                <Input
+                  hasError={Boolean(passwordError)}
                   id="register-password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
@@ -211,15 +215,12 @@ function Register() {
                   aria-invalid={Boolean(passwordError)}
                   aria-describedby="register-password-policy register-password-error"
                 />
-                <button
-                  className="input-icon-btn"
-                  type="button"
-                  onClick={() => setShowPassword((currentValue) => !currentValue)}
+                <InputIconButton
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  icon={showPassword ? 'eye-off' : 'eye'}
                   title={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <i className={`ti ti-${showPassword ? 'eye-off' : 'eye'}`} aria-hidden="true" />
-                </button>
+                  onClick={() => setShowPassword((currentValue) => !currentValue)}
+                />
               </div>
               <div
                 className="policy-box"
@@ -227,38 +228,33 @@ function Register() {
                 aria-label="Password requirements"
               >
                 <span className={`policy-rule ${passwordPolicy.minLength ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.minLength ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.minLength ? 'check' : 'circle'} />
                   At least 8 characters
                 </span>
                 <span className={`policy-rule ${passwordPolicy.uppercase ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.uppercase ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.uppercase ? 'check' : 'circle'} />
                   One uppercase letter
                 </span>
                 <span className={`policy-rule ${passwordPolicy.number ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.number ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.number ? 'check' : 'circle'} />
                   One number
                 </span>
                 <span className={`policy-rule ${passwordPolicy.specialCharacter ? 'ok' : ''}`}>
-                  <i className={`ti ti-${passwordPolicy.specialCharacter ? 'check' : 'circle'}`} aria-hidden="true" />
+                  <Icon name={passwordPolicy.specialCharacter ? 'check' : 'circle'} />
                   One special character
                 </span>
               </div>
-              <div
-                className={`field-error ${passwordError ? 'visible' : ''}`}
-                id="register-password-error"
-              >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
-                <span>{passwordError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="field">
-              <label className="field-label" htmlFor="register-confirm-password">
-                Confirm Password
-              </label>
+            <FormField
+              error={confirmPasswordError}
+              errorId="register-confirm-password-error"
+              label="Confirm Password"
+              labelFor="register-confirm-password"
+            >
               <div className="input-wrap">
-                <input
-                  className={`input ${confirmPasswordError ? 'error' : ''}`}
+                <Input
+                  hasError={Boolean(confirmPasswordError)}
                   id="register-confirm-password"
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -273,35 +269,32 @@ function Register() {
                   aria-invalid={Boolean(confirmPasswordError)}
                   aria-describedby={confirmPasswordError ? 'register-confirm-password-error' : undefined}
                 />
-                <button
-                  className="input-icon-btn"
-                  type="button"
-                  onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
+                <InputIconButton
                   aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
+                  icon={showConfirmPassword ? 'eye-off' : 'eye'}
                   title={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
-                >
-                  <i className={`ti ti-${showConfirmPassword ? 'eye-off' : 'eye'}`} aria-hidden="true" />
-                </button>
+                  onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
+                />
               </div>
-              <div
-                className={`field-error ${confirmPasswordError ? 'visible' : ''}`}
-                id="register-confirm-password-error"
-              >
-                <i className="ti ti-alert-circle" aria-hidden="true" />
-                <span>{confirmPasswordError}</span>
-              </div>
-            </div>
+            </FormField>
 
-            <button className="btn btn-primary btn-full" type="submit" disabled={isLoading}>
+            <Button
+              disabled={isLoading}
+              fullWidth
+              icon={!isLoading ? 'arrow-right' : undefined}
+              iconPosition="right"
+              type="submit"
+            >
               {isLoading ? 'Creating account…' : 'Create account'}
-              {!isLoading && <i className="ti ti-arrow-right" aria-hidden="true" />}
-            </button>
+            </Button>
           </form>
 
           <footer className="auth-footer">
             <span>Already have an account?</span>
             <Link className="auth-link" to="/login">Sign in</Link>
           </footer>
+
+          <LegalFooter />
         </div>
       </section>
     </main>

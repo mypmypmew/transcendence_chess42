@@ -1,15 +1,21 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
+import {
+  Alert,
+  Icon,
+} from './ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 const navigationItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: 'ti ti-layout-dashboard' },
-  { to: '/game', label: 'Game', icon: 'ti ti-chess-rook' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'ti ti-trophy' },
-  { to: '/profile', label: 'Profile', icon: 'ti ti-user-circle' },
-  { to: '/chat', label: 'Chat', icon: 'ti ti-messages' },
-  { action: 'logout', label: 'Logout', icon: 'ti ti-logout' },
+  { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+  // Open matchmaking before navigating the player to a server-created game.
+  { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
+  { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
+  { to: '/friends', label: 'Friends', icon: 'users' },
+  { to: '/profile', label: 'Profile', icon: 'user-circle' },
+  { to: '/chat', label: 'Chat', icon: 'messages' },
+  { action: 'logout', label: 'Logout', icon: 'logout' },
 ]
 
 function Sidebar({ onOpenLeaderboard }) {
@@ -48,7 +54,7 @@ function Sidebar({ onOpenLeaderboard }) {
                 type="button"
                 onClick={onOpenLeaderboard}
               >
-                <i className={item.icon} aria-hidden="true" />
+                <Icon name={item.icon} />
                 <span>{item.label}</span>
               </button>
             )
@@ -63,7 +69,7 @@ function Sidebar({ onOpenLeaderboard }) {
                 disabled={isLoggingOut}
                 onClick={handleLogout}
               >
-                <i className={item.icon} aria-hidden="true" />
+                <Icon name={item.icon} />
                 <span>{isLoggingOut ? 'Logging out…' : item.label}</span>
               </button>
             )
@@ -81,16 +87,13 @@ function Sidebar({ onOpenLeaderboard }) {
               key={item.to}
               to={item.to}
             >
-              <i className={item.icon} aria-hidden="true" />
+              <Icon name={item.icon} />
               <span>{item.label}</span>
             </NavLink>
           )
         })}
         {logoutError && (
-          <div className="alert alert-error visible" role="alert">
-            <i className="ti ti-alert-circle" aria-hidden="true" />
-            <span>{logoutError}</span>
-          </div>
+          <Alert>{logoutError}</Alert>
         )}
       </nav>
     </aside>

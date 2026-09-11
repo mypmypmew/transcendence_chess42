@@ -3,8 +3,10 @@ import { NavLink } from 'react-router-dom'
 import Sidebar from './Sidebar.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import LeaderboardModal from './LeaderboardModal.jsx'
+import LegalFooter from './LegalFooter.jsx'
+import { Icon } from './ui.jsx'
 
-function AppLayout({ eyebrow, title, actions, children }) {
+function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }) {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
   
   return (
@@ -13,7 +15,7 @@ function AppLayout({ eyebrow, title, actions, children }) {
       <div className="cm-app-frame">
         <header className="cm-header">
           <NavLink className="cm-brand" to="/dashboard" aria-label="ChessMate dashboard">
-            <i className="ti ti-crown" aria-hidden="true" />
+            <Icon name="crown" />
             <span>ChessMate</span>
           </NavLink>
           <div className="cm-header-copy">
@@ -31,6 +33,7 @@ function AppLayout({ eyebrow, title, actions, children }) {
             {children}
           </main>
         </div>
+        {showLegalFooter && <LegalFooter />}
       </div>
       {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
     </div>

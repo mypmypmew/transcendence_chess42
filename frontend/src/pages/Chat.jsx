@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react'
-import { getMessages, listConversations, openConversation } from '../api/chatApi.js'
+import { getMessages, listConversations } from '../api/chatApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
-
-
+import {
+  Button,
+  EmptyState,
+  IconButton,
+  Input,
+  ListRow,
+  MessageBubble,
+  Panel,
+  PanelBody,
+  PanelHeader,
+} from '../components/ui.jsx'
 
 function Chat() {
   const { user } = useAuth()
-  const { socket } = useSocket() 
+  const { socket } = useSocket()
   const [activeConversationId, setActiveConversationId] = useState(null)
   const [messageText, setMessageText] = useState('')
   const [conversationList, setConversationList] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [messages, setMessages] = useState([])
-  const [newUserId, setNewUserId] = useState('')
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
 
@@ -47,11 +55,12 @@ function Chat() {
     }
   }, [])
 
-    useEffect(() => {
+  useEffect(() => {
     if (!activeConversationId) {
       setMessages([])
       return
     }
+
     socket.emit('chat:join', activeConversationId, () => {})
 
     let cancelled = false
@@ -74,9 +83,9 @@ function Chat() {
     return () => {
       cancelled = true
     }
-  }, [activeConversationId])
+  }, [socket, activeConversationId])
 
-    useEffect(() => {
+  useEffect(() => {
     function handleIncomingMessage(message) {
       if (message.conversationId !== activeConversationId) {
         return
@@ -91,7 +100,7 @@ function Chat() {
     }
   }, [socket, activeConversationId])
 
-    useEffect(() => {
+  useEffect(() => {
     function handleReconnect() {
       if (!activeConversationId) {
         return
@@ -109,27 +118,6 @@ function Chat() {
     }
   }, [socket, activeConversationId])
 
-   async function handleOpenConversation(event) { 
-    event.preventDefault()
-    const parsedId = Number(newUserId)
-
-    if (!Number.isInteger(parsedId) || parsedId <= 0) {
-      setLoadError('Enter a valid user id')
-      return
-    }
-
-    try {
-      const data = await openConversation(parsedId)
-      const listData = await listConversations()
-      setConversationList(listData.conversations)
-      setActiveConversationId(data.conversation.id)
-      setNewUserId('')
-      setLoadError(null)
-    } catch (error) {
-      setLoadError(error.message)
-    }
-  }
-
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
@@ -146,7 +134,7 @@ function Chat() {
       'chat:message',
       { conversationId: activeConversationId, body: trimmedMessage },
       (reply) => {
-        if (reply.error) {
+        if (reply?.error) {
           setLoadError(reply.error)
         }
       },
@@ -154,55 +142,41 @@ function Chat() {
 
     setMessageText('')
   }
+
   return (
-    <AppLayout eyebrow="Messages" title="Chat">
-		<div className="cm-page-grid chat">
-        <section className="cm-panel" aria-labelledby="chat-list-title">
-          <div className="cm-panel-header">
-            <div>
-              <h2 className="cm-section-title" id="chat-list-title">Conversations</h2>
-              <p className="cm-muted">Existing dialogs only</p>
-            </div>
-          </div>
-
-          <form className="cm-panel-body flex gap-3" onSubmit={handleOpenConversation}>
-            <input
-              className="input flex-1"
-              type="text"
-              value={newUserId}
-              placeholder="User id"
-              aria-label="User id to message"
-              onChange={(event) => setNewUserId(event.target.value)}
-            />
-            <button className="btn btn-primary" type="submit" disabled={!newUserId.trim()}>
-              Start
-            </button>
-          </form>
-
-          <div className="cm-panel-body">
+    <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
+      <div className="cm-page-grid chat">
+        <Panel aria-labelledby="chat-list-title">
+          <PanelHeader title="Conversations" titleId="chat-list-title">
+            <p className="cm-muted">Existing dialogs only</p>
+          </PanelHeader>
+          <PanelBody>
             {isLoading && (
-              <div className="empty-state">
-                <p className="text-primary">Loading conversations...</p>
-              </div>
+              <EmptyState
+                icon="message-circle"
+                title="Loading conversations..."
+              />
             )}
             {!isLoading && loadError && (
-              <div className="empty-state">
-                <p className="text-primary">Could not load conversations</p>
-                <span className="text-muted">{loadError}</span>
-              </div>
+              <EmptyState
+                icon="message-circle"
+                title="Could not load conversations"
+                subtitle={loadError}
+              />
             )}
             {!isLoading && !loadError && !hasConversations && (
-              <div className="empty-state">
-                <i className="ti ti-message-circle" aria-hidden="true" />
-                <p className="text-primary">No conversations yet</p>
-                <span className="text-muted">Message someone from your friends list.</span>
-              </div>
+              <EmptyState
+                icon="message-circle"
+                title="No conversations yet"
+                subtitle="Message someone from your friends list."
+              />
             )}
             {!isLoading && !loadError && hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
-                  <button
-                    className={activeConversationId === conversation.id ? 'cm-list-row active' : 'cm-list-row'}
+                  <ListRow
+                    as="button"
+                    className={activeConversationId === conversation.id ? 'active' : ''}
                     key={conversation.id}
                     type="button"
                     onClick={() => setActiveConversationId(conversation.id)}
@@ -212,21 +186,21 @@ function Chat() {
                       <strong className="text-primary">{conversation.user.username}</strong>
                       <p className="cm-muted">Rating {conversation.user.rating}</p>
                     </div>
-                  </button>
+                  </ListRow>
                 ))}
               </div>
             )}
-          </div>
-        </section>
-        <section className="cm-panel cm-chat-shell" aria-labelledby="chat-active-title">
+          </PanelBody>
+        </Panel>
+        <Panel className="cm-chat-shell" aria-labelledby="chat-active-title">
           {!activeConversation && (
-            <div className="cm-panel-body">
-              <div className="empty-state">
-                <i className="ti ti-message" aria-hidden="true" />
-                <p className="text-primary">Select a conversation</p>
-                <span className="text-muted">Choose a dialog from the left side.</span>
-              </div>
-            </div>
+            <PanelBody>
+              <EmptyState
+                icon="message"
+                title="Select a conversation"
+                subtitle="Choose a dialog from the left side."
+              />
+            </PanelBody>
           )}
           {activeConversation && (
             <>
@@ -238,37 +212,36 @@ function Chat() {
                     <p className="cm-muted">Rating {activeConversation.user.rating}</p>
                   </div>
                 </div>
-                <button className="btn btn-ghost btn-icon" type="button" aria-label="Close conversation" onClick={handleCloseConversation}>
-                  <i className="ti ti-x" aria-hidden="true" />
-                </button>
+                <IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />
               </div>
-              <div className="cm-panel-body">
+              <PanelBody>
                 <div className="cm-message-list">
                   {messages.map((message) => (
-                    <div className={message.senderId === user.id ? 'cm-message mine' : 'cm-message'} key={message.id}>
+                    <MessageBubble isMine={message.senderId === user.id} key={message.id}>
                       {message.body}
-                    </div>
+                    </MessageBubble>
                   ))}
                 </div>
-              </div>
-              <form className="cm-panel-body flex gap-3" onSubmit={handleSendMessage}>
-                <input
-                  className="input flex-1"
+              </PanelBody>
+              <PanelBody as="form" className="flex gap-3" onSubmit={handleSendMessage}>
+                <Input
+                  className="flex-1"
                   type="text"
                   value={messageText}
                   placeholder="Write a message..."
                   aria-label="Message text"
                   onChange={(event) => setMessageText(event.target.value)}
                 />
-                <button className="btn btn-primary" type="submit" disabled={!messageText.trim()}>
+                <Button type="submit" disabled={!messageText.trim()}>
                   Send
-                </button>
-              </form>
+                </Button>
+              </PanelBody>
             </>
           )}
-        </section>
+        </Panel>
       </div>
     </AppLayout>
   )
 }
+
 export default Chat

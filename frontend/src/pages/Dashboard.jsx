@@ -1,27 +1,97 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import Avatar from '../components/Avatar.jsx'
+import MatchHistory from '../components/MatchHistory.jsx'
 import AppLayout from '../components/AppLayout'
+import {
+  ActionCard,
+  Alert,
+  Button,
+  Icon,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  StatCell,
+} from '../components/ui.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { getGames } from '../api/gameApi.js'
+import { getGameStatistics, getWeeklyActivity } from '../utils/gameStatistics.js'
 import './App.css'
 
-const recentGames = [
-  { opponent: 'Artemis', result: 'Win', rating: '+12', time: '2 hours ago', badge: 'badge-win' },
-  { opponent: 'BishopBrain', result: 'Draw', rating: '0', time: 'Yesterday', badge: 'badge-draw' },
-  { opponent: 'CastleGuard', result: 'Loss', rating: '-8', time: '2 days ago', badge: 'badge-loss' },
-]
-
 function Dashboard() {
+  // Use the signed-in account as the source of the displayed rating.
+  const { user } = useAuth()
+  const userId = user?.id
+  const [history, setHistory] = useState(null)
+
+  // Load history for the current account and ignore outdated responses.
+  useEffect(() => {
+    if (!userId) {
+      return
+    }
+
+    let isActive = true
+
+    async function loadGames() {
+      try {
+        const data = await getGames()
+
+        // An invalid response must not appear as an empty game history.
+        if (!Array.isArray(data?.games)) {
+          throw new Error('Unable to load game statistics.')
+        }
+
+        if (isActive) {
+          setHistory({
+            userId,
+            games: data.games,
+            error: null,
+          })
+        }
+      } catch (error) {
+        if (isActive) {
+          setHistory({
+            userId,
+            games: [],
+            error: error.message || 'Unable to load game statistics.',
+          })
+        }
+      }
+    }
+
+    loadGames()
+
+    return () => {
+      isActive = false
+    }
+  }, [userId])
+
+  // Never display a previous account's history while loading a new one.
+  const currentHistory = history?.userId === userId ? history : null
+  const isHistoryLoading = Boolean(userId) && currentHistory === null
+  const historyError = currentHistory?.error ?? null
+
+  // Calculate statistics only after a successful response.
+  const statistics = currentHistory && !historyError
+    ? getGameStatistics(currentHistory.games, userId)
+    : null
+
+  // Use the full history so weekly activity is not limited to five recent games.
+  const weeklyActivity = currentHistory && !historyError
+    ? getWeeklyActivity(currentHistory.games, userId)
+    : null
+
+  // Keep an empty week at zero and avoid division by zero when scaling bars.
+  const maxDailyGames = Math.max(
+    1,
+    ...(weeklyActivity?.map((day) => day.count) ?? []),
+  )
+
+  // Open matchmaking directly from the dashboard's primary header action.
   const actions = (
-    <>
-      <Link className="btn btn-ghost" to="/game">
-        <i className="ti ti-target-arrow" aria-hidden="true" />
-        Think
-      </Link>
-      <Link className="btn btn-ghost" to="/leaderboard">
-        <i className="ti ti-trophy" aria-hidden="true" />
+      <Button as={Link} icon="trophy" to="/game-lobby" variant="ghost">
         Compete
-      </Link>
-    </>
+      </Button>
   )
 
   return (
@@ -36,99 +106,105 @@ function Dashboard() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link className="btn btn-primary" to="/game">Play now</Link>
-            <Link className="btn btn-ghost" to="/leaderboard">View rankings</Link>
+            <Button as={Link} to="/game-lobby">Play now</Button>
+            <Button as={Link} to="/leaderboard" variant="ghost">View rankings</Button>
           </div>
         </section>
 
-        <section className="cm-panel" aria-labelledby="rating-title">
-          <div className="cm-panel-header">
-            <h2 className="cm-section-title" id="rating-title">Rating</h2>
-            <span className="badge badge-accent">Rapid</span>
-          </div>
-          <div className="cm-panel-body">
+        <Panel aria-labelledby="rating-title">
+          <PanelHeader
+            title="Rating"
+            titleId="rating-title"
+          />
+          <PanelBody>
+            {/* Keep unavailable statistics distinct from a successfully loaded empty history. */}
             <div className="cm-stat-grid">
-              <div className="stat-cell">
-                <div className="stat-num">1768</div>
-                <div className="stat-lbl">Rating</div>
-              </div>
-              <div className="stat-cell">
-                <div className="stat-num">312</div>
-                <div className="stat-lbl">Games</div>
-              </div>
-              <div className="stat-cell">
-                <div className="stat-num">61%</div>
-                <div className="stat-lbl">Win rate</div>
-              </div>
+              <StatCell label="Rating" value={user?.rating ?? '-'} />
+              <StatCell label="Games" value={statistics?.totalGames ?? '-'} />
+              <StatCell
+                label="Win rate"
+                value={statistics && statistics.winRate !== null
+                  ? `${statistics.winRate}%`
+                  : '-'}
+              />
             </div>
-            <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
-              <p className="label">Weekly progress</p>
-              <div className="flex items-end gap-2" aria-hidden="true" style={{ height: 92, marginTop: 'var(--space-3)' }}>
-                {[34, 42, 36, 52, 58, 68, 76, 88].map((height, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      height: `${height}%`,
-                      flex: 1,
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <section className="cm-panel">
-          <div className="cm-panel-header">
-            <h2 className="cm-section-title">Training</h2>
-            <span className="cm-muted">Today</span>
-          </div>
-          <div className="cm-panel-body cm-action-grid">
-            <Link className="cm-action-card" to="/game">
-              <i className="ti ti-chess-rook" aria-hidden="true" />
+            {isHistoryLoading && (
+              <p className="cm-muted" role="status">
+                Loading game statistics...
+              </p>
+            )}
+
+            {historyError && (
+              <Alert>{historyError}</Alert>
+            )}
+
+            {/* Render real daily counts only after history has loaded successfully. */}
+            {weeklyActivity && (
+              <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
+                <p className="label">Completed games over 7 days</p>
+                <div className="flex gap-2" style={{ marginTop: 'var(--space-3)' }}>
+                  {weeklyActivity.map((day) => (
+                    <div className="flex-1 min-w-0 text-center" key={day.date}>
+                      {/* Keep each count above its bar and reserve space for the tallest label. */}
+                      <div className="flex flex-col" style={{ height: 'calc(92px + 1.5em)', justifyContent: 'flex-end' }}>
+                        <p className="text-primary">{day.count}</p>
+
+                        {/* Only the decorative bar is hidden from assistive technologies. */}
+                        <div
+                          aria-hidden="true"
+                          style={{
+                            height: `${(day.count / maxDailyGames) * 92}px`,
+                            flexShrink: 0,
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
+                          }}
+                        />
+                      </div>
+
+                      <p className="cm-muted">{day.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </PanelBody>
+        </Panel>
+
+        <Panel>
+          <PanelHeader action={<span className="cm-muted">Today</span>} title="Training" />
+          <PanelBody className="cm-action-grid">
+            <ActionCard as={Link} to="/game-lobby">
+              <Icon name="chess-rook" />
               <h3>Quick Play</h3>
               <p className="cm-muted">Instant match with default settings</p>
-            </Link>
-            <Link className="cm-action-card" to="/dashboard">
-              <i className="ti ti-puzzle" aria-hidden="true" />
+            </ActionCard>
+            <ActionCard as={Link} to="/dashboard">
+              <Icon name="puzzle" />
               <h3>Puzzles - Experimental</h3>
               <p className="cm-muted">Sharpen tactics</p>
-            </Link>
-            <Link className="cm-action-card" to="/dashboard">
-              <i className="ti ti-book" aria-hidden="true" />
+            </ActionCard>
+            <ActionCard as={Link} to="/dashboard">
+              <Icon name="book" />
               <h3>Lessons - Experimental</h3>
               <p className="cm-muted">Learn positions</p>
-            </Link>
-            <Link className="cm-action-card" to="/dashboard">
-              <i className="ti ti-award" aria-hidden="true" />
+            </ActionCard>
+            <ActionCard as={Link} to="/dashboard">
+              <Icon name="award" />
               <h3>Tournaments - Experimental</h3>
               <p className="cm-muted">Join and compete</p>
-            </Link>
-          </div>
-        </section>
+            </ActionCard>
+          </PanelBody>
+        </Panel>
 
-        <section className="cm-panel">
-          <div className="cm-panel-header">
-            <h2 className="cm-section-title">Recent games</h2>
-          </div>
-          <div className="cm-panel-body cm-list">
-            {recentGames.map((game) => (
-              <div className="cm-list-row" key={game.opponent}>
-                <Avatar avatar={null} name={game.opponent} className="avatar avatar-md" aria-hidden="true" />
-                <div className="min-w-0">
-                  <p className="text-primary truncate">vs {game.opponent}</p>
-                  <p className="cm-muted">{game.time}</p>
-                </div>
-                <div className="text-right">
-                  <span className={`badge ${game.badge}`}>{game.result}</span>
-                  <p className="cm-muted">{game.rating}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Reuse the existing history panel for the five latest completed games. */}
+        <MatchHistory
+          title="Recent games"
+          games={statistics?.recentGames ?? []}
+          currentUserId={userId}
+          isLoading={isHistoryLoading}
+          error={historyError}
+        />
       </div>
     </AppLayout>
   )
