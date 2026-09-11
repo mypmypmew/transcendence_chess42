@@ -89,8 +89,8 @@ function ChessGuideModal({ onClose }) {
 							<dl className="flex flex-col gap-3">
 								{section.items.map((item) => (
 									<div key={item.title}>
-										<dt className="text-primary">
-											<strong>{item.title}</strong>
+										<dt className="stat-num text-primary">
+											{item.title}
 										</dt>
 										<dd className="cm-muted">{item.text}</dd>
 									</div>
