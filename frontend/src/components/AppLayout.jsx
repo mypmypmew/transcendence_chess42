@@ -24,6 +24,11 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
           </div>
           <div className="cm-header-actions">
             {actions}
+            {/* Keep account access beside the theme toggle on every page. */}
+            <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
+              <Icon name="user-circle" />
+              <span>Profile</span>
+            </NavLink>
             <ThemeToggle />
           </div>
         </header>

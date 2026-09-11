@@ -7,13 +7,13 @@ import {
 } from './ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
+// Profile access lives in the shared header beside the theme toggle.
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
   // Open matchmaking before navigating the player to a server-created game.
   { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
   { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
-  { to: '/profile', label: 'Profile', icon: 'user-circle' },
   { to: '/chat', label: 'Chat', icon: 'messages' },
   { action: 'logout', label: 'Logout', icon: 'logout' },
 ]
