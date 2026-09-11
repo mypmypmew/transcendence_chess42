@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AppLayout from '../components/AppLayout.jsx'
 import ChessGame from '../components/ChessGame.jsx'
 import ChessGuideModal from '../components/ChessGuideModal.jsx'
-import { Button } from '../components/ui.jsx'
 import useMultiplayerGame from '../hooks/useMultiplayerGame.js'
 
 function Game() {
@@ -79,17 +78,7 @@ function Game() {
   }
 
   return (
-    <AppLayout
-      eyebrow="Game Screen"
-      title="Multiplayer Chess"
-      showLegalFooter={false}
-      actions={(
-        <Button type="button" variant="ghost" aria-haspopup="dialog" onClick={() => setIsGuideOpen(true)}>
-          <span aria-hidden="true">?</span>
-          Rules
-        </Button>
-      )}
-    >
+    <AppLayout eyebrow="Game Screen" title="Multiplayer Chess" showLegalFooter={false}>
       {gameError && (
         <section className="cm-panel">
           <div className="cm-panel-body">
@@ -115,6 +104,7 @@ function Game() {
         showRestart={false}
         onMove={makeMove}
         onResign={resignGame}
+        onOpenRules={() => setIsGuideOpen(true)}
         onRestart={returnToLobby}
         onExit={returnToDashboard}
       />
