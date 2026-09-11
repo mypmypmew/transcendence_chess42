@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getMessages, listConversations } from '../api/chatApi.js'
+import { getMessages, listConversations, openConversation } from '../api/chatApi.js'
 import { searchUsers } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
@@ -26,12 +26,13 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [messages, setMessages] = useState([])
-   const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState([])   
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
+  const isSearching = searchTerm.trim().length >= 2
 
   useEffect(() => {
     let cancelled = false
@@ -59,6 +60,46 @@ function Chat() {
       cancelled = true
     }
   }, [])
+
+    useEffect(() => {
+    const trimmedSearch = searchTerm.trim()
+
+    if (trimmedSearch.length < 2) {
+      setSearchResults([])
+      return
+    }
+
+    let isCancelled = false
+
+    const timer = window.setTimeout(async () => {
+      try {
+        if (!isCancelled) {
+          setIsSearchLoading(true)
+          setSearchError(null)
+        }
+
+        const data = await searchUsers(trimmedSearch)
+
+        if (!isCancelled) {
+          setSearchResults(Array.isArray(data?.users) ? data.users : [])
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setSearchResults([])
+          setSearchError(error.message)
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSearchLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [searchTerm])
 
   useEffect(() => {
     if (!activeConversationId) {
@@ -123,6 +164,20 @@ function Chat() {
     }
   }, [socket, activeConversationId])
 
+  async function handleSelectUser(selectedUser) {
+    try {
+      const data = await openConversation(selectedUser.id)
+      const listData = await listConversations()
+      setConversationList(listData.conversations)
+      setActiveConversationId(data.conversation.id)
+      setSearchTerm('')
+      setSearchResults([])
+      setLoadError(null)
+    } catch (error) {
+      setLoadError(error.message)
+    }
+  }
+
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
@@ -153,30 +208,60 @@ function Chat() {
       <div className="cm-page-grid chat">
         <Panel aria-labelledby="chat-list-title">
           <PanelHeader title="Conversations" titleId="chat-list-title">
-            <p className="cm-muted">Existing dialogs only</p>
+            <Input
+              className="flex-1"
+              type="text"
+              value={searchTerm}
+              placeholder="Search users..."
+              aria-label="Search users to message"
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
           </PanelHeader>
           <PanelBody>
-            {isLoading && (
+            {isSearching && (
+              <div className="cm-list">
+                {isSearchLoading && <p className="cm-muted">Searching...</p>}
+                {!isSearchLoading && searchError && <p className="cm-muted">{searchError}</p>}
+                {!isSearchLoading && !searchError && searchResults.length === 0 && (
+                  <p className="cm-muted">No users found</p>
+                )}
+                {!isSearchLoading && !searchError && searchResults.map((result) => (
+                  <ListRow
+                    as="button"
+                    key={result.id}
+                    type="button"
+                    onClick={() => handleSelectUser(result)}
+                  >
+                    <Avatar avatar={null} name={result.username} className="avatar avatar-md" />
+                    <div className="min-w-0">
+                      <strong className="text-primary">{result.username}</strong>
+                      <p className="cm-muted">Rating {result.rating}</p>
+                    </div>
+                  </ListRow>
+                ))}
+              </div>
+            )}
+            {!isSearching && isLoading && (
               <EmptyState
                 icon="message-circle"
                 title="Loading conversations..."
               />
             )}
-            {!isLoading && loadError && (
+            {!isSearching && !isLoading && loadError && (
               <EmptyState
                 icon="message-circle"
                 title="Could not load conversations"
                 subtitle={loadError}
               />
             )}
-            {!isLoading && !loadError && !hasConversations && (
+            {!isSearching && !isLoading && !loadError && !hasConversations && (
               <EmptyState
                 icon="message-circle"
                 title="No conversations yet"
                 subtitle="Message someone from your friends list."
               />
             )}
-            {!isLoading && !loadError && hasConversations && (
+            {!isSearching && !isLoading && !loadError && hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
                   <ListRow
