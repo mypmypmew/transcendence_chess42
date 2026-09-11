@@ -637,6 +637,45 @@ button.cm-list-row:hover,
     border: 0;
   }
 
+  /* Raise the focused or hovered control above nearby navigation buttons. */
+  .cm-nav-link:hover,
+  .cm-nav-link:focus-visible {
+    z-index: 2;
+  }
+
+  /* Reveal the existing label without changing the button layout. */
+  .cm-nav-link:hover span,
+  .cm-nav-link:focus-visible span {
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    height: auto;
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    overflow: visible;
+    clip-path: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    z-index: 1;
+  }
+
+  /* Keep labels at the outer edges inside the navigation width. */
+  .cm-nav-link:first-child span {
+    left: 0;
+    transform: none;
+  }
+
+  .cm-nav-link:nth-child(4) span {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+
   /* Keep logout errors readable across the fullnavigation width. */
   .cm-nav > :not(.cm-nav-link) {
     grid-column: 1 / -1;
