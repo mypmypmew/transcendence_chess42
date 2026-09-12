@@ -152,7 +152,7 @@ function Chat() {
         if (!cancelled) {
           setMessagesErrorState({ conversationId, message: error.message })
         }
-      } 
+      }
     })
 
     return () => {
