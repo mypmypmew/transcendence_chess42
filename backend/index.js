@@ -26,6 +26,8 @@ const io = new Server(httpServer, {
   },
 });
 
+app.set('io', io);  
+
 // Keep one authoritative game store and one matchmaking queue shared by every authenticated Socket.IO connection.
 const gameService = new GameService();
 const matchmakingService = new MatchmakingService({

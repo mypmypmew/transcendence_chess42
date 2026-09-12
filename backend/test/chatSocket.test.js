@@ -36,7 +36,7 @@ test('chat:join refuses a non-participant', async (t) => {
   await socket.emitTo('chat:join', 12, (received) => { reply = received; });
 
   assert.equal(reply.error, 'Conversation not found');
-  assert.deepEqual(socket.joinedRooms, []);
+  assert.deepEqual(socket.joinedRooms, ['user:999']);
 });
 
 test('chat:join adds a participant to the conversation room', async (t) => {
@@ -53,7 +53,7 @@ test('chat:join adds a participant to the conversation room', async (t) => {
   await socket.emitTo('chat:join', 12, (received) => { reply = received; });
 
   assert.equal(reply.ok, true);
-  assert.deepEqual(socket.joinedRooms, ['conversation:12']);
+  assert.deepEqual(socket.joinedRooms, ['user:7', 'conversation:12']);
 });
 
 test('chat:message persists then broadcasts to the conversation room', async (t) => {
@@ -96,7 +96,7 @@ test('chat:join survives a missing acknowledgement callback', async (t) => {
 
   await socket.emitTo('chat:join', 12, undefined);
 
-  assert.deepEqual(socket.joinedRooms, ['conversation:12']);
+  assert.deepEqual(socket.joinedRooms, ['user:7', 'conversation:12']);
 });
 
 test('chat:message rejects a malformed payload', async (t) => {

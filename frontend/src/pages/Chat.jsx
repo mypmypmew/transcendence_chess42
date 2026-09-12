@@ -43,7 +43,6 @@ function Chat() {
   const [searchState, setSearchState] = useState({ term: '', results: [] })
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
-  // const [isMessagesLoading, setIsMessagesLoading] = useState(false)
   const [messagesErrorState, setMessagesErrorState] = useState({ conversationId: null, message: null })
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
@@ -86,7 +85,6 @@ function Chat() {
     const trimmedSearch = searchTerm.trim()
 
     if (trimmedSearch.length < 2) {
-      // setSearchResults([])
       return
     }
 
@@ -131,7 +129,6 @@ function Chat() {
     const conversationId = activeConversationId
     let cancelled = false
 
-    // setIsMessagesLoading(true)
 
     socket.emit('chat:join', conversationId, async (joinReply) => {
       if (cancelled) {
@@ -140,7 +137,6 @@ function Chat() {
 
       if (joinReply?.error) {
         setMessagesErrorState({ conversationId, message: joinReply.error })
-        // setIsMessagesLoading(false)
         return
       }
 
@@ -157,11 +153,6 @@ function Chat() {
           setMessagesErrorState({ conversationId, message: error.message })
         }
       } 
-      //finally {
-      //   if (!cancelled) {
-      //     setIsMessagesLoading(false)
-      //   }
-      // }
     })
 
     return () => {
@@ -229,6 +220,32 @@ function Chat() {
       socket.off('connect', handleReconnect)
     }
   }, [socket, activeConversationId])
+
+    useEffect(() => {
+    let cancelled = false
+
+    async function refreshConversations() {
+      try {
+        const data = await listConversations()
+        if (!cancelled) {
+          setConversationList(data.conversations)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error.message)
+        }
+      }
+    }
+
+    socket.on('chat:conversation', refreshConversations)
+    socket.on('connect', refreshConversations)
+
+    return () => {
+      cancelled = true
+      socket.off('chat:conversation', refreshConversations)
+      socket.off('connect', refreshConversations)
+    }
+  }, [socket])
 
   async function handleSelectUser(selectedUser) {
     try {

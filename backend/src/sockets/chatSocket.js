@@ -5,6 +5,10 @@ function conversationRoom(conversationId) {
   return `conversation:${conversationId}`;
 }
 
+function userRoom(userId) {
+  return `user:${userId}`;
+}
+
 function reply(callback, response) {
   if (typeof callback === 'function') {
     callback(response);
@@ -12,6 +16,7 @@ function reply(callback, response) {
 }
 
 function registerChatHandlers(io, socket) {
+  socket.join(userRoom(socket.data.userId));
   socket.on('chat:join', async (conversationId, callback) => {
     try {
       if (!Number.isInteger(conversationId) || conversationId <= 0) {
@@ -66,3 +71,4 @@ function registerChatHandlers(io, socket) {
 }
 
 module.exports = registerChatHandlers;
+module.exports.userRoom = userRoom;

@@ -1,4 +1,5 @@
 const express = require('express');
+const { userRoom } = require('../sockets/chatSocket');
 const requireAuth = require('../middlewares/requireAuth');
 const chatService = require('../services/chatService');
 
@@ -19,6 +20,16 @@ router.get('/', requireAuth, async (req, res, next) => {
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const conversation = await chatService.openConversation(req.userId, req.body.userId);
+
+    const io = req.app.get('io');
+    let recipientId = conversation.userAId;
+
+    if (conversation.userAId === req.userId) {
+      recipientId = conversation.userBId;
+    }
+
+    io.to(userRoom(recipientId)).emit('chat:conversation', { id: conversation.id });
+
     res.status(201).json({ conversation });
   } catch (err) {
     if (err.status) {
