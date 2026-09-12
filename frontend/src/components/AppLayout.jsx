@@ -45,25 +45,32 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
       <div className="cm-backdrop" aria-hidden="true" />
       <div className="cm-app-frame">
         <header className="cm-header">
-          <NavLink className="cm-brand" to="/dashboard" aria-label="ChessMate dashboard">
-            <Icon name="crown" />
-            <span>ChessMate</span>
-          </NavLink>
+          {/* Keep the theme control separate from account actions. */}
+          <div className="cm-header-brand-row">
+            <NavLink className="cm-brand" to="/dashboard" aria-label="ChessMate dashboard">
+              <Icon name="crown" />
+              <span>ChessMate</span>
+            </NavLink>
+            <ThemeToggle className="cm-header-theme" />
+          </div>
+
           <div className="cm-header-copy">
             <p className="cm-eyebrow">{eyebrow}</p>
             <h1>{title}</h1>
           </div>
+
           <div className="cm-header-actions">
             {actions}
-            {/* Keep account access beside the theme toggle on every page. */}
-            <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
-              <Icon name="user-circle" />
-              <span>Profile</span>
-            </NavLink>
-            <Button type="button" variant="ghost" icon="logout" disabled={isLoggingOut} onClick={handleLogout}>
-              {isLoggingOut ? 'Logging out...' : 'Log out'}
-            </Button>
-            <ThemeToggle />
+            {/* Keep Profile and Log out together at every screen width. */}
+            <div className="cm-header-account">
+              <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
+                <Icon name="user-circle" />
+                <span>Profile</span>
+              </NavLink>
+              <Button type="button" variant="ghost" icon="logout" disabled={isLoggingOut} onClick={handleLogout}>
+                {isLoggingOut ? 'Logging out...' : 'Log out'}
+              </Button>
+            </div>
           </div>
         </header>
         <div className="cm-main-grid">
