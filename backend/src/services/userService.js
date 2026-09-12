@@ -33,6 +33,17 @@ async function searchUsers(currentUserId, search) {
   return users.map(toPublicUser);
 }
 
+// Return public leaderboard fields with total completed games.
+async function getLeaderboard() {
+  const players = await userRepository.findLeaderboardPlayers();
+
+  return players.map((player) => ({
+    ...toPublicUser(player),
+    games: player._count.gamesAsWhite + player._count.gamesAsBlack,
+  }));
+}
+
 module.exports = {
   searchUsers,
+  getLeaderboard,
 };
