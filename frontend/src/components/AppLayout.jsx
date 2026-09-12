@@ -8,6 +8,11 @@ import { Icon } from './ui.jsx'
 
 function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }) {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
+
+  // Share the same leaderboard opener between navigation and page content.
+  function openLeaderboard() {
+    setIsLeaderboardOpen(true)
+  }
   
   return (
     <div className="cm-shell fade-in">
@@ -33,9 +38,11 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
           </div>
         </header>
         <div className="cm-main-grid">
-          <Sidebar onOpenLeaderboard={() => setIsLeaderboardOpen(true)} />
+          <Sidebar onOpenLeaderboard={openLeaderboard} />
           <main className="cm-content">
-            {children}
+            {typeof children === 'function'
+              ? children({ openLeaderboard })
+              : children}
           </main>
         </div>
         {showLegalFooter && <LegalFooter />}
