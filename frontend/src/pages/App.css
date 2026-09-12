@@ -733,6 +733,11 @@ button.cm-list-row:hover,
   .cm-hero-card {
     padding: var(--space-4);
   }
+
+  /* Wrap only the dashboard description to leave room for the knight. */
+  .cm-dashboard-description {
+    max-width: 55%;
+  }
 }
 
 /* Keep destination labels readable on the narrowest screens. */
