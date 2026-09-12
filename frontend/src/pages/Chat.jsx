@@ -62,6 +62,7 @@ function Chat() {
         const data = await listConversations()
         if (!cancelled) {
           setConversationList(data.conversations)
+          setLoadError(null)
         }
       } catch (error) {
         if (!cancelled) {
@@ -147,6 +148,7 @@ function Chat() {
             const base = current.conversationId === conversationId ? current.items : []
             return { conversationId, items: mergeMessages(base, data.messages) }
           })
+          setMessagesErrorState({ conversationId: null, message: null })
         }
       } catch (error) {
         if (!cancelled) {
@@ -204,6 +206,7 @@ function Chat() {
               const base = current.conversationId === conversationId ? current.items : []
               return { conversationId, items: mergeMessages(base, data.messages) }
             })
+            setMessagesErrorState({ conversationId: null, message: null })
           }
         } catch (error) {
           if (!cancelled) {
@@ -229,6 +232,7 @@ function Chat() {
         const data = await listConversations()
         if (!cancelled) {
           setConversationList(data.conversations)
+          setLoadError(null)
         }
       } catch (error) {
         if (!cancelled) {
@@ -417,7 +421,7 @@ function Chat() {
               </PanelBody>
               <PanelBody as="form" className="flex gap-3" onSubmit={handleSendMessage}>
                 <Input
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                   type="text"
                   value={messageText}
                   placeholder="Write a message..."

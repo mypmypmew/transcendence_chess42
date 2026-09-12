@@ -542,21 +542,26 @@ button.cm-list-row:hover,
 .cm-chat-shell {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  min-width: 0;
   min-height: 540px;
 }
 
 .cm-message-list {
   display: grid;
   align-content: start;
+  justify-items: start;
+  min-width: 0;
   gap: var(--space-3);
 }
 
 .cm-message {
   max-width: 76%;
+  min-width: 0;
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   background: rgba(20, 35, 54, 0.82);
   color: var(--text-on-dark-secondary);
+  overflow-wrap: anywhere;
 }
 
 .cm-message.mine {
