@@ -125,6 +125,7 @@ body {
 }
 
 .cm-app-frame {
+  --cm-navigation-width: 180px;
   width: min(1440px, 100%);
   margin: 0 auto;
   position: relative;
@@ -133,7 +134,7 @@ body {
 
 .cm-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: calc(var(--cm-navigation-width) + var(--space-6)) minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--space-5);
   margin-bottom: var(--space-5);
@@ -159,6 +160,15 @@ body {
   white-space: nowrap;
 }
 
+/* Separate the desktop theme control from account actions. */
+.cm-header-theme-slot {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  padding-left: var(--space-5);
+  border-left: 1px solid var(--border);
+}
+
 /* Keep the theme button compact while retaining its accessible label. */
 .cm-header-theme {
   flex-shrink: 0;
@@ -176,13 +186,14 @@ body {
   align-items: center;
   gap: var(--space-2);
   font-family: var(--font-display);
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: 32px;
   color: var(--accent-hover);
   text-shadow: 0 8px 28px rgba(212, 160, 55, 0.18);
+  white-space: nowrap;
 }
 
 .cm-brand i {
-  font-size: 34px;
+  font-size: 32px;
 }
 
 .cm-header-copy {
@@ -210,7 +221,7 @@ body {
 
 .cm-main-grid {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
+  grid-template-columns: var(--cm-navigation-width) minmax(0, 1fr);
   gap: var(--space-5);
 }
 
@@ -605,12 +616,30 @@ button.cm-list-row:hover,
   }
 
   .cm-header-brand-row {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Place the theme beside the logo when navigation becomes compact. */
+  .cm-header-theme-slot {
+    grid-column: 2;
+    grid-row: 1;
+    padding-left: 0;
+    border-left: 0;
   }
 
   .cm-header-actions {
     justify-content: flex-end;
     flex-wrap: wrap;
+  }
+
+  /* Restore the larger logo when it no longer shares the sidebar column. */
+  .cm-brand {
+    font-size: clamp(28px, 4vw, 44px);
+  }
+
+  .cm-brand i {
+    font-size: 34px;
   }
 
   /* Move the friend action from the header to the page content. */
