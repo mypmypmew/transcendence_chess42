@@ -1,13 +1,8 @@
-import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
-import {
-  Alert,
-  Icon,
-} from './ui.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
+import { Icon } from './ui.jsx'
 
-// Profile access lives in the shared header beside the theme toggle.
+// Keep account actions in the header and reserve the sidebar for navigation.
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
   // Open matchmaking before navigating the player to a server-created game.
@@ -15,33 +10,9 @@ const navigationItems = [
   { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
   { to: '/chat', label: 'Chat', icon: 'messages' },
-  { action: 'logout', label: 'Logout', icon: 'logout' },
 ]
 
 function Sidebar({ onOpenLeaderboard }) {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [logoutError, setLogoutError] = useState('')
-
-  async function handleLogout() {
-    if (isLoggingOut) {
-      return
-    }
-
-    setIsLoggingOut(true)
-    setLogoutError('')
-
-    try {
-      await logout()
-      navigate('/login')
-    } catch (error) {
-      setLogoutError(error instanceof Error ? error.message : 'Logout failed')
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
-
   return (
     <aside className="cm-sidebar" aria-label="Main navigation">
       <nav className="cm-nav">
@@ -56,21 +27,6 @@ function Sidebar({ onOpenLeaderboard }) {
               >
                 <Icon name={item.icon} />
                 <span>{item.label}</span>
-              </button>
-            )
-          }
-
-          if (item.action === 'logout') {
-            return (
-              <button
-                className="cm-nav-link"
-                key={item.label}
-                type="button"
-                disabled={isLoggingOut}
-                onClick={handleLogout}
-              >
-                <Icon name={item.icon} />
-                <span>{isLoggingOut ? 'Logging out…' : item.label}</span>
               </button>
             )
           }
@@ -92,9 +48,6 @@ function Sidebar({ onOpenLeaderboard }) {
             </NavLink>
           )
         })}
-        {logoutError && (
-          <Alert>{logoutError}</Alert>
-        )}
       </nav>
     </aside>
   )
