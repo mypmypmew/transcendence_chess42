@@ -31,6 +31,30 @@ async function searchPublicUsersByUsername(search, excludeUserId) {
   });
 }
 
+// Load the top players and count completed games for both colors
+async function findLeaderboardPlayers() {
+  return prisma.user.findMany({
+    select: {
+      ...PUBLIC_USER_SELECT,
+      _count: {
+        select: {
+          gamesAsWhite: {
+            where: { status: 'COMPLETED' },
+          },
+          gamesAsBlack: {
+            where: { status: 'COMPLETED' },
+          },
+        },
+      },
+    },
+    orderBy: [
+      { rating: 'desc' },
+      { id: 'asc' },
+    ],
+    take: 10,
+  });
+}
+
 async function findUserByEmail(email) {
   return prisma.user.findUnique({
     where: { email },
@@ -58,5 +82,6 @@ module.exports = {
   findUserByUsername,
   findPublicUserById,
   searchPublicUsersByUsername,
+  findLeaderboardPlayers,
   createUser,
 };
