@@ -51,7 +51,6 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
               <Icon name="crown" />
               <span>ChessMate</span>
             </NavLink>
-            <ThemeToggle className="cm-header-theme" />
           </div>
 
           <div className="cm-header-copy">
@@ -71,6 +70,11 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
                 {isLoggingOut ? 'Logging out...' : 'Log out'}
               </Button>
             </div>
+          </div>
+
+          {/* Position the theme separately from account actions. */}
+          <div className="cm-header-theme-slot">
+            <ThemeToggle className="cm-header-theme"/>
           </div>
         </header>
         <div className="cm-main-grid">
