@@ -345,7 +345,7 @@ function Chat() {
               <EmptyState
                 icon="message-circle"
                 title="No conversations yet"
-                subtitle="Message someone from your friends list."
+                subtitle="Search for a username above to start a conversation."
               />
             )}
             {!isSearching && !isLoading && !loadError && hasConversations && (
