@@ -73,11 +73,11 @@ function LeaderboardModal({ onClose }) {
           )}
 
           {!isLoading && error && (
-            <EmptyState icon="trophy" title="Could not load leaderboard" subtitle="Please close the leaderboard and open it again to retry." />
+            <EmptyState icon="trophy" title="Could not load leaderboard." subtitle="Please close the leaderboard and open it again to retry." />
           )}
 
           {!isLoading && !error && players.length === 0 && (
-            <EmptyState icon="trophy" title="No players yet" subtitle="No registered players to display." />
+            <EmptyState icon="trophy" title="No players yet." />
           )}
 
           {/* Preserve the server ranking and display only real player data. */}
