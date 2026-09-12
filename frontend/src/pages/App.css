@@ -214,26 +214,22 @@ body {
   gap: var(--space-5);
 }
 
-.cm-panel,
-.cm-sidebar {
+.cm-panel {
   border: 1px solid var(--border);
   border-radius: 22px;
   box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(18px);
 }
 
+/* Keep navigation compact without a shared outer panel. */
 .cm-sidebar {
-  min-height: 0;
-  padding: var(--space-4);
-  background: linear-gradient(180deg, rgba(10, 24, 38, 0.86), rgba(7, 15, 25, 0.9));
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  min-width: 0;
+  align-self: start;
 }
 
 .cm-nav {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .cm-nav-link {
@@ -242,12 +238,12 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 44px;
+  min-height: 52px;
   padding: 0 var(--space-3);
-  background: transparent;
+  background: var(--bg-surface);
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -264,7 +260,7 @@ body {
 
 .cm-nav-link:hover,
 .cm-nav-link.active {
-  background: rgba(212, 160, 55, 0.14);
+  background: var(--accent-muted);
   border-color: var(--accent-border);
   color: var(--accent-hover);
 }
@@ -635,31 +631,16 @@ button.cm-list-row:hover,
     grid-template-columns: 1fr;
   }
 
-  /* Remove the shared panel around compact navigation in both themes. */
-  .cm-sidebar,
-  html[data-theme='light'] .cm-main-grid > .cm-sidebar {
-    min-height: 0;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-  }
-
   /* Show three labelled destinations above a centered pair. */
   .cm-nav {
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: var(--space-3);
   }
 
   .cm-nav-link {
     grid-column: span 2;
     justify-content: center;
     min-width: 0;
-    min-height: 52px;
     padding: var(--space-2);
-    background: var(--bg-surface);
-    border-color: var(--border);
   }
 
   .cm-nav-link:nth-child(4) {
@@ -668,13 +649,6 @@ button.cm-list-row:hover,
 
   .cm-nav-link:nth-child(5) {
     grid-column: 4 / span 2;
-  }
-
-  .cm-nav-link:hover,
-  .cm-nav-link.active {
-    background: var(--accent-muted);
-    border-color: var(--accent-border);
-    color: var(--accent-hover);
   }
 
   .cm-nav-link:focus-visible {
@@ -693,37 +667,6 @@ button.cm-list-row:hover,
     padding: var(--space-3);
   }
 
-  /* Center headings when account controls move onto their own row. */
-  .cm-header {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .cm-header-brand-row {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
-    gap: var(--space-2);
-  }
-
-  .cm-header-brand-row .cm-brand {
-    grid-column: 2;
-    justify-self: center;
-    white-space: nowrap;
-  }
-
-  .cm-header-theme {
-    grid-column: 3;
-  }
-
-  .cm-header-copy {
-    text-align: center;
-  }
-
-  .cm-header-actions {
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-
   .cm-action-grid,
   .cm-stat-grid {
     grid-template-columns: 1fr;
@@ -737,6 +680,34 @@ button.cm-list-row:hover,
   /* Wrap only the dashboard description to leave room for the knight. */
   .cm-dashboard-description {
     max-width: 55%;
+  }
+}
+
+/* Keep branding and page headings left-aligned on narrow screens. */
+@media (max-width: 560px) {
+  .cm-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .cm-header-brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .cm-header-brand-row .cm-brand {
+    white-space: nowrap;
+  }
+
+  .cm-header-copy {
+    text-align: left;
+  }
+
+  .cm-header-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 }
 
@@ -835,8 +806,7 @@ html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
   color: var(--accent-hover);
 }
 
-html[data-theme='light'] .cm-panel,
-html[data-theme='light'] .cm-sidebar {
+html[data-theme='light'] .cm-panel {
   background: rgba(255, 250, 240, 0.78);
   border-color: var(--border);
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
