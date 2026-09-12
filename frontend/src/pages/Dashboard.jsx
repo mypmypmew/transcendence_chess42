@@ -91,15 +91,8 @@ function Dashboard() {
     ...(weeklyActivity?.map((day) => day.count) ?? []),
   )
 
-  // Open matchmaking directly from the dashboard's primary header action.
-  const actions = (
-      <Button as={Link} icon="trophy" to="/game-lobby" variant="ghost">
-        Compete
-      </Button>
-  )
-
   return (
-    <AppLayout eyebrow="Play. Learn. Improve." title="Your chess command center" actions={actions}>
+    <AppLayout eyebrow="Play. Learn. Improve." title="Your chess command center">
       {({ openLeaderboard }) => (
         <>
           <div className="cm-page-grid two">
@@ -107,7 +100,7 @@ function Dashboard() {
               <div>
                 <p className="cm-eyebrow">Welcome back</p>
                 <h2 className="cm-hero-title" id="dashboard-hero-title">Ready for your next move?</h2>
-                <p className="auth-visual-text">
+                <p className="auth-visual-text cm-dashboard-description">
                   Practice tactics, start a quick match, or review your latest games in one calm, focused space.
                 </p>
               </div>
