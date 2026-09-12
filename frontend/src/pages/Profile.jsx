@@ -152,111 +152,119 @@ function Profile() {
 	  eyebrow="Personal account"
 	  title="My profile"
 	>
-	  <div className="cm-profile-grid">
-		<Panel aria-labelledby="profile-title">
-		  <PanelBody className="flex flex-col items-center gap-5 text-center">
-			<input
-			  accept="image/*"
-			  hidden
-			  onChange={handleAvatarChange}
-			  ref={avatarInputRef}
-			  type="file"
+	  {({ handleLogout, isLoggingOut }) => (
+		<>
+			<div className="cm-profile-grid">
+			<Panel aria-labelledby="profile-title">
+				<PanelBody className="flex flex-col items-center gap-5 text-center">
+				<input
+					accept="image/*"
+					hidden
+					onChange={handleAvatarChange}
+					ref={avatarInputRef}
+					type="file"
+				/>
+				<Avatar
+					avatar={avatarPreview}
+					name={user.username}
+					className="avatar avatar-xl avatar-ring"
+					aria-hidden="true"
+				/>
+
+				<div>
+					<p className="label">Player profile</p>
+					<h2 className="cm-section-title" id="profile-title">{user.username}</h2>
+					<p className="cm-muted">Your ChessMate personal account</p>
+				</div>
+
+				<div className="cm-list" aria-label="Profile details">
+					<ListRow>
+					<Icon className="text-accent" name="chart-bar" />
+					<span className="cm-muted">Rating</span>
+					<strong className="text-primary">{user.rating}</strong>
+					</ListRow>
+					<ListRow>
+					<Icon className="text-accent" name="mail" />
+					<span className="cm-muted">Email</span>
+					<strong className="text-primary truncate">{user.email}</strong>
+					</ListRow>
+				</div>
+
+				{avatarPreview && (
+					<p className="cm-muted">New avatar selected</p>
+				)}
+
+				<Button icon="camera" type="button" onClick={openAvatarPicker}>
+					Change avatar
+				</Button>
+
+				<Button icon="logout" type="button" variant="ghost" disabled={isLoggingOut} onClick={handleLogout}>
+					{isLoggingOut ? 'Logging out...' : 'Log out'}
+				</Button>
+				</PanelBody>
+			</Panel>
+
+			<MatchHistory
+				games={games}
+				currentUserId={user.id}
+				error={historyError}
+				isLoading={isHistoryLoading}
 			/>
-			<Avatar
-			  avatar={avatarPreview}
-			  name={user.username}
-			  className="avatar avatar-xl avatar-ring"
-			  aria-hidden="true"
-			/>
 
-			<div>
-			  <p className="label">Player profile</p>
-			  <h2 className="cm-section-title" id="profile-title">{user.username}</h2>
-			  <p className="cm-muted">Your ChessMate personal account</p>
-			</div>
+			<Panel aria-labelledby="friends-title">
+				<PanelHeader
+				action={<Badge>{friends.length}</Badge>}
+				eyebrow="Community"
+				title="Friends list"
+				titleId="friends-title"
+				/>
 
-			<div className="cm-list" aria-label="Profile details">
-			  <ListRow>
-				<Icon className="text-accent" name="chart-bar" />
-				<span className="cm-muted">Rating</span>
-				<strong className="text-primary">{user.rating}</strong>
-			  </ListRow>
-			  <ListRow>
-				<Icon className="text-accent" name="mail" />
-				<span className="cm-muted">Email</span>
-				<strong className="text-primary truncate">{user.email}</strong>
-			  </ListRow>
-			</div>
+				<PanelBody>
+				{friendsError && (
+					<Alert>{friendsError}</Alert>
+				)}
 
-			{avatarPreview && (
-			  <p className="cm-muted">New avatar selected</p>
-			)}
+				{isFriendsLoading ? (
+					<EmptyState title="Loading friends..." />
+				) : friends.length === 0 ? (
+					<EmptyState title="No friends yet" />
+				) : (
+					<div className="cm-list">
+					{friends.map((friendship) => (
+						<ListRow
+						as="button"
+						key={friendship.friendshipId}
+						type="button"
+						onClick={() => handleOpenFriendProfile(friendship)}
+						>
+						<Avatar
+							avatar={friendship.user.avatar}
+							name={friendship.user.username}
+							className="avatar avatar-md"
+							aria-hidden="true"
+						/>
+						<div className="min-w-0 text-left">
+							<p className="text-primary truncate">{friendship.user.username}</p>
+							<p className="cm-muted">Rating {friendship.user.rating}</p>
+						</div>
 
-			<Button icon="camera" type="button" onClick={openAvatarPicker}>
-			  Change avatar
-			</Button>
-		  </PanelBody>
-		</Panel>
-
-		<MatchHistory
-		  games={games}
-		  currentUserId={user.id}
-		  error={historyError}
-		  isLoading={isHistoryLoading}
-		/>
-
-		<Panel aria-labelledby="friends-title">
-		  <PanelHeader
-			action={<Badge>{friends.length}</Badge>}
-			eyebrow="Community"
-			title="Friends list"
-			titleId="friends-title"
-		  />
-
-		  <PanelBody>
-			{friendsError && (
-			  <Alert>{friendsError}</Alert>
-			)}
-
-			{isFriendsLoading ? (
-			  <EmptyState title="Loading friends..." />
-			) : friends.length === 0 ? (
-			  <EmptyState title="No friends yet" />
-			) : (
-			  <div className="cm-list">
-				{friends.map((friendship) => (
-				  <ListRow
-					as="button"
-					key={friendship.friendshipId}
-					type="button"
-					onClick={() => handleOpenFriendProfile(friendship)}
-				  >
-					<Avatar
-					  avatar={friendship.user.avatar}
-					  name={friendship.user.username}
-					  className="avatar avatar-md"
-					  aria-hidden="true"
-					/>
-					<div className="min-w-0 text-left">
-					  <p className="text-primary truncate">{friendship.user.username}</p>
-					  <p className="cm-muted">Rating {friendship.user.rating}</p>
+						<Icon className="cm-muted" name="chevron-right" />
+						</ListRow>
+					))}
 					</div>
+				)}
+				</PanelBody>
+			</Panel>
+			</div>
 
-					<Icon className="cm-muted" name="chevron-right" />
-				  </ListRow>
-				))}
-			  </div>
+			{selectedFriend && (
+			<UserProfileModal
+				player={selectedFriend}
+				onRemoveFriend={handleRemoveFriend}
+				onClose={() => setSelectedFriend(null)}
+			/>
 			)}
-		  </PanelBody>
-		</Panel>
-	  </div>
-
-	  {selectedFriend && (
-		<UserProfileModal
-		  player={selectedFriend}
-		  onRemoveFriend={handleRemoveFriend}
-		  onClose={() => setSelectedFriend(null)}
-		/>
+		</>
 	  )}
 	</AppLayout>
   )
