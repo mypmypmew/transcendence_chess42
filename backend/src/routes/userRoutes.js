@@ -22,4 +22,15 @@ router.get('/', requireAuth, async (req, res, next) => {
     }
 });
 
+// Return the global leaderboard for authenticated users.
+router.get('/leaderboard', requireAuth, async (req, res, next) => {
+    try {
+        const players = await userService.getLeaderboard();
+
+        res.status(200).json({ players });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;
