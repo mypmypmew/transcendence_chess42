@@ -129,3 +129,25 @@ test('chat:message does not leak unexpected errors', async (t) => {
 
   assert.equal(reply.error, 'Could not send message');
 });
+
+test('registering handlers joins the personal user room', async (t) => {
+  const socket = fakeSocket(7);
+  registerChatHandlers({}, socket);
+
+  assert.deepEqual(socket.joinedRooms, ['user:7']);
+});
+
+test('chat:join reports a failure to the caller', async (t) => {
+  t.mock.method(chatRepository, 'findConversationById', async () => {
+    throw new Error('database is down');
+  });
+
+  const socket = fakeSocket(7);
+  registerChatHandlers({}, socket);
+
+  let reply;
+  await socket.emitTo('chat:join', 12, (received) => { reply = received; });
+
+  assert.equal(reply.error, 'Could not join conversation');
+  assert.deepEqual(socket.joinedRooms, ['user:7']);
+});
