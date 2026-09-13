@@ -867,7 +867,6 @@ html[data-theme='light'] .cm-message {
 /* Distinguish outgoing messages using existing accent background. */
 html[data-theme='light'] .cm-message.mine {
   background: var(--accent-muted);
-  color: var(--text-primary);
 }
 
 /* Use light surfaces and matching text colors for data rows and action cards. */
