@@ -73,7 +73,7 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
           </div>
 
           {/* Position the theme separately from account actions. */}
-          <div className="cm-header-theme-slot">
+          <div className="cm-header-theme-slot flex items-center">
             <ThemeToggle className="cm-header-theme"/>
           </div>
         </header>
