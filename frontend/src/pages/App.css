@@ -158,10 +158,6 @@ body {
   padding: 0;
 }
 
-.cm-header-theme span {
-  display: none;
-}
-
 .cm-brand {
   display: inline-flex;
   align-items: center;
