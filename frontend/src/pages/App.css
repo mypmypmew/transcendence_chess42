@@ -216,7 +216,6 @@ body {
 
 /* Keep navigation compact without a shared outer panel. */
 .cm-sidebar {
-  min-width: 0;
   align-self: start;
 }
 
