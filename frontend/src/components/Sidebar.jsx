@@ -14,7 +14,7 @@ const navigationItems = [
 
 function Sidebar({ onOpenLeaderboard }) {
   return (
-    <aside className="cm-sidebar" aria-label="Main navigation">
+    <aside className="cm-sidebar min-w-0" aria-label="Main navigation">
       <nav className="cm-nav">
         {navigationItems.map((item) => {
           if (item.label === 'Leaderboard') {
