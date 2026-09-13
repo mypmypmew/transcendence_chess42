@@ -74,7 +74,7 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
 
           {/* Position the theme separately from account actions. */}
           <div className="cm-header-theme-slot flex items-center">
-            <ThemeToggle className="cm-header-theme flex-shrink-0"/>
+            <ThemeToggle iconOnly className="cm-header-theme flex-shrink-0"/>
           </div>
         </header>
         <div className="cm-main-grid">
