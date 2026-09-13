@@ -62,11 +62,11 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
             {actions}
             {/* Keep Profile and Log out together at every screen width. */}
             <div className="cm-header-account flex items-center gap-3">
-              <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
+              <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn flex-shrink-0 ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
                 <Icon name="user-circle" />
                 <span>Profile</span>
               </NavLink>
-              <Button type="button" variant="ghost" icon="logout" disabled={isLoggingOut} onClick={handleLogout}>
+              <Button className="flex-shrink-0" type="button" variant="ghost" icon="logout" disabled={isLoggingOut} onClick={handleLogout}>
                 {isLoggingOut ? 'Logging out...' : 'Log out'}
               </Button>
             </div>
