@@ -44,11 +44,13 @@ function Chat() {
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(null)
   const [messagesErrorState, setMessagesErrorState] = useState({ conversationId: null, message: null })
+  const [sendErrorState, setSendErrorState] = useState({ conversationId: null, message: null })
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
   const isSearching = searchTerm.trim().length >= 2
   const messages = messageState.conversationId === activeConversationId ? messageState.items : []
   const searchResults = searchState.term === searchTerm.trim() ? searchState.results : []
+  const sendError = sendErrorState.conversationId === activeConversationId ? sendErrorState.message : null
   const messagesError = messagesErrorState.conversationId === activeConversationId ? messagesErrorState.message : null
   const isMessagesLoading = activeConversationId !== null
     && messageState.conversationId !== activeConversationId
@@ -277,13 +279,17 @@ function Chat() {
       return
     }
 
+    const conversationId = activeConversationId
+
     socket.emit(
       'chat:message',
-      { conversationId: activeConversationId, body: trimmedMessage },
+      { conversationId, body: trimmedMessage },
       (reply) => {
         if (reply?.error) {
-          setLoadError(reply.error)
+          setSendErrorState({ conversationId, message: reply.error })
+          return
         }
+        setSendErrorState({ conversationId: null, message: null })
       },
     )
 
@@ -431,6 +437,7 @@ function Chat() {
                 <Button type="submit" disabled={!messageText.trim()}>
                   Send
                 </Button>
+                 {sendError && <p className="cm-muted">{sendError}</p>}
               </PanelBody>
             </>
           )}
