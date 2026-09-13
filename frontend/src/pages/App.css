@@ -700,17 +700,6 @@ button.cm-list-row:hover,
   }
 }
 
-/* Keep branding and page headings left-aligned on narrow screens. */
-@media (max-width: 560px) {
-  .cm-header-copy {
-    text-align: left;
-  }
-
-  .cm-header-actions {
-    overflow: visible;
-  }
-}
-
 /* Keep destination labels readable on the narrowest screens. */
 @media (max-width: 480px) {
   .cm-nav {
