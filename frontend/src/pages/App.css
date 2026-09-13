@@ -140,15 +140,6 @@ body {
   margin-bottom: var(--space-5);
 }
 
-/* Separate branding and theme controls from account actions. */
-.cm-header-brand-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  min-width: 0;
-}
-
 .cm-header-account .btn {
   flex-shrink: 0;
   white-space: nowrap;
@@ -713,10 +704,6 @@ button.cm-list-row:hover,
 
 /* Keep branding and page headings left-aligned on narrow screens. */
 @media (max-width: 560px) {
-  .cm-header-brand-row {
-    gap: var(--space-2);
-  }
-
   .cm-header-copy {
     text-align: left;
   }
