@@ -83,8 +83,8 @@ function ChessGuideModal({ onClose }) {
 					{/* Native disclosure controls support mouse, touch and keyboard. */}
 					{chessGuideSections.map((section, index) => (
 						<details key={section.id} className="cm-guide-section" open={index === 0}>
-							<summary className="cm-guide-summary">
-								<h3 className="cm-section-title">{section.title}</h3>
+							<summary className="cm-guide-summary flex items-center justify-between gap-3">
+								<h3 className="cm-section-title min-w-0">{section.title}</h3>
 							</summary>
 
 							<dl className="flex flex-col gap-3">
