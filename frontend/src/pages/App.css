@@ -561,7 +561,6 @@ button.cm-list-row:hover,
 .cm-chat-shell {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-width: 0;
   min-height: 540px;
 }
 
@@ -569,7 +568,6 @@ button.cm-list-row:hover,
   display: grid;
   align-content: start;
   justify-items: start;
-  min-width: 0;
   gap: var(--space-3);
 }
 
