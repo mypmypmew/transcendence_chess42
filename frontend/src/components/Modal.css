@@ -61,20 +61,12 @@
 
 /* Keep the whole heading clickable and place its indicator on the right. */
 .cm-guide-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
   list-style: none;
   cursor: pointer;
 }
 
 .cm-guide-summary::-webkit-details-marker {
   display: none;
-}
-
-.cm-guide-summary h3 {
-  min-width: 0;
 }
 
 /* Draw a small decorative chevron that follows the open state. */
