@@ -831,10 +831,11 @@ html[data-theme='light'] .cm-message.mine {
   background: var(--accent-muted);
 }
 
-/* Use light surfaces and matching text colors for data rows and action cards. */
+/* Share light surface and text defaults across cards and rows. */
 html[data-theme='light'] .cm-list-row,
 html[data-theme='light'] .cm-action-card,
-html[data-theme='light'] .cm-hero-card {
+html[data-theme='light'] .cm-hero-card,
+html[data-theme='light'] .cm-game-card {
   --text-on-dark: var(--text-primary);
   --text-on-dark-secondary: var(--text-secondary);
   --text-on-dark-muted: var(--text-muted);
@@ -855,14 +856,9 @@ html[data-theme='light'] button.cm-list-row:hover {
   border-color: var(--accent-border);
 }
 
-/* Match game panels to the light theme and keep their text readable. */
+/* Preserve the distinct game panel surface, border and shadow. */
 html[data-theme='light'] .cm-game-card {
-  --text-on-dark: var(--text-primary);
-  --text-on-dark-secondary: var(--text-secondary);
-  --text-on-dark-muted: var(--text-muted);
-
   background: var(--bg-surface);
-  color: var(--text-primary);
   border-color: var(--border);
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
