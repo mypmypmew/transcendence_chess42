@@ -52,7 +52,6 @@ function ChessGuideModal({ onClose }) {
 				height: '100%',
 				maxWidth: 'none',
 				maxHeight: 'none',
-				margin: 0,
 				border: 0,
 				background: 'transparent',
 				color: 'inherit',
