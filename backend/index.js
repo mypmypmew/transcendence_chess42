@@ -3,7 +3,9 @@ let cors = require('cors');
 let cookieParser = require('cookie-parser');
 let authRoutes = require('./src/routes/authRoutes');
 const gameRoutes = require('./src/routes/gameRoutes');
+const chatRoutes = require('./src/routes/chatRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
+const registerChatHandlers = require('./src/sockets/chatSocket');
 const { GameService } = require('./src/services/gameService');
 const { MatchmakingService } = require('./src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
@@ -24,6 +26,8 @@ const io = new Server(httpServer, {
   },
 });
 
+app.set('io', io);
+
 // Keep one authoritative game store and one matchmaking queue shared by every authenticated Socket.IO connection.
 const gameService = new GameService();
 const matchmakingService = new MatchmakingService({
@@ -35,6 +39,7 @@ io.use(socketAuth);
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id} (user ${socket.data.userId})`);
 
+  registerChatHandlers(io, socket);
   // Connect this authenticated socket to the shared matchmaking services.
   registerMatchmakingHandlers({
     io,
@@ -64,6 +69,8 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/conversations', chatRoutes);
+
 app.use('/api/users', userRoutes);
 app.use('/api', friendshipRoutes);
 app.get('/api/health', (req, res) => {
