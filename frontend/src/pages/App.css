@@ -719,19 +719,8 @@ button.cm-list-row:hover,
 
 /* Keep branding and page headings left-aligned on narrow screens. */
 @media (max-width: 560px) {
-  .cm-header {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
   .cm-header-brand-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     gap: var(--space-2);
-  }
-
-  .cm-header-brand-row .cm-brand {
-    white-space: nowrap;
   }
 
   .cm-header-copy {
@@ -739,8 +728,6 @@ button.cm-list-row:hover,
   }
 
   .cm-header-actions {
-    justify-content: flex-end;
-    flex-wrap: wrap;
     overflow: visible;
   }
 }
