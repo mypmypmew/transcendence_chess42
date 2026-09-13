@@ -154,7 +154,6 @@ body {
 
 /* Keep the theme button compact while retaining its accessible label. */
 .cm-header-theme {
-  flex-shrink: 0;
   width: 44px;
   min-height: 44px;
   padding: 0;
