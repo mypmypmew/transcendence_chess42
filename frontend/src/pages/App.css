@@ -147,8 +147,6 @@ body {
 
 /* Separate the desktop theme control from account actions. */
 .cm-header-theme-slot {
-  display: flex;
-  align-items: center;
   justify-self: end;
   padding-left: var(--space-5);
   border-left: 1px solid var(--border);
