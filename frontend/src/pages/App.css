@@ -149,12 +149,6 @@ body {
   min-width: 0;
 }
 
-.cm-header-account {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
 .cm-header-account .btn {
   flex-shrink: 0;
   white-space: nowrap;
