@@ -141,7 +141,6 @@ body {
 }
 
 .cm-header-account .btn {
-  flex-shrink: 0;
   white-space: nowrap;
 }
 
