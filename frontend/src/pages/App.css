@@ -789,7 +789,8 @@ html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
   color: var(--accent-hover);
 }
 
-html[data-theme='light'] .cm-panel {
+html[data-theme='light'] .cm-panel,
+html[data-theme='light'] .cm-game-card {
   background: rgba(255, 250, 240, 0.78);
   border-color: var(--border);
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
@@ -856,11 +857,10 @@ html[data-theme='light'] button.cm-list-row:hover {
   border-color: var(--accent-border);
 }
 
-/* Preserve the distinct game panel surface, border and shadow. */
+/* Preserve the distinct game panel surface and border. */
 html[data-theme='light'] .cm-game-card {
   background: var(--bg-surface);
   border-color: var(--border);
-  box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
 
 html[data-theme='light'] .cm-shell {
