@@ -61,7 +61,7 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
           <div className="cm-header-actions">
             {actions}
             {/* Keep Profile and Log out together at every screen width. */}
-            <div className="cm-header-account">
+            <div className="cm-header-account flex items-center gap-3">
               <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
                 <Icon name="user-circle" />
                 <span>Profile</span>
