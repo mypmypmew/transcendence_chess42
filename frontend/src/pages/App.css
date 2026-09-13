@@ -573,7 +573,6 @@ button.cm-list-row:hover,
 
 .cm-message {
   max-width: 76%;
-  min-width: 0;
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   background: rgba(20, 35, 54, 0.82);
