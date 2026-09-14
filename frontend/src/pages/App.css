@@ -150,13 +150,6 @@ body {
   border-left: 1px solid var(--border);
 }
 
-/* Keep the theme button compact while retaining its accessible label. */
-.cm-header-theme {
-  width: 44px;
-  min-height: 44px;
-  padding: 0;
-}
-
 .cm-brand {
   display: inline-flex;
   align-items: center;

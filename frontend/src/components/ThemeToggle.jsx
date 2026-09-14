@@ -10,6 +10,7 @@ function ThemeToggle({ className = '', iconOnly = false }) {
   return (
 	<Button
 	  className={`theme-toggle ${className}`.trim()}
+	  size={iconOnly ? 'icon' : undefined}
 	  icon={icon}
 	  type="button"
 	  onClick={toggleTheme}
