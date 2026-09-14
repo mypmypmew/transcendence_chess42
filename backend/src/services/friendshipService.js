@@ -102,6 +102,8 @@ async function acceptFriendRequest(currentUserId, requestId) {
             id: accepted.id,
             status: accepted.status,
             createdAt: accepted.createdAt,
+            userAId: accepted.userAId,
+            userBId: accepted.userBId,
         };
     } catch (err) {
         if (err?.code === 'P2025') {
