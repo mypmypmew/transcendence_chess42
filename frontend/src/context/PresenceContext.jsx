@@ -46,7 +46,35 @@ function PresenceProvider({ children }) {
       })
     }
 
+    function handleUpdate(update) {
+      if (!update || !Number.isInteger(update.userId)) {
+        return
+      }
+
+      setPresence((previous) => {
+        if (previous.userId !== userId || !previous.isAvailable) {
+          return previous
+        }
+
+        const onlineUserIds = new Set(previous.onlineUserIds)
+
+        if (update.online) {
+          onlineUserIds.add(update.userId)
+        } else {
+          onlineUserIds.delete(update.userId)
+        }
+
+        return { ...previous, onlineUserIds }
+      })
+    }
+
+    function handleDisconnect() {
+      setPresence({ userId, onlineUserIds: new Set(), isAvailable: false })
+    }
+
     socket.on('connect', loadPresence)
+    socket.on('presence:update', handleUpdate)
+    socket.on('disconnect', handleDisconnect)
 
     if (socket.connected) {
       loadPresence()
@@ -55,6 +83,8 @@ function PresenceProvider({ children }) {
     return () => {
       isActive = false
       socket.off('connect', loadPresence)
+      socket.off('presence:update', handleUpdate)
+      socket.off('disconnect', handleDisconnect)
     }
   }, [socket, userId])
 
