@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
 
-  /* Keep the complete board visible on common desktop screens without excessive scrolling. */
+  /* T: Keep the complete board visible on common desktop screens without excessive scrolling. */
   --cm-chessboard-size: clamp(420px, calc(100vh - 300px), 500px);
   --cm-chessboard-card-size: calc(var(--cm-chessboard-size) + (var(--space-4) * 2));
 
@@ -125,7 +125,6 @@ body {
 }
 
 .cm-app-frame {
-  --cm-navigation-width: 180px;
   width: min(1440px, 100%);
   margin: 0 auto;
   position: relative;
@@ -134,7 +133,7 @@ body {
 
 .cm-header {
   display: grid;
-  grid-template-columns: calc(var(--cm-navigation-width) + var(--space-6)) minmax(0, 1fr) auto auto;
+  grid-template-columns: calc(180px + var(--space-6)) minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--space-5);
   margin-bottom: var(--space-5);
@@ -198,7 +197,7 @@ body {
 
 .cm-main-grid {
   display: grid;
-  grid-template-columns: var(--cm-navigation-width) minmax(0, 1fr);
+  grid-template-columns: 180px minmax(0, 1fr);
   gap: var(--space-5);
 }
 
