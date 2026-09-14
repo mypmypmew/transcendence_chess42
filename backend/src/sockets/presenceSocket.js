@@ -38,4 +38,17 @@ function registerPresenceHandlers(socket, presenceService) {
   });
 }
 
+async function broadcastPresenceChange(io, { userId, online }) {
+  try {
+    const friendIds = await findFriendIds(userId);
+
+    for (const friendId of friendIds) {
+      io.to(userRoom(friendId)).emit('presence:update', { userId, online });
+    }
+  } catch (err) {
+    console.error('presence broadcast failed:', err);
+  }
+}
+
 module.exports = registerPresenceHandlers;
+module.exports.broadcastPresenceChange = broadcastPresenceChange;
