@@ -86,6 +86,22 @@ class GameService {
     return this.toSnapshot(game);
   }
 
+  getActiveGame(playerId) {
+    if (!Number.isInteger(playerId) || playerId <= 0) {
+      throw new TypeError('playerId must be a positive integer');
+    }
+
+    for (const game of this.games.values()) {
+      if (game.status === 'IN_PROGRESS' &&
+        (game.whiteId === playerId || game.blackId === playerId)
+      ) {
+        return this.toSnapshot(game);
+      }
+    }
+
+    return null;
+  }
+
   async makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
     const game = this._getGameOrThrow(gameId);
 
