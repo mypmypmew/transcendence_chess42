@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 
 const friendshipRepository = require('../src/repositories/friendshipRepository');
 const registerPresenceHandlers = require('../src/sockets/presenceSocket');
-const { broadcastPresenceChange } = require('../src/sockets/presenceSocket');
+const { broadcastPresenceChange, notifyNewFriendship } = require('../src/sockets/presenceSocket');
 
 function fakeSocket(userId, socketId = 'socket-a') {
   const handlers = {};
@@ -36,6 +36,9 @@ function fakePresenceService(onlineIds = []) {
     },
     filterOnline(userIds) {
       return userIds.filter((id) => onlineIds.includes(id));
+    },
+    isOnline(userId) {
+      return onlineIds.includes(userId);
     },
   };
 }
@@ -169,4 +172,16 @@ test('broadcastPresenceChange survives a repository failure', async (t) => {
   await broadcastPresenceChange(io, { userId: 7, online: true });
 
   assert.deepEqual(io.emitted, []);
+});
+
+test('notifyNewFriendship sends each new friend the other side\'s status', () => {
+  const io = fakeIo();
+  const presenceService = fakePresenceService([3]);
+
+  notifyNewFriendship(io, presenceService, 3, 7);
+
+  assert.deepEqual(io.emitted, [
+    { room: 'user:3', event: 'presence:update', payload: { userId: 7, online: false } },
+    { room: 'user:7', event: 'presence:update', payload: { userId: 3, online: true } },
+  ]);
 });

@@ -50,5 +50,18 @@ async function broadcastPresenceChange(io, { userId, online }) {
   }
 }
 
+function notifyNewFriendship(io, presenceService, userAId, userBId) {
+  io.to(userRoom(userAId)).emit('presence:update', {
+    userId: userBId,
+    online: presenceService.isOnline(userBId),
+  });
+
+  io.to(userRoom(userBId)).emit('presence:update', {
+    userId: userAId,
+    online: presenceService.isOnline(userAId),
+  });
+}
+
 module.exports = registerPresenceHandlers;
 module.exports.broadcastPresenceChange = broadcastPresenceChange;
+module.exports.notifyNewFriendship = notifyNewFriendship;
