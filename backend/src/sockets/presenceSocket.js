@@ -33,6 +33,9 @@ function registerPresenceHandlers(socket, presenceService) {
       reply(acknowledge, { error: 'Could not load presence' });
     }
   });
+  socket.on('disconnect', () => {
+    presenceService.removeConnection(userId, socket.id);
+  });
 }
 
 module.exports = registerPresenceHandlers;
