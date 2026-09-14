@@ -428,3 +428,63 @@ test('persists the result and PGN after resignation', async () => {
     pgn: finished.pgn,
   });
 });
+
+test('returns the current active game for both participants', async () => {
+  const service = createTestService();
+  await service.createGame({ whiteId: 3, blackId: 4 });
+  const game = await service.createGame({
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  const updated = await service.makeMove({
+    gameId: game.gameId,
+    playerId: 1,
+    from: 'e2',
+    to: 'e4',
+  });
+
+  assert.deepEqual(service.getActiveGame(1), updated);
+  assert.deepEqual(service.getActiveGame(2), updated);
+});
+
+test('returns null when the player has no current active game', async () => {
+  const service = createTestService();
+  assert.equal(service.getActiveGame(1), null);
+  await service.createGame({ whiteId: 1, blackId: 2 });
+  assert.equal(service.getActiveGame(3), null);
+});
+
+test('excludes completed games from active game lookup', async () => {
+  const service = createTestService();
+  const game = await service.createGame({
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  await service.resignGame({ gameId: game.gameId, playerId: 1 });
+
+  assert.equal(service.getActiveGame(1), null);
+  assert.equal(service.getActiveGame(2), null);
+
+  const nextGame = await service.createGame({
+    whiteId: 1,
+    blackId: 3,
+  });
+
+  assert.deepEqual(service.getActiveGame(1), nextGame);
+});
+
+test('rejects invalid player ids in active game lookup', () => {
+  const service = createTestService();
+
+  for (const playerId of [undefined, null, '1', 0, -1, 1.5, NaN]) {
+    assert.throws(
+      () => service.getActiveGame(playerId),
+      {
+        name: 'TypeError',
+        message: 'playerId must be a positive integer',
+      },
+    );
+  }
+});
