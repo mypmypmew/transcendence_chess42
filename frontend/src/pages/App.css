@@ -581,11 +581,6 @@ button.cm-list-row:hover,
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .cm-header-brand-row {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
   /* Place the theme beside the logo when navigation becomes compact. */
   .cm-header-theme-slot {
     grid-column: 2;

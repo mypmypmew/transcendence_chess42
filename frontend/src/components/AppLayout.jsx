@@ -46,7 +46,7 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
       <div className="cm-app-frame">
         <header className="cm-header">
           {/* Keep the theme control separate from account actions. */}
-          <div className="cm-header-brand-row flex items-center min-w-0">
+          <div className="flex items-center min-w-0">
             <NavLink className="cm-brand" to="/dashboard" aria-label="ChessMate dashboard">
               <Icon name="crown" />
               <span>ChessMate</span>
