@@ -133,10 +133,10 @@ body {
 
 .cm-header {
   display: grid;
-  grid-template-columns: calc(180px + var(--space-6)) minmax(0, 1fr) auto auto;
+  grid-template-columns: calc(180px + var(--space-6)) minmax(0, 1fr) auto auto; /*T*/
   align-items: center;
-  gap: var(--space-5);
-  margin-bottom: var(--space-5);
+  gap: var(--space-5); /* T */
+  margin-bottom: var(--space-5); /* T */
 }
 
 /* T */
@@ -145,21 +145,21 @@ body {
 }
 
 /* T: Separate the desktop theme control from account actions. */
-.cm-header-theme-slot {
-  justify-self: end;
+.cm-header-theme-slot { /* T */
+  justify-self: end; /* T */
   padding-left: var(--space-5);
   border-left: 1px solid var(--border);
 }
 
 .cm-brand {
-  display: inline-flex;
+  display: inline-flex; /* T */
   align-items: center;
   gap: var(--space-2);
-  font-family: var(--font-display);
+  font-family: var(--font-display); /* T */
   font-size: 32px;
   color: var(--accent-hover);
   text-shadow: 0 8px 28px rgba(212, 160, 55, 0.18);
-  white-space: nowrap;
+  white-space: nowrap; /* T */
 }
 
 .cm-brand i {
@@ -191,7 +191,7 @@ body {
 
 .cm-main-grid {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
+  grid-template-columns: 180px minmax(0, 1fr); /* T */
   gap: var(--space-5);
 }
 
@@ -209,12 +209,12 @@ body {
 
 .cm-nav-link {
   appearance: none;
-  width: 100%;
+  width: 100%; /* T */
   display: flex;
-  align-items: center;
+  align-items: center; /* T */
   gap: var(--space-3);
   min-height: 52px;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-3); /* T */
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
@@ -472,11 +472,11 @@ button.cm-list-row:hover,
 }
 
 .cm-chessboard-wrapper > div {
-  width: 100%;
-  height: 100%;
+  width: 100%; /* T */
+  height: 100%; /* T */
 }
 
-/* Override react-chessboard's pointer cursor for pieces the current player cannot move. */
+/* T: Override react-chessboard's pointer cursor for pieces the current player cannot move. */
 .cm-chessboard-wrapper[data-board-disabled='true'] [data-piece],
 .cm-chessboard-wrapper[data-player-color='w'] [data-piece^='b'],
 .cm-chessboard-wrapper[data-player-color='b'] [data-piece^='w'] {
@@ -531,8 +531,8 @@ button.cm-list-row:hover,
 
 .cm-profile-grid {
   display: grid;
-  /* Give match history more room while keeping profile and friends compact. */
-  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr);
+  /* T: Give match history more room while keeping profile and friends compact. */
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr); /* T */
   gap: var(--space-5);
 }
 
@@ -551,7 +551,7 @@ button.cm-list-row:hover,
 .cm-message-list {
   display: grid;
   align-content: start;
-  justify-items: start;
+  justify-items: start; /* Taulant */
   gap: var(--space-3);
 }
 
@@ -561,7 +561,7 @@ button.cm-list-row:hover,
   border-radius: var(--radius-lg);
   background: rgba(20, 35, 54, 0.82);
   color: var(--text-on-dark-secondary);
-  overflow-wrap: anywhere;
+  overflow-wrap: anywhere; /* Taulant */
 }
 
 .cm-message.mine {
@@ -570,18 +570,18 @@ button.cm-list-row:hover,
   color: var(--text-on-dark);
 }
 
-/* Keep the content-level friend action hidden on desktop. */
+/* T: Keep the content-level friend action hidden on desktop. */
 .cm-friends-content-action {
   display: none;
 }
 
 @media (max-width: 1120px) {
-  /* Give branding its own row and keep account controls beside the title. */
+  /* T: Give branding its own row and keep account controls beside the title. */
   .cm-header {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  /* Place the theme beside the logo when navigation becomes compact. */
+  /* T: Place the theme beside the logo when navigation becomes compact. */
   .cm-header-theme-slot {
     grid-column: 2;
     grid-row: 1;
@@ -589,25 +589,28 @@ button.cm-list-row:hover,
     border-left: 0;
   }
 
+  /* T */
   .cm-header-actions {
     justify-content: flex-end;
     flex-wrap: wrap;
   }
 
-  /* Restore the larger logo when it no longer shares the sidebar column. */
+  /* T: Restore the larger logo when it no longer shares the sidebar column. */
   .cm-brand {
     font-size: clamp(28px, 4vw, 44px);
   }
 
+  /* T */
   .cm-brand i {
     font-size: 34px;
   }
 
-  /* Move the friend action from the header to the page content. */
+  /* T: Move the friend action from the header to the page content. */
   .cm-friends-header-action {
     display: none;
   }
 
+  /* T */
   .cm-friends-content-action {
     display: flex;
   }
@@ -621,26 +624,29 @@ button.cm-list-row:hover,
     grid-template-columns: 1fr;
   }
 
-  /* Show three labelled destinations above a centered pair. */
+  /* T: Show three labelled destinations above a centered pair. */
   .cm-nav {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .cm-nav-link {
-    grid-column: span 2;
+    grid-column: span 2; /* T */
     justify-content: center;
-    min-width: 0;
-    padding: var(--space-2);
+    min-width: 0; /* T */
+    padding: var(--space-2); /* T */
   }
 
+  /* T */
   .cm-nav-link:nth-child(4) {
     grid-column: 2 / span 2;
   }
 
+  /* T */
   .cm-nav-link:nth-child(5) {
     grid-column: 4 / span 2;
   }
 
+  /* T */
   .cm-nav-link:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
@@ -648,8 +654,9 @@ button.cm-list-row:hover,
 }
 
 @media (max-width: 700px) {
+  /* T */
   :root {
-    /* Fit the board to the mobile viewport after the layout becomes one column. */
+    /* T: Fit the board to the mobile viewport after the layout becomes one column. */
     --cm-chessboard-size: calc(100vw -(var(--space-4) * 4));
   }
   
@@ -657,24 +664,27 @@ button.cm-list-row:hover,
     padding: var(--space-3);
   }
 
+  /* T */
   .cm-action-grid,
   .cm-stat-grid {
     grid-template-columns: 1fr;
   }
 
+  /* T */
   .cm-panel-body,
   .cm-hero-card {
     padding: var(--space-4);
   }
 
-  /* Wrap only the dashboard description to leave room for the knight. */
+  /* T: Wrap only the dashboard description to leave room for the knight. */
   .cm-dashboard-description {
     max-width: 55%;
   }
 }
 
-/* Keep destination labels readable on the narrowest screens. */
+/* T: Keep destination labels readable on the narrowest screens. */
 @media (max-width: 480px) {
+  /* T */
   .cm-nav {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -735,16 +745,17 @@ html[data-theme='light'] {
 
 html[data-theme='light'] body {
   background: var(--bg-base);
-  color: var(--text-secondary);
+  color: var(--text-secondary); /* T */
 }
 
+/* T */
 html[data-theme='light'] .input {
   background: rgba(255, 255, 255, 0.78);
   color: var(--text-primary);
   border-color: var(--border-surface);
 }
 
-/* Preserve visible focus and validation borders in light mode. */
+/* T: Preserve visible focus and validation borders in light mode. */
 html[data-theme='light'] .input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-muted);
@@ -759,56 +770,58 @@ html[data-theme='light'] .input.valid {
 }
 
 html[data-theme='light'] .btn-ghost {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7); /* T */
   color: var(--text-secondary);
 }
 
 html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
   background: rgba(159, 107, 33, 0.1);
-  color: var(--accent-hover);
+  color: var(--accent-hover); /* T */
 }
 
+/* T */
 html[data-theme='light'] .cm-panel {
   background: rgba(255, 250, 240, 0.78);
   border-color: var(--border);
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
 
-/* Give the nested chart a white surface and the same corners as match rows. */
+/* T: Give the nested chart a white surface and the same corners as match rows. */
 html[data-theme='light'] .surface {
   background: var(--bg-elevated);
   border-color: var(--border-subtle);
   border-radius: var(--radius-lg);
 }
 
-/* Keep statistic cells white inside the tinted light-theme panel. */
+/* T: Keep statistic cells white inside the tinted light-theme panel. */
 html[data-theme='light'] .stat-cell {
   background: var(--bg-elevated);
 }
 
-/* Keep tabs readable on light panels and distinguish the selected tab. */
+/* T: Keep tabs readable on light panels and distinguish the selected tab. */
 html[data-theme='light'] .cm-tab {
   background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
+/* T */
 html[data-theme='light'] .cm-tab.active {
   background: var(--accent-muted);
   color: var(--accent);
 }
 
-/* Keep incoming messages readable on light chat panels. */
+/* T: Keep incoming messages readable on light chat panels. */
 html[data-theme='light'] .cm-message {
   background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
-/* Distinguish outgoing messages using existing accent background. */
+/* T: Distinguish outgoing messages using existing accent background. */
 html[data-theme='light'] .cm-message.mine {
   background: var(--accent-muted);
 }
 
-/* Share light surface and text defaults across cards and rows. */
+/* T: Share light surface and text defaults across cards and rows. */
 html[data-theme='light'] .cm-list-row,
 html[data-theme='light'] .cm-action-card,
 html[data-theme='light'] .cm-hero-card,
@@ -822,12 +835,12 @@ html[data-theme='light'] .cm-game-card {
   color: var(--text-primary);
 }
 
-/* Keep the decorative knight visible but subtle on the light hero surface. */
+/* T: Keep the decorative knight visible but subtle on the light hero surface. */
 html[data-theme='light'] .cm-hero-card::after {
   color: var(--accent-muted);
 }
 
-/* Keep interactive rows light when hovered. */
+/* T: Keep interactive rows light when hovered. */
 html[data-theme='light'] button.cm-list-row:hover {
   background: var(--bg-surface);
   border-color: var(--accent-border);
@@ -843,9 +856,10 @@ html[data-theme='light'] .cm-shell {
   background:
     radial-gradient(circle at 75% 18%, rgba(42, 58, 74, 0.84), transparent 0 25%),
     radial-gradient(circle at 14% 8%, rgba(122, 147, 170, 0.18), transparent 0 28%),
-    linear-gradient(135deg, #f5f2eb 0%, #fffaf0 52%, #ece9e0 100%);
+    linear-gradient(135deg, #f5f2eb 0%, #fffaf0 52%, #ece9e0 100%); /* T */
 }
 
+/* T */
 html[data-theme='light'] .cm-shell::before {
   background:
     linear-gradient(180deg, rgba(184, 122, 36, 0.08), transparent 34%),

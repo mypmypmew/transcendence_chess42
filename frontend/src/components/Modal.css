@@ -34,9 +34,9 @@
 }
 .cm-modal__actions {
   display: flex;
-  /* Center wrapped action buttons consistently insisde modal dialogs */
-  justify-content: center;
-  flex-wrap: wrap;
+  /* T: Center wrapped action buttons consistently insisde modal dialogs */
+  justify-content: center; /* T */
+  flex-wrap: wrap; /* T */
   gap: var(--space-3);
   margin-top: var(--space-4);
 }
@@ -53,23 +53,24 @@
   }
 }
 
-/* Separate guide sections without adding nested cards. */
+/* T: Separate guide sections without adding nested cards. */
 .cm-guide-section + .cm-guide-section {
   border-top: 1px solid var(--border);
   padding-top: var(--space-5);
 }
 
-/* Keep the whole heading clickable and place its indicator on the right. */
+/* T: Keep the whole heading clickable and place its indicator on the right. */
 .cm-guide-summary {
   list-style: none;
   cursor: pointer;
 }
 
+/* T */
 .cm-guide-summary::-webkit-details-marker {
   display: none;
 }
 
-/* Draw a small decorative chevron that follows the open state. */
+/* T: Draw a small decorative chevron that follows the open state. */
 .cm-guide-summary::after {
   content: '';
   width: 8px;
@@ -81,15 +82,17 @@
   transform: rotate(-45deg);
 }
 
+/* T */
 .cm-guide-section[open] > .cm-guide-summary::after {
   transform: rotate(45deg);
 }
 
+/* T */
 .cm-guide-section[open] > .cm-guide-summary {
   margin-bottom: var(--space-4);
 }
 
-/* Make keyboard navigation visible in both themes. */
+/* T: Make keyboard navigation visible in both themes. */
 .cm-guide-summary:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
