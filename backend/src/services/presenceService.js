@@ -70,6 +70,50 @@ class PresenceService {
 
     return true;
   }
+  isOnline(userId) {
+    validateUserId(userId);
+
+    return this.connections.has(userId);
+  }
+
+  filterOnline(userIds) {
+    if (!Array.isArray(userIds)) {
+      throw new TypeError('userIds must be an array');
+    }
+
+    return userIds.filter((userId) => this.connections.has(userId));
+  }
+  removeConnection(userId, socketId) {
+    validateUserId(userId);
+    validateSocketId(socketId);
+
+    const sockets = this.connections.get(userId);
+
+    if (!sockets || !sockets.delete(socketId)) {
+      return false;
+    }
+
+    if (sockets.size > 0) {
+      return false;
+    }
+
+    const timer = setTimeout(() => {
+      this.offlineTimers.delete(userId);
+
+      const remaining = this.connections.get(userId);
+
+      if (!remaining || remaining.size > 0) {
+        return;
+      }
+
+      this.connections.delete(userId);
+      this.notify({ userId, online: false });
+    }, this.offlineGraceMs);
+
+    this.offlineTimers.set(userId, timer);
+
+    return true;
+  }
 }
 
 
