@@ -139,11 +139,12 @@ body {
   margin-bottom: var(--space-5);
 }
 
+/* T */
 .cm-header-account .btn {
   white-space: nowrap;
 }
 
-/* Separate the desktop theme control from account actions. */
+/* T: Separate the desktop theme control from account actions. */
 .cm-header-theme-slot {
   justify-self: end;
   padding-left: var(--space-5);
@@ -199,11 +200,6 @@ body {
   border-radius: 22px;
   box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(18px);
-}
-
-/* Keep navigation compact without a shared outer panel. */
-.cm-sidebar {
-  align-self: start;
 }
 
 .cm-nav {
