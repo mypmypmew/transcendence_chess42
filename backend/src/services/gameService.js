@@ -8,6 +8,7 @@ class GameService {
   constructor({ gameRepository = defaultGameRepository } = {}) {
     this.gameRepository = gameRepository;
     this.games = new Map();
+    this.pendingPlayers = new Set();
   }
 
   async createGame({ whiteId, blackId }) {
@@ -23,31 +24,48 @@ class GameService {
       throw new Error('White and black players must be different users');
     }
 
-    // Create the database record before storing the active game in memory.
-    // Prisma generates the permanent numeric ID shared by the database,
-    // Socket.IO events and frontend routes.
-    const persistedGame = await this.gameRepository.createGame({
-      whiteId,
-      blackId,
-    });
+    for (const playerId of [whiteId, blackId]) {
+      if (this.pendingPlayers.has(playerId) ||
+        this.getActiveGame(playerId)
+      ) {
+        throw new Error('Player already has an active or pending game');
+      }
+    }
 
-    // Use Prisma's ID instead of generating a separate in-memory UUID.
-    // This prevents the same game from having two unrelated identifiers.
-    const gameId = persistedGame.id;
+    // Reserve both players before the asynchronous database operation.
+    this.pendingPlayers.add(whiteId);
+    this.pendingPlayers.add(blackId);
 
-    const game = {
-      gameId,
-      whiteId,
-      blackId,
-      chess: new Chess(),
-      status: 'IN_PROGRESS',
-      result: null,
-      winnerId: null,
-    };
+    try {
+      // Create the database record before storing the active game in memory.
+      // Prisma generates the permanent numeric ID shared by the database,
+      // Socket.IO events and frontend routes.
+      const persistedGame = await this.gameRepository.createGame({
+        whiteId,
+        blackId,
+      });
 
-    this.games.set(gameId, game);
+      const game = {
+        // Use Prisma's ID instead of generating a separate in-memory UUID.
+        // This prevents the same game from having two unrelated identifiers.
+        gameId: persistedGame.id,
+        whiteId,
+        blackId,
+        chess: new Chess(),
+        status: 'IN_PROGRESS',
+        result: null,
+        winnerId: null,
+      };
 
-    return this.toSnapshot(game);
+      this.games.set(game.gameId, game);
+
+      return this.toSnapshot(game);
+    } finally {
+      // Release reservations after success or failure.
+      this.pendingPlayers.delete(whiteId);
+      this.pendingPlayers.delete(blackId);
+    }
+
   }
 
   toSnapshot(game) {
