@@ -11,6 +11,11 @@ export default defineConfig({
         target: 'http://backend:3000',
         changeOrigin: true,
       },
+      '/socket.io': {
+        target: 'http://backend:3000',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

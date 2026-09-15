@@ -1,0 +1,33 @@
+services:
+  backend:
+    build: ./backend
+    command: npm start
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/data/app.db
+    expose:
+      - "3000"
+    volumes:
+      - backend_data:/data
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  backend_data:
+  caddy_data:
+  caddy_config:
