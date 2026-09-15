@@ -1,4 +1,6 @@
 const userRepository = require('../repositories/userRepository');
+const authValidator = require('../validators/authValidator');
+const { toPublicUser: toAccountUser } = require('./authService');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -43,7 +45,22 @@ async function getLeaderboard() {
   }));
 }
 
+async function updateProfile(userId, { username, email }) {
+  const errors = authValidator.validateProfileUpdateInput({ username, email });
+  if (errors.length > 0) {
+    throw httpError(400, errors.join('; '));
+  }
+
+  const user = await userRepository.updateUser(userId, {
+    username: username.trim(),
+    email: authValidator.normalizeEmail(email),
+  });
+
+  return toAccountUser(user);
+}
+
 module.exports = {
   searchUsers,
   getLeaderboard,
+  updateProfile,
 };
