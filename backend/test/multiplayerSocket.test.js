@@ -343,6 +343,18 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 	assert.equal(finishedResponse.status, 200);
 	assert.deepEqual(await finishedResponse.json(), { game: null });
 
+	// A delayed join using the earlier API response must return the final state.
+	const lateJoinStateEvent = waitForEvent(reconnectedBlackClient, 'game:state');
+
+	reconnectedBlackClient.emit('game:join', {
+		gameId: activeGame.gameId,
+	});
+
+	const lateJoinState = await lateJoinStateEvent;
+
+	assert.deepEqual(lateJoinState, finalStateForBlack);
+	assert.equal(lateJoinState.status, 'COMPLETED');
+
 	assert.match(
 		finalStateForWhite.pgn,
 		/\[Result "1-0"\]/,
