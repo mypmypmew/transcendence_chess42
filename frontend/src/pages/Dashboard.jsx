@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import MatchHistory from '../components/MatchHistory.jsx'
 import ChessGuideModal from '../components/ChessGuideModal.jsx'
 import AppLayout from '../components/AppLayout'
+import WeeklyActivityChart from '../components/WeeklyActivityChart.jsx'
 import {
   ActionCard,
   Alert,
@@ -17,7 +18,6 @@ import {
 import { useAuth } from '../context/AuthContext.jsx'
 import { getGames } from '../api/gameApi.js'
 import { getGameStatistics, getWeeklyActivity } from '../utils/gameStatistics.js'
-import './App.css'
 
 function Dashboard() {
   // Use the signed-in account as the source of the displayed rating.
@@ -140,37 +140,12 @@ function Dashboard() {
 
                 {/* Render real daily counts only after history has loaded successfully. */}
                 {weeklyActivity && (
-                  <div className="surface" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-4)' }}>
-                    <p className="label">Completed games over 7 days</p>
-                    <div className="flex gap-2" style={{ marginTop: 'var(--space-3)' }}>
-                      {weeklyActivity.map((day) => (
-                        <div className="flex-1 min-w-0 text-center" key={day.date}>
-                          {/* Keep each count above its bar and reserve space for the tallest label. */}
-                          <div className="flex flex-col" style={{ height: 'calc(92px + 1.5em)', justifyContent: 'flex-end' }}>
-                            <p className="text-primary">{day.count}</p>
-
-                            {/* Only the decorative bar is hidden from assistive technologies. */}
-                            <div
-                              aria-hidden="true"
-                              className="flex-shrink-0"
-                              style={{
-                                height: `${(day.count / maxDailyGames) * 92}px`,
-                                borderRadius: 'var(--radius-sm)',
-                                background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
-                              }}
-                            />
-                          </div>
-
-                          <p className="cm-muted">{day.label}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <WeeklyActivityChart days={weeklyActivity} maxDailyGames={maxDailyGames} />
                 )}
               </PanelBody>
             </Panel>
 
-            <Panel>
+            <Panel className="cm-dashboard-training">
               <PanelHeader title="Training" />
               <PanelBody className="cm-action-grid">
                 <ActionCard as={Link} to="/game-lobby">
@@ -178,26 +153,17 @@ function Dashboard() {
                   <h3>Quick Play</h3>
                   <p className="cm-muted">Instant match with default settings</p>
                 </ActionCard>
-                <ActionCard as={Link} to="/dashboard">
-                  <Icon name="puzzle" />
-                  <h3>Puzzles - Experimental</h3>
-                  <p className="cm-muted">Sharpen tactics</p>
-                </ActionCard>
-                <ActionCard as="button" type="button" aria-haspopup="dialog" onClick={() => setIsGuideOpen(true)} style={{ textAlign: 'left', lineHeight: 'inherit' }}>
+                <ActionCard as="button" type="button" aria-haspopup="dialog" onClick={() => setIsGuideOpen(true)}>
                   <Icon name="book" />
                   <h3>Chess guide</h3>
                   <p className="cm-muted">Learn the rules and piece moves</p>
-                </ActionCard>
-                <ActionCard as={Link} to="/dashboard">
-                  <Icon name="award" />
-                  <h3>Tournaments - Experimental</h3>
-                  <p className="cm-muted">Join and compete</p>
                 </ActionCard>
               </PanelBody>
             </Panel>
 
             {/* Reuse the existing history panel for the five latest completed games. */}
             <MatchHistory
+              className="cm-dashboard-history"
               title="Recent games"
               games={statistics?.recentGames ?? []}
               currentUserId={userId}
