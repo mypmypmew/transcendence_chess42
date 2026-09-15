@@ -5,12 +5,12 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
+import UserListRow from '../components/UserListRow.jsx'
 import {
   Button,
   EmptyState,
   IconButton,
   Input,
-  ListRow,
   MessageBubble,
   Panel,
   PanelBody,
@@ -319,18 +319,13 @@ function Chat() {
                   <p className="cm-muted">No users found</p>
                 )}
                 {!isSearchLoading && !searchError && searchResults.map((result) => (
-                  <ListRow
-                    as="button"
+                  <UserListRow
                     key={result.id}
-                    type="button"
+                    avatar={null}
+                    meta={`Rating ${result.rating}`}
+                    name={result.username}
                     onClick={() => handleSelectUser(result)}
-                  >
-                    <Avatar avatar={null} name={result.username} className="avatar avatar-md" />
-                    <div className="min-w-0">
-                      <strong className="text-primary">{result.username}</strong>
-                      <p className="cm-muted">Rating {result.rating}</p>
-                    </div>
-                  </ListRow>
+                  />
                 ))}
               </div>
             )}
@@ -357,19 +352,14 @@ function Chat() {
             {!isSearching && !isLoading && !loadError && hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
-                  <ListRow
-                    as="button"
+                  <UserListRow
                     className={activeConversationId === conversation.id ? 'active' : ''}
                     key={conversation.id}
-                    type="button"
+                    avatar={null}
+                    meta={`Rating ${conversation.user.rating}`}
+                    name={conversation.user.username}
                     onClick={() => setActiveConversationId(conversation.id)}
-                  >
-                    <Avatar avatar={null} name={conversation.user.username} className="avatar avatar-md" />
-                    <div className="min-w-0">
-                      <strong className="text-primary">{conversation.user.username}</strong>
-                      <p className="cm-muted">Rating {conversation.user.rating}</p>
-                    </div>
-                  </ListRow>
+                  />
                 ))}
               </div>
             )}
@@ -387,7 +377,9 @@ function Chat() {
           )}
           {activeConversation && (
             <>
-              <div className="cm-panel-header">
+              <PanelHeader
+                action={<IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />}
+              >
                 <div className="flex items-center gap-3">
                   <Avatar avatar={null} name={activeConversation.user.username} className="avatar avatar-md" />
                   <div>
@@ -395,9 +387,8 @@ function Chat() {
                     <p className="cm-muted">Rating {activeConversation.user.rating}</p>
                   </div>
                 </div>
-                <IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />
-              </div>
-              <PanelBody>
+              </PanelHeader>
+              <PanelBody className="cm-chat-messages">
                 {isMessagesLoading && messages.length === 0 && (
                   <EmptyState icon="message" title="Loading messages..." />
                 )}

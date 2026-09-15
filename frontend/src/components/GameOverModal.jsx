@@ -1,11 +1,8 @@
-import './Modal.css'
+import Modal from './Modal.jsx'
 import {
   Button,
   EmptyState,
-  IconButton,
-  Panel,
   PanelBody,
-  PanelHeader,
 } from './ui.jsx'
 
 function getGameOverContent(gameOverInfo) {
@@ -41,16 +38,13 @@ function GameOverModal({ gameOverInfo, onClose, onRestart, onExit }) {
   const { icon, title, message } = getGameOverContent(gameOverInfo)
 
   return (
-    <div className="cm-modal" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
-      <button className="cm-modal__backdrop" type="button" aria-label="Close game over modal" onClick={onClose} />
-      <Panel as="div" className="cm-modal__content cm-modal__content--sm">
-        <PanelHeader
-          action={<IconButton aria-label="Close game over modal" icon="x" onClick={onClose} />}
-          title="Game over"
-          titleId="game-over-title"
-        >
-          <p className="cm-muted">{message}</p>
-        </PanelHeader>
+    <Modal
+      description={message}
+      onClose={onClose}
+      size="sm"
+      title="Game over"
+      titleId="game-over-title"
+    >
         <PanelBody>
           <EmptyState
             icon={icon}
@@ -74,8 +68,7 @@ function GameOverModal({ gameOverInfo, onClose, onRestart, onExit }) {
             </Button>
           )}
         </div>
-      </Panel>
-    </div>
+    </Modal>
   )
 }
 export default GameOverModal

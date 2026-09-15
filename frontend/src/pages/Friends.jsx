@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../components/AppLayout'
-import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
-import PresenceStatus from '../components/PresenceStatus'
+import UserListRow from '../components/UserListRow.jsx'
 import {
   Alert,
   Button,
   EmptyState,
   FormField,
-  Icon,
   Input,
-  ListRow,
   Panel,
   PanelBody,
   PanelHeader,
@@ -25,18 +22,7 @@ import {
   sendFriendRequest,
 } from '../api/friendshipApi.js'
 import { searchUsers } from '../api/userApi.js'
-
-function toModalPlayer(user, options = {}) {
-  return {
-    id: user.id,
-    avatar: user.avatar || null,
-    nickname: user.username,
-    rating: user.rating,
-    isFriend: options.isFriend ?? true,
-    hasPendingFriendRequest: options.hasPendingFriendRequest ?? false,
-    friendActionLabel: options.friendActionLabel,
-  }
-}
+import { toModalPlayer } from '../utils/userProfile.js'
 
 export default function Friends() {
   const [friends, setFriends] = useState([])
@@ -151,6 +137,32 @@ export default function Friends() {
     setSelectedFriend(toModalPlayer(friendship.user))
   }
 
+  const handleOpenProfileKeyDown = (event, friendship) => {
+    if (event.target !== event.currentTarget) {
+      return
+    }
+
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return
+    }
+
+    event.preventDefault()
+    handleOpenProfile(friendship)
+  }
+
+  const handleOpenRowKeyDown = (event, openProfile) => {
+    if (event.target !== event.currentTarget) {
+      return
+    }
+
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return
+    }
+
+    event.preventDefault()
+    openProfile()
+  }
+
   const handleOpenSearchProfile = (user) => {
     setSelectedFriend(toModalPlayer(user, {
       isFriend: friendUserIds.includes(user.id),
@@ -190,7 +202,7 @@ export default function Friends() {
       setRemovingFriendIds((current) => current.filter((id) => id !== friendUserId))
     }
   }
-	
+  
   const handleAddFriend = () => {
     if (isSearchOpen) {
       setSearchTerm('')
@@ -282,195 +294,171 @@ export default function Friends() {
       eyebrow="Friends" 
       title="Friends"
       showLegalFooter={false}
-      actions={
-        <Button className="cm-friends-header-action" type="button" onClick={handleAddFriend} aria-expanded={isSearchOpen}>
-          Add Friend
-        </Button>
-      }
     >
-      <div className="cm-page-grid">
-        {/* Place the compact-layout action below navigation and before the panels. */}
-        <div className="cm-friends-content-action">
-          <Button type="button" onClick={handleAddFriend} aria-expanded={isSearchOpen}>
-            Add Friend
-          </Button>
-        </div>
+      <div className="cm-page-grid two">
+        <div className="flex flex-col gap-5">
+          {pageError && (
+            <Alert>
+              {pageError}
+            </Alert>
+          )}
 
-        {pageError && (
-          <Alert>
-            {pageError}
-          </Alert>
-        )}
+          <Panel className="flex flex-col flex-1">
+            <PanelHeader
+              action={
+                <Button type="button" onClick={handleAddFriend} aria-expanded={isSearchOpen}>
+                  {isSearchOpen ? 'Close Search' : 'Add Friend'}
+                </Button>
+              }
+              eyebrow="Requests"
+              title="Friend Requests"
+            />
+            <PanelBody className="flex flex-col gap-4">
+              {isSearchOpen && (
+                <>
+                  {searchError && (
+                    <Alert>
+                      {searchError}
+                    </Alert>
+                  )}
 
-        {isSearchOpen && (
-          <Panel>
-            <PanelHeader eyebrow="Add Friend" title="Search Users" />
-            <PanelBody>
-              {searchError && (
-                <Alert>
-                  {searchError}
-                </Alert>
+                  <FormField label="Username" labelFor="friend-search">
+                    <Input
+                      id="friend-search"
+                      type="search"
+                      value={searchTerm}
+                      placeholder="Search username..."
+                      onChange={handleSearchTermChange}
+                    />
+                  </FormField>
+
+                  {searchTerm.trim().length >= 2 && (
+                    isSearchLoading ? (
+                      <EmptyState title="Searching users..." />
+                    ) : searchResults.length === 0 ? (
+                      <EmptyState title="No users found" />
+                    ) : (
+                      <div className="cm-list">
+                        {searchResults.map((user) => {
+                          const isFriend = friendUserIds.includes(user.id)
+                          const isSent = outgoingRecipientIds.includes(user.id)
+                          const isSending = sendingRequestIds.includes(user.id)
+
+                          return (
+                            <UserListRow
+                              actions={(
+                                <Button
+                                  size="sm"
+                                  type="button"
+                                  disabled={isFriend || isSent || isSending}
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    handleSendFriendRequest(user)
+                                  }}
+                                >
+                                  {isFriend ? 'Friend' : isSent ? 'Request Sent' : 'Add'}
+                                </Button>
+                              )}
+                              avatar={user.avatar}
+                              key={user.id}
+                              meta={user.rating}
+                              name={user.username}
+                              role="button"
+                              onClick={() => handleOpenSearchProfile(user)}
+                              onKeyDown={(event) => handleOpenRowKeyDown(
+                                event,
+                                () => handleOpenSearchProfile(user),
+                              )}
+                            />
+                          )
+                        })}
+                      </div>
+                    )
+                  )}
+                </>
               )}
 
-              <FormField label="Username" labelFor="friend-search">
-                <Input
-                  id="friend-search"
-                  type="search"
-                  value={searchTerm}
-                  placeholder="Search username..."
-                  onChange={handleSearchTermChange}
-                />
-              </FormField>
-
-              {searchTerm.trim().length < 2 ? (
-                <EmptyState title="Enter at least 2 characters" />
-              ) : isSearchLoading ? (
-                <EmptyState title="Searching users..." />
-              ) : searchResults.length === 0 ? (
-                <EmptyState title="No users found" />
+              {isLoading ? (
+                <EmptyState title="Loading requests..." />
+              ) : incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
+                <EmptyState title="No pending requests" />
               ) : (
                 <div className="cm-list">
-                  {searchResults.map((user) => {
-                    const isFriend = friendUserIds.includes(user.id)
-                    const isSent = outgoingRecipientIds.includes(user.id)
-                    const isSending = sendingRequestIds.includes(user.id)
+                  {incomingRequests.map((request) => {
+                    const isProcessing = processingRequestIds.includes(request.id)
 
                     return (
-                      <ListRow key={user.id}>
-                        <Avatar
-                          avatar={user.avatar}
-                          name={user.username}
-                          className="avatar avatar-md"
-                        />
+                      <UserListRow
+                        actions={(
+                          <Toolbar onClick={(event) => event.stopPropagation()}>
+                            <Button
+                              size="sm"
+                              type="button"
+                              disabled={isProcessing}
+                              onClick={() => handleAcceptFriendRequest(request)}
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              size="sm"
+                              type="button"
+                              disabled={isProcessing}
+                              variant="ghost"
+                              onClick={() => handleDeleteFriendRequest(request.id)}
+                            >
+                              Decline
+                            </Button>
+                          </Toolbar>
+                        )}
+                        avatar={request.requester.avatar}
+                        key={`incoming-${request.id}`}
+                        meta={`${request.requester.rating} Incoming`}
+                        name={request.requester.username}
+                        role="button"
+                        onClick={() => handleOpenIncomingRequestProfile(request)}
+                        onKeyDown={(event) => handleOpenRowKeyDown(
+                          event,
+                          () => handleOpenIncomingRequestProfile(request),
+                        )}
+                      />
+                    )
+                  })}
 
-                        <div>
-                          <Button
-                            size="sm"
-                            type="button"
-                            variant="ghost"
-                            onClick={() => handleOpenSearchProfile(user)}
-                          >
-                            {user.username}
-                          </Button>
-                          <div className="flex items-center gap-2">
-                            <Icon className="text-accent" name="trophy" />
-                            <span className="text-muted">{user.rating}</span>
-                          </div>
-                        </div>
-
+                  {outgoingRequests.map((request) => (
+                    <UserListRow
+                      actions={(
                         <Button
                           size="sm"
                           type="button"
-                          disabled={isFriend || isSent || isSending}
-                          onClick={() => handleSendFriendRequest(user)}
+                          disabled={processingRequestIds.includes(request.id)}
+                          variant="ghost"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleDeleteFriendRequest(request.id)
+                          }}
                         >
-                          {isFriend ? 'Friend' : isSent ? 'Request Sent' : 'Add'}
+                          Cancel
                         </Button>
-                      </ListRow>
-                    )
-                  })}
+                      )}
+                      avatar={request.recipient.avatar}
+                      key={`outgoing-${request.id}`}
+                      meta={`${request.recipient.rating} Outgoing`}
+                      name={request.recipient.username}
+                      role="button"
+                      onClick={() => handleOpenOutgoingRequestProfile(request)}
+                      onKeyDown={(event) => handleOpenRowKeyDown(
+                        event,
+                        () => handleOpenOutgoingRequestProfile(request),
+                      )}
+                    />
+                  ))}
                 </div>
               )}
             </PanelBody>
           </Panel>
-        )}
+        </div>
 
-        <Panel>
-          <PanelHeader eyebrow="Requests" title="Friend Requests" />
-          <PanelBody>
-            {isLoading ? (
-              <EmptyState title="Loading requests..." />
-            ) : incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
-              <EmptyState title="No pending requests" />
-            ) : (
-              <div className="cm-list">
-                {incomingRequests.map((request) => {
-                  const isProcessing = processingRequestIds.includes(request.id)
-
-                  return (
-                    <ListRow key={`incoming-${request.id}`}>
-                      <Avatar
-                        avatar={request.requester.avatar}
-                        name={request.requester.username}
-                        className="avatar avatar-md"
-                      />
-                      <div>
-                        <Button
-                          size="sm"
-                          type="button"
-                          variant="ghost"
-                          onClick={() => handleOpenIncomingRequestProfile(request)}
-                        >
-                          {request.requester.username}
-                        </Button>
-                        <div className="flex items-center gap-2">
-                          <Icon className="text-accent" name="trophy" />
-                          <span className="text-muted">{request.requester.rating}</span>
-                          <span className="text-muted">Incoming</span>
-                        </div>
-                      </div>
-                      <Toolbar>
-                        <Button
-                          size="sm"
-                          type="button"
-                          disabled={isProcessing}
-                          onClick={() => handleAcceptFriendRequest(request)}
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          type="button"
-                          disabled={isProcessing}
-                          variant="ghost"
-                          onClick={() => handleDeleteFriendRequest(request.id)}
-                        >
-                          Decline
-                        </Button>
-                      </Toolbar>
-                    </ListRow>
-                  )
-                })}
-
-                {outgoingRequests.map((request) => (
-                  <ListRow key={`outgoing-${request.id}`}>
-                    <Avatar
-                      avatar={request.recipient.avatar}
-                      name={request.recipient.username}
-                      className="avatar avatar-md"
-                    />
-                    <div>
-                      <Button
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                        onClick={() => handleOpenOutgoingRequestProfile(request)}
-                      >
-                        {request.recipient.username}
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        <Icon className="text-accent" name="trophy" />
-                        <span className="text-muted">{request.recipient.rating}</span>
-                        <span className="text-muted">Outgoing</span>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      type="button"
-                      disabled={processingRequestIds.includes(request.id)}
-                      variant="ghost"
-                      onClick={() => handleDeleteFriendRequest(request.id)}
-                    >
-                      Cancel
-                    </Button>
-                  </ListRow>
-                ))}
-              </div>
-            )}
-          </PanelBody>
-        </Panel>
-
-        <Panel>
+        <Panel className="flex flex-col">
           <PanelHeader eyebrow="Friends List" title="Friends" />
           <PanelBody>
             {isLoading ? (
@@ -479,73 +467,57 @@ export default function Friends() {
               <EmptyState title="No friends yet" />
             ) : (
               <div className="cm-list">
-                {friends.map((friendship) => (
-                  <ListRow key={friendship.friendshipId}>
-                    <Avatar
-                      avatar={friendship.user.avatar}
-                      name={friendship.user.username}
-                      className="avatar avatar-md"
-                    />
-                    
-                    <div>
-                      <Button
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                        onClick={() => handleOpenProfile(friendship)}
-                      >
-                        {friendship.user.username}
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        <Icon className="text-accent" name="trophy" />
-                        <span className="text-muted">{friendship.user.rating}</span>
-                      </div>
-                        <PresenceStatus userId={friendship.user.id} />
-                    </div>
+                {friends.map((friendship) => {
+                  const isRemoving = removingFriendIds.includes(friendship.user.id)
 
-                    <Toolbar>
-                      <Button
-                        size="sm"
-                        type="button"
-                        disabled
-                        variant="ghost"
-                      >
-                        Message
-                      </Button>
-                      <Button
-                        size="sm"
-                        type="button"
-                        disabled
-                        variant="ghost"
-                      >
-                        Challenge
-                      </Button>
-                      <Button
-                        size="sm"
-                        type="button"
-                        disabled={removingFriendIds.includes(friendship.user.id)}
-                        variant="danger"
-                        onClick={() => handleRemoveFriend(friendship.user.id)}
-                      >
-                        Remove
-                      </Button>
-                    </Toolbar>
-                  </ListRow>
-                ))}
+                  return (
+                    <UserListRow
+                      actions={(
+                        <Toolbar onClick={(event) => event.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            Message
+                          </Button>
+                          <Button
+                            size="sm"
+                            type="button"
+                            disabled={isRemoving}
+                            variant="danger"
+                            onClick={() => handleRemoveFriend(friendship.user.id)}
+                          >
+                            {isRemoving ? 'Removing...' : 'Remove'}
+                          </Button>
+                        </Toolbar>
+                      )}
+                      avatar={friendship.user.avatar}
+                      key={friendship.friendshipId}
+                      meta={friendship.user.rating}
+                      name={friendship.user.username}
+                      role="button"
+                      showPresence
+                      userId={friendship.user.id}
+                      onClick={() => handleOpenProfile(friendship)}
+                      onKeyDown={(event) => handleOpenProfileKeyDown(event, friendship)}
+                    />
+                  )
+                })}
               </div>
             )}
           </PanelBody>
         </Panel>
       </div>
 
-	  {selectedFriend && (
-	    <UserProfileModal
+    {selectedFriend && (
+      <UserProfileModal
         player={selectedFriend}
         onAddFriend={(player) => handleSendFriendRequest(player, { throwOnError: true })}
         onRemoveFriend={(player) => handleRemoveFriend(player.id)}
         onClose={() => setSelectedFriend(null)}
       />
-	  )}
+    )}
     </AppLayout>
   )
 }

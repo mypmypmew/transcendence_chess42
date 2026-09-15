@@ -1,23 +1,25 @@
 import { NavLink } from 'react-router-dom'
 
-import { Icon } from './ui.jsx'
+import {
+  Alert,
+  Icon,
+} from './ui.jsx'
 
-// Keep account actions in the header and reserve the sidebar for navigation.
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-  // Open matchmaking before navigating the player to a server-created game.
   { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
+  { action: 'leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
+  { to: '/profile', label: 'Profile', icon: 'user-circle' },
   { to: '/chat', label: 'Chat', icon: 'messages' },
 ]
 
-function Sidebar({ onOpenLeaderboard }) {
+function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeaderboard }) {
   return (
-    <aside className="min-w-0" aria-label="Main navigation">
+    <aside className="cm-sidebar" aria-label="Main navigation">
       <nav className="cm-nav">
         {navigationItems.map((item) => {
-          if (item.label === 'Leaderboard') {
+          if (item.action === 'leaderboard') {
             return (
               <button
                 className="cm-nav-link"
@@ -49,6 +51,21 @@ function Sidebar({ onOpenLeaderboard }) {
           )
         })}
       </nav>
+
+      <div className="cm-sidebar-actions">
+        <button
+          className="cm-nav-link"
+          type="button"
+          disabled={isLoggingOut}
+          onClick={onLogout}
+        >
+          <Icon name="logout" />
+          <span>{isLoggingOut ? 'Logging out…' : 'Logout'}</span>
+        </button>
+        {logoutError && (
+          <Alert>{logoutError}</Alert>
+        )}
+      </div>
     </aside>
   )
 }

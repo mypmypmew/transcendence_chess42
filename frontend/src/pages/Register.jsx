@@ -13,7 +13,6 @@ import {
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
-import './App.css'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
