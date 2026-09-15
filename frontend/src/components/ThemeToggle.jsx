@@ -8,17 +8,17 @@ function ThemeToggle({ className = '' }) {
   const label = `Switch to ${nextThemeLabel} theme`
 
   return (
-	<Button
-	  className={`theme-toggle ${className}`.trim()}
-	  icon={icon}
-	  type="button"
-	  onClick={toggleTheme}
-	  aria-label={label}
-	  title={label}
-	  variant="ghost"
-	>
-	  <span>{theme}</span>
-	</Button>
+  <Button
+    className={`theme-toggle ${className}`.trim()}
+    icon={icon}
+    type="button"
+    onClick={toggleTheme}
+    aria-label={label}
+    title={label}
+    variant="ghost"
+  >
+    <span>{theme}</span>
+  </Button>
   )
 }
 
