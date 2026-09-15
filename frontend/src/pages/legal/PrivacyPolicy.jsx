@@ -8,7 +8,6 @@ import {
   PanelBody,
   PanelHeader,
 } from '../../components/ui.jsx'
-import '../App.css'
 
 function PrivacyPolicy() {
   return (
