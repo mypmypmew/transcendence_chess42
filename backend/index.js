@@ -7,6 +7,7 @@ const chatRoutes = require('./src/routes/chatRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
 const registerChatHandlers = require('./src/sockets/chatSocket');
 const { GameService } = require('./src/services/gameService');
+const { cancelInterruptedGames } = require('./src/repositories/gameRepository');
 const { MatchmakingService } = require('./src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
 const { registerGameHandlers } = require('./src/socket/gameSocket');
@@ -80,6 +81,22 @@ app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
 });
 
-httpServer.listen(PORT, () => {
-    console.log(`Hello, Backend running on http://localhost:${PORT}`);
-});
+async function startServer() {
+  try {
+    // Resolve games with lost in-memory state before accepting connections.
+    const { count } = await cancelInterruptedGames();
+
+    if (count > 0) {
+      console.log(`Cancelled ${count} interrupted game(s) after restart.`);
+    }
+
+    httpServer.listen(PORT, () => {
+        console.log(`Hello, Backend running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Backend startup failed:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
