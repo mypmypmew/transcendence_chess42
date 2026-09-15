@@ -30,6 +30,9 @@ app.set('io', io);
 
 // Keep one authoritative game store and one matchmaking queue shared by every authenticated Socket.IO connection.
 const gameService = new GameService();
+// Share the existing game state with HTTP routes.
+app.set('gameService', gameService);
+
 const matchmakingService = new MatchmakingService({
   gameService,
 });
