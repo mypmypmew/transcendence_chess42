@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 
 const { GameService } = require('../src/services/gameService');
 const { finishGame } = require('../src/repositories/gameRepository');
+const { create } = require('node:domain');
+const { DatabaseSync } = require('node:sqlite');
 
 // Create an isolated GameService for tests that do not examine persistence directly.
 // The fake repository prevents unit tests from connecting to Prisma.
@@ -427,4 +429,161 @@ test('persists the result and PGN after resignation', async () => {
     result: 'WHITE_WIN',
     pgn: finished.pgn,
   });
+});
+
+test('returns the current active game for both participants', async () => {
+  const service = createTestService();
+  await service.createGame({ whiteId: 3, blackId: 4 });
+  const game = await service.createGame({
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  const updated = await service.makeMove({
+    gameId: game.gameId,
+    playerId: 1,
+    from: 'e2',
+    to: 'e4',
+  });
+
+  assert.deepEqual(service.getActiveGame(1), updated);
+  assert.deepEqual(service.getActiveGame(2), updated);
+});
+
+test('returns null when the player has no current active game', async () => {
+  const service = createTestService();
+  assert.equal(service.getActiveGame(1), null);
+  await service.createGame({ whiteId: 1, blackId: 2 });
+  assert.equal(service.getActiveGame(3), null);
+});
+
+test('excludes completed games from active game lookup', async () => {
+  const service = createTestService();
+  const game = await service.createGame({
+    whiteId: 1,
+    blackId: 2,
+  });
+
+  await service.resignGame({ gameId: game.gameId, playerId: 1 });
+
+  assert.equal(service.getActiveGame(1), null);
+  assert.equal(service.getActiveGame(2), null);
+
+  const nextGame = await service.createGame({
+    whiteId: 1,
+    blackId: 3,
+  });
+
+  assert.deepEqual(service.getActiveGame(1), nextGame);
+});
+
+test('rejects invalid player ids in active game lookup', () => {
+  const service = createTestService();
+
+  for (const playerId of [undefined, null, '1', 0, -1, 1.5, NaN]) {
+    assert.throws(
+      () => service.getActiveGame(playerId),
+      {
+        name: 'TypeError',
+        message: 'playerId must be a positive integer',
+      },
+    );
+  }
+});
+
+test('rejects another game for either active participant', async () => {
+  const service = createTestService();
+  await service.createGame({ whiteId: 1, blackId: 2 });
+
+  for (const players of [
+    { whiteId: 1, blackId: 3 },
+    { whiteId: 3, blackId: 1 },
+    { whiteId: 2, blackId: 3 },
+    { whiteId: 3, blackId: 2 },
+  ]) {
+    await assert.rejects(
+      () => service.createGame(players),
+      /Player already has an active or pending game/,
+    );
+  }
+
+  const independentGame = await service.createGame({
+    whiteId: 3,
+    blackId: 4,
+  });
+
+  assert.equal(independentGame.status, 'IN_PROGRESS');
+});
+
+test('reserves both players while game creation is pending', async () => {
+  let resolveCreation;
+  let createCalls = 0;
+
+  const service = new GameService({
+    gameRepository: {
+      createGame() {
+        createCalls += 1;
+        return new Promise((resolve) => {
+          resolveCreation = resolve;
+        });
+      },
+    },
+  });
+
+  const pendingGame = service.createGame({ whiteId: 1, blackId: 2 });
+
+  for (const players of [
+    { whiteId: 1, blackId: 3 },
+    { whiteId: 3, blackId: 1 },
+    { whiteId: 2, blackId: 3 },
+    { whiteId: 3, blackId: 2 },
+  ]) {
+    await assert.rejects(
+      () => service.createGame(players),
+      /Player already has an active or pending game/,
+    );
+  }
+
+  assert.equal(createCalls, 1);
+
+  resolveCreation({ id: 42 });
+  const game = await pendingGame;
+
+  assert.equal(game.gameId, 42);
+  assert.deepEqual(service.getActiveGame(1), game);
+  assert.deepEqual(service.getActiveGame(2), game);
+});
+
+test('releases both players when game creation fails', async () => {
+  let createCalls = 0;
+  const databaseError = new Error('Database unavailable');
+
+  const service = new GameService({
+    gameRepository: {
+      async createGame() {
+          createCalls += 1;
+
+          if (createCalls === 1) {
+            throw databaseError;
+          }
+
+          return { id: createCalls };
+      },
+    },
+  });
+
+  await assert.rejects(
+    () => service.createGame({ whiteId: 1, blackId: 2 }),
+    (error) => error === databaseError,
+  );
+
+  assert.equal(service.getActiveGame(1), null);
+  assert.equal(service.getActiveGame(2), null);
+
+  const firstGame = await service.createGame({ whiteId: 1, blackId: 3 });
+  const secondGame = await service.createGame({ whiteId: 4, blackId: 2 });
+
+  assert.equal(firstGame.whiteId, 1);
+  assert.equal(secondGame.blackId, 2);
+  assert.equal(createCalls, 3);
 });

@@ -4,12 +4,19 @@ const assert = require('node:assert/strict');
 const {
 	MatchmakingService,
 } = require('../src/services/matchmakingService');
+const { createGame } = require('../src/repositories/gameRepository');
+const { error } = require('node:console');
+const { match } = require('node:assert');
 
 test('keeps the first player waiting for an opponent', async () => {
   // Count game creation attempts to prove that one player is not enough to start a multiplayer game.
   let createGameCalls = 0;
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     // Simulate the GameService dependency without creating a database record.
     async createGame() {
       createGameCalls += 1;
@@ -48,6 +55,10 @@ test('matches the second player and creates a game', async () => {
   };
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     // Simulate authoritative game creation without Prisma or chess.js.
     async createGame(players) {
       createdPlayers = players;
@@ -88,6 +99,10 @@ test('rejects a player who is already waiting', async () => {
   let createGameCalls = 0;
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     async createGame() {
       createGameCalls += 1;
 
@@ -119,6 +134,10 @@ test('removes a waiting player when matchmaking is cancelled', async () => {
   let createGameCalls = 0;
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     async createGame() {
       createGameCalls += 1;
 
@@ -148,4 +167,149 @@ test('removes a waiting player when matchmaking is cancelled', async () => {
   });
 
   assert.equal(createGameCalls, 0);
+});
+
+test('rejects a busy player without occupying the empty queue', async () => {
+  const matchmakingService = new MatchmakingService({
+    gameService: {
+      isPlayerBusy(playerId) {
+        return playerId === 1;
+      },
+      async createGame() {
+        assert.fail('Game creation must not be called')
+      },
+    },
+  });
+
+  await assert.rejects(
+    () => matchmakingService.join(1),
+    /Player already has an active or pending game/,
+  );
+
+  assert.deepEqual(await matchmakingService.join(2), {
+    status: 'WAITING',
+  });
+});
+
+test('preserves the waiting player when a busy opponent joins', async () => {
+  const createdPairs = [];
+
+  const matchmakingService = new MatchmakingService({
+    gameService: {
+      isPlayerBusy(playerId) {
+        return playerId === 2;
+      },
+      async createGame(players) {
+        createdPairs.push(players);
+        return { gameId: 42, ...players };
+      },
+    },
+  });
+
+  await matchmakingService.join(1);
+
+  await assert.rejects(
+    () => matchmakingService.join(2),
+    /Player already has an active or pending game/,
+  );
+
+  assert.equal(createdPairs.length, 0);
+
+  const result = await matchmakingService.join(3);
+
+  assert.equal(result.status, 'MATCHED');
+  assert.deepEqual(createdPairs, [{ whiteId: 1, blackId: 3 }]);
+});
+
+test('preserves the queue when availability checking joins', async () => {
+  const availabilityError = new Error('Availability check failed');
+  const createdPairs = [];
+
+  const matchmakingService = new MatchmakingService({
+    gameService: {
+      isPlayerBusy(playerId) {
+        if (playerId === 2) {
+          throw availabilityError;
+        }
+        return false;
+      },
+      async createGame(players) {
+        createdPairs.push(players);
+        return { gameId: 42, ...players };
+      },
+    },
+  });
+
+  await matchmakingService.join(1);
+
+  await assert.rejects(
+    () => matchmakingService.join(2),
+    (error) => error === availabilityError,
+  );
+
+  assert.equal(createdPairs.length, 0);
+
+  const result = await matchmakingService.join(3);
+
+  assert.equal(result.status, 'MATCHED');
+  assert.deepEqual(createdPairs, [{ whiteId: 1, blackId: 3 }]);
+});
+
+test('blocks repeated joins during and after game creation', async () => {
+  const { GameService } = require('../src/services/gameService');
+  const createdPairs = [];
+  let resolveCreation;
+
+  const gameService = new GameService({
+    gameRepository: {
+      async createGame(players) {
+        createdPairs.push(players);
+        const id = createdPairs.length;
+
+        // Keep the first database operation pending until the test releases it.
+        if (id === 1) {
+          await new Promise((resolve) => {
+            resolveCreation = resolve;
+          });
+        }
+
+        return { id };
+      },
+    },
+  });
+
+  const matchmakingService = new MatchmakingService({ gameService });
+
+  await matchmakingService.join(1);
+  const pendingMatch = matchmakingService.join(2);
+
+  try {
+    for (const playerId of [1, 2]) {
+      await assert.rejects(
+        () => matchmakingService.join(playerId),
+        /Player already has an active or pending game/,
+      );
+    }
+
+    assert.deepEqual(await matchmakingService.join(3), { status: 'WAITING' });
+    assert.equal(createdPairs.length, 1);
+  } finally {
+    resolveCreation();
+    await pendingMatch;
+  }
+
+  for (const playerId of [1, 2]) {
+      await assert.rejects(
+        () => matchmakingService.join(playerId),
+        /Player already has an active or pending game/,
+      );
+  }
+
+  const nextMatch = await matchmakingService.join(4);
+
+  assert.equal(nextMatch.status, 'MATCHED');
+  assert.deepEqual(createdPairs, [
+    { whiteId: 1, blackId: 2 },
+    { whiteId: 3, blackId: 4 },
+  ]);
 });

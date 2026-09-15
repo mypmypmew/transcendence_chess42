@@ -10,6 +10,10 @@ const { MatchmakingService } = require('../src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('../src/socket/matchmakingSocket');
 const { registerGameHandlers } = require('../src/socket/gameSocket');
 
+const express = require('express');
+const sessionService = require('../src/services/sessionService');
+const gameRoutes = require('../src/routes/gameRoutes');
+
 // Wait for one Socket.IO event and reject if it never arrives.
 // The timeout prevents a broken integration test from hanging forever.
 function waitForEvent(socket, eventName) {
@@ -52,7 +56,15 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		gameService,
 	});
 
-	const httpServer = http.createServer();
+	// Simulate the returning black player's authenticated HTTP session.
+	t.mock.method(sessionService, 'getSession', async () => ({ userId: 2 }));
+
+	const app = express();
+	app.set('gameService', gameService);
+	app.use('/api/games', gameRoutes);
+
+	const httpServer = http.createServer(app);
+
 	const io = new Server(httpServer);
 
 	// Simulate completed socketAuth middleware.
@@ -275,9 +287,15 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 		'game:state',
 	);
 
-	// The reconnected frontend repeats game:join using its current route gameId.
+	// Discover the active game through the API instead of a saved route.
+	const activeResponse = await fetch(`${serverUrl}/api/games/active`);
+	assert.equal(activeResponse.status, 200);
+
+	const { game: activeGame } = await activeResponse.json();
+	assert.deepEqual(activeGame, stateAfterMoveForBlack);
+
 	reconnectedBlackClient.emit('game:join', {
-		gameId: blackGame.gameId,
+		gameId: activeGame.gameId,
 	});
 
 	const restoredState = await restoredStateEvent;
@@ -320,6 +338,23 @@ test('matches two clients and synchronizes a legal move', async (t) => {
 	assert.equal(finalStateForWhite.status, 'COMPLETED');
 	assert.equal(finalStateForWhite.result, 'WHITE_WIN');
 	assert.equal(finalStateForWhite.winnerId, 1);
+
+	const finishedResponse = await fetch(`${serverUrl}/api/games/active`);
+	assert.equal(finishedResponse.status, 200);
+	assert.deepEqual(await finishedResponse.json(), { game: null });
+
+	// A delayed join using the earlier API response must return the final state.
+	const lateJoinStateEvent = waitForEvent(reconnectedBlackClient, 'game:state');
+
+	reconnectedBlackClient.emit('game:join', {
+		gameId: activeGame.gameId,
+	});
+
+	const lateJoinState = await lateJoinStateEvent;
+
+	assert.deepEqual(lateJoinState, finalStateForBlack);
+	assert.equal(lateJoinState.status, 'COMPLETED');
+
 	assert.match(
 		finalStateForWhite.pgn,
 		/\[Result "1-0"\]/,
