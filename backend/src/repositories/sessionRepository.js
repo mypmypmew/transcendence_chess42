@@ -16,6 +16,7 @@ async function findSessionById(id) {
           email: true,
           username: true,
           rating: true,
+          avatar: true,
           createdAt: true,
           updatedAt: true,
         },
