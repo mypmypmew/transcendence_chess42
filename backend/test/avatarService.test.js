@@ -66,3 +66,16 @@ test('saveAvatar rejects missing, unsupported or oversized files without writing
   assert.equal(updateUser.mock.callCount(), 0);
   assert.equal(fs.readdirSync(AVATARS_DIR).length, before);
 });
+
+test('saveAvatar removes the previous avatar file after a replacement is stored', async (t) => {
+  const oldName = '1-old.png';
+  fs.writeFileSync(path.join(AVATARS_DIR, oldName), 'old-bytes');
+  t.mock.method(userRepository, 'findUserById', async () =>
+    fakeUser({ avatar: `/uploads/avatars/${oldName}` }));
+  t.mock.method(userRepository, 'updateUser', async (id, data) => fakeUser({ id, ...data }));
+
+  const user = await avatarService.saveAvatar(1, fakeFile());
+
+  assert.equal(fs.existsSync(path.join(AVATARS_DIR, oldName)), false);
+  assert.equal(fs.existsSync(path.join(AVATARS_DIR, path.basename(user.avatar))), true);
+});
