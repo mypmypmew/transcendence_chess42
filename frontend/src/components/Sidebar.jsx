@@ -7,13 +7,11 @@ import {
 
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-  // Open matchmaking before navigating the player to a server-created game.
   { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
+  { action: 'leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
   { to: '/profile', label: 'Profile', icon: 'user-circle' },
   { to: '/chat', label: 'Chat', icon: 'messages' },
-  { action: 'logout', label: 'Logout', icon: 'logout' },
 ]
 
 function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeaderboard }) {
@@ -21,7 +19,7 @@ function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeade
     <aside className="cm-sidebar" aria-label="Main navigation">
       <nav className="cm-nav">
         {navigationItems.map((item) => {
-          if (item.label === 'Leaderboard') {
+          if (item.action === 'leaderboard') {
             return (
               <button
                 className="cm-nav-link"
@@ -31,21 +29,6 @@ function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeade
               >
                 <Icon name={item.icon} />
                 <span>{item.label}</span>
-              </button>
-            )
-          }
-
-          if (item.action === 'logout') {
-            return (
-              <button
-                className="cm-nav-link"
-                key={item.label}
-                type="button"
-                disabled={isLoggingOut}
-                onClick={onLogout}
-              >
-                <Icon name={item.icon} />
-                <span>{isLoggingOut ? 'Logging out…' : item.label}</span>
               </button>
             )
           }
@@ -67,10 +50,22 @@ function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeade
             </NavLink>
           )
         })}
+      </nav>
+
+      <div className="cm-sidebar-actions">
+        <button
+          className="cm-nav-link"
+          type="button"
+          disabled={isLoggingOut}
+          onClick={onLogout}
+        >
+          <Icon name="logout" />
+          <span>{isLoggingOut ? 'Logging out…' : 'Logout'}</span>
+        </button>
         {logoutError && (
           <Alert>{logoutError}</Alert>
         )}
-      </nav>
+      </div>
     </aside>
   )
 }
