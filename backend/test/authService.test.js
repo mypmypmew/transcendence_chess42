@@ -130,7 +130,7 @@ test('login returns public user data and creates a session', async (t) => {
 
   assert.equal(createSession.mock.calls[0].arguments[0], 7);
   assert.deepEqual(Object.keys(user).sort(), [
-    'createdAt', 'email', 'id', 'rating', 'updatedAt', 'username',
+    'avatar', 'createdAt', 'email', 'id', 'rating', 'updatedAt', 'username',
   ]);
   assert.equal('passwordHash' in user, false);
 });

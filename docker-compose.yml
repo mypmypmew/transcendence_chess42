@@ -9,6 +9,7 @@ services:
       - ./backend/index.js:/app/index.js
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
+      - ./backend/uploads:/app/uploads
 
   frontend:
     build: ./frontend

@@ -25,6 +25,7 @@ test('session lookup selects only public user fields', async () => {
       email: true,
       username: true,
       rating: true,
+      avatar: true,
       createdAt: true,
       updatedAt: true,
     });
