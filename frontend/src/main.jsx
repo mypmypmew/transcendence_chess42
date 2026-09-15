@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { SocketProvider } from './context/SocketContext.jsx'
+import { PresenceProvider } from './context/PresenceContext.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <AuthProvider>
         <SocketProvider>
-          <App />
+          <PresenceProvider>
+            <App />
+          </PresenceProvider>
         </SocketProvider>
       </AuthProvider>
     </ThemeProvider>

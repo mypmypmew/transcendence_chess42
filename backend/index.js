@@ -6,6 +6,9 @@ const gameRoutes = require('./src/routes/gameRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
 const registerChatHandlers = require('./src/sockets/chatSocket');
+const registerPresenceHandlers = require('./src/sockets/presenceSocket');
+const { broadcastPresenceChange } = require('./src/sockets/presenceSocket');
+const { PresenceService } = require('./src/services/presenceService');
 const { GameService } = require('./src/services/gameService');
 const { MatchmakingService } = require('./src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
@@ -34,12 +37,19 @@ const matchmakingService = new MatchmakingService({
   gameService,
 });
 
+const presenceService = new PresenceService();
+
+presenceService.onChange((change) => broadcastPresenceChange(io, change));
+
+app.set('presenceService', presenceService);
+
 io.use(socketAuth);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id} (user ${socket.data.userId})`);
 
   registerChatHandlers(io, socket);
+  registerPresenceHandlers(socket, presenceService);
   // Connect this authenticated socket to the shared matchmaking services.
   registerMatchmakingHandlers({
     io,

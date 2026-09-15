@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../components/AppLayout'
 import Avatar from '../components/Avatar'
 import UserProfileModal from '../components/UserProfileModal'
+import PresenceStatus from '../components/PresenceStatus'
 import {
   Alert,
   Button,
@@ -499,6 +500,7 @@ export default function Friends() {
                         <Icon className="text-accent" name="trophy" />
                         <span className="text-muted">{friendship.user.rating}</span>
                       </div>
+                        <PresenceStatus userId={friendship.user.id} />
                     </div>
 
                     <Toolbar>
