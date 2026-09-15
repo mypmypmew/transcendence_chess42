@@ -35,9 +35,15 @@ async function saveAvatar(userId, file) {
   await fs.mkdir(AVATARS_DIR, { recursive: true });
   await fs.writeFile(path.join(AVATARS_DIR, fileName), file.buffer);
 
+  const previous = await userRepository.findUserById(userId);
+
   const user = await userRepository.updateUser(userId, {
     avatar: `/uploads/avatars/${fileName}`,
   });
+
+  if (previous?.avatar) {
+    await fs.rm(path.join(UPLOADS_DIR, previous.avatar.replace('/uploads/', '')), { force: true });
+  }
 
   return toAccountUser(user);
 }

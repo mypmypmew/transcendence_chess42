@@ -67,6 +67,12 @@ async function findUserByUsername(username) {
   });
 }
 
+async function findUserById(userId) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+  });
+}
+
 async function createUser({ email, username, passwordHash }) {
   return prisma.user.create({
     data: {
@@ -87,6 +93,7 @@ async function updateUser(userId, data) {
 module.exports = {
   findUserByEmail,
   findUserByUsername,
+  findUserById,
   findPublicUserById,
   searchPublicUsersByUsername,
   findLeaderboardPlayers,
