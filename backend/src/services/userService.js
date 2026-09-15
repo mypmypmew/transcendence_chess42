@@ -51,9 +51,22 @@ async function updateProfile(userId, { username, email }) {
     throw httpError(400, errors.join('; '));
   }
 
+  const trimmedUsername = username.trim();
+  const normalizedEmail = authValidator.normalizeEmail(email);
+
+  const emailOwner = await userRepository.findUserByEmail(normalizedEmail);
+  if (emailOwner && emailOwner.id !== userId) {
+    throw httpError(409, 'Email already in use');
+  }
+  
+  const usernameOwner = await userRepository.findUserByUsername(trimmedUsername);
+  if (usernameOwner && usernameOwner.id !== userId) {
+    throw httpError(409, 'Username already in use');
+  }
+
   const user = await userRepository.updateUser(userId, {
-    username: username.trim(),
-    email: authValidator.normalizeEmail(email),
+    username: trimmedUsername,
+    email: normalizedEmail,
   });
 
   return toAccountUser(user);
