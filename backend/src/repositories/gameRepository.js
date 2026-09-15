@@ -106,9 +106,26 @@ async function finishGame(gameId, { result, pgn = null }) {
   });
 }
 
+// Cancel games whose in-memory state was lost after a backend restart.
+// Call only during startup, before accepting requests or socket connections.
+async function cancelInterruptedGames() {
+  return prisma.game.updateMany({
+    where: {
+      status: GameStatus.IN_PROGRESS,
+    },
+    data: {
+      status: GameStatus.CANCELLED,
+      result: null,
+      winnerId: null,
+      endedAt: new Date(),
+    },
+  });
+}
+
 module.exports = {
   findGameById,
   findGamesByUserId,
   createGame,
   finishGame,
+  cancelInterruptedGames,
 };
