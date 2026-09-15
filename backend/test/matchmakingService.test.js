@@ -10,6 +10,10 @@ test('keeps the first player waiting for an opponent', async () => {
   let createGameCalls = 0;
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     // Simulate the GameService dependency without creating a database record.
     async createGame() {
       createGameCalls += 1;
@@ -48,6 +52,10 @@ test('matches the second player and creates a game', async () => {
   };
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     // Simulate authoritative game creation without Prisma or chess.js.
     async createGame(players) {
       createdPlayers = players;
@@ -88,6 +96,10 @@ test('rejects a player who is already waiting', async () => {
   let createGameCalls = 0;
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     async createGame() {
       createGameCalls += 1;
 
@@ -119,6 +131,10 @@ test('removes a waiting player when matchmaking is cancelled', async () => {
   let createGameCalls = 0;
 
   const fakeGameService = {
+    isPlayerBusy() {
+      return false;
+    },
+
     async createGame() {
       createGameCalls += 1;
 
