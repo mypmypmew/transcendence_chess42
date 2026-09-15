@@ -1,7 +1,7 @@
 import { useTheme } from '../context/ThemeContext.jsx'
 import { Button } from './ui.jsx'
 
-function ThemeToggle({ className = '' }) {
+function ThemeToggle({ className = '', iconOnly = false }) {
   const { theme, isLightTheme, toggleTheme } = useTheme()
   const icon = isLightTheme ? 'sun' : 'moon'
   const nextThemeLabel = isLightTheme ? 'dark' : 'light'
@@ -10,6 +10,7 @@ function ThemeToggle({ className = '' }) {
   return (
 	<Button
 	  className={`theme-toggle ${className}`.trim()}
+	  size={iconOnly ? 'icon' : undefined}
 	  icon={icon}
 	  type="button"
 	  onClick={toggleTheme}
@@ -17,7 +18,7 @@ function ThemeToggle({ className = '' }) {
 	  title={label}
 	  variant="ghost"
 	>
-	  <span>{theme}</span>
+	  {!iconOnly && <span>{theme}</span>}
 	</Button>
   )
 }

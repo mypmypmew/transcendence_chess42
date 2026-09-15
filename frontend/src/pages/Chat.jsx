@@ -375,7 +375,7 @@ function Chat() {
             )}
           </PanelBody>
         </Panel>
-        <Panel className="cm-chat-shell" aria-labelledby="chat-active-title">
+        <Panel className="cm-chat-shell min-w-0" aria-labelledby="chat-active-title">
           {!activeConversation && (
             <PanelBody>
               <EmptyState
@@ -416,7 +416,7 @@ function Chat() {
                   />
                 )}
                 {messages.length > 0 && (
-                  <div className="cm-message-list">
+                  <div className="cm-message-list min-w-0">
                     {messages.map((message) => (
                       <MessageBubble isMine={message.senderId === user.id} key={message.id}>
                         {message.body}

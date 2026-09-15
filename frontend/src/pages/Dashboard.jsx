@@ -152,9 +152,9 @@ function Dashboard() {
                             {/* Only the decorative bar is hidden from assistive technologies. */}
                             <div
                               aria-hidden="true"
+                              className="flex-shrink-0"
                               style={{
                                 height: `${(day.count / maxDailyGames) * 92}px`,
-                                flexShrink: 0,
                                 borderRadius: 'var(--radius-sm)',
                                 background: 'linear-gradient(180deg, var(--accent-hover), rgba(212, 160, 55, 0.18))',
                               }}
