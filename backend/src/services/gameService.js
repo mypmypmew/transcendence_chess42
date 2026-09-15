@@ -25,9 +25,7 @@ class GameService {
     }
 
     for (const playerId of [whiteId, blackId]) {
-      if (this.pendingPlayers.has(playerId) ||
-        this.getActiveGame(playerId)
-      ) {
+      if (this.isPlayerBusy(playerId)) {
         throw new Error('Player already has an active or pending game');
       }
     }
@@ -118,6 +116,11 @@ class GameService {
     }
 
     return null;
+  }
+
+  isPlayerBusy(playerId) {
+    return this.getActiveGame(playerId) !== null ||
+      this.pendingPlayers.has(playerId);
   }
 
   async makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
