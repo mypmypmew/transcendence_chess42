@@ -1,106 +1,18 @@
 :root {
-  color-scheme: dark;
-
-  /* T: Keep the complete board visible on common desktop screens without excessive scrolling. */
   --cm-chessboard-size: clamp(420px, calc(100vh - 300px), 500px);
   --cm-chessboard-card-size: calc(var(--cm-chessboard-size) + (var(--space-4) * 2));
-
-  --bg-base: #0f172a;
-  --bg-surface: #142336;
-  --bg-elevated: #0b1624;
-  --bg-overlay: rgba(4, 10, 18, 0.72);
-  --bg-pattern: none;
-
-  --accent: #d4a037;
-  --accent-hover: #ffbd59;
-  --accent-muted: rgba(212, 160, 55, 0.16);
-  --accent-border: rgba(212, 160, 55, 0.38);
-  --accent-text: #fff8e8;
-
-  --border: rgba(148, 163, 184, 0.22);
-  --border-subtle: rgba(148, 163, 184, 0.16);
-  --border-surface: rgba(148, 163, 184, 0.28);
-
-  --color-win: #6cc56f;
-  --color-win-bg: rgba(108, 197, 111, 0.16);
-  --color-loss: #ff7777;
-  --color-loss-bg: rgba(255, 119, 119, 0.14);
-  --color-draw: #c0c8d4;
-  --color-draw-bg: rgba(192, 200, 212, 0.12);
-
-  --color-online: #60d96f;
-  --color-playing: #d4a037;
-  --color-offline: #5b687a;
-
-  --color-danger: #ff7b7b;
-  --color-danger-bg: rgba(255, 123, 123, 0.12);
-  --color-danger-border: rgba(255, 123, 123, 0.36);
-
-  --text-primary: #f7f9ff;
-  --text-secondary: #dfe5f0;
-  --text-muted: #aab6c7;
-  --text-hint: #8b96a8;
-
-  /* Text colors used on surfaces that always have a dark background */
-  --text-on-dark: #f7f9ff;
-  --text-on-dark-secondary: #dfe5f0;
-  --text-on-dark-muted: #aab6c7;
-}
-
-body {
-  background: #0f172a;
-}
-
-.input {
-  min-height: 44px;
-  background: rgba(11, 22, 36, 0.66);
-  border: 1px solid var(--border-surface);
-  color: var(--text-primary);
-}
-
-.input:focus {
-  border-color: var(--accent-hover);
-  box-shadow: 0 0 0 4px rgba(212, 160, 55, 0.18);
-}
-
-.btn-primary {
-  background: linear-gradient(180deg, #ffbd59 0%, #b77413 100%);
-  color: #fff8e8;
-  border: 1px solid rgba(255, 211, 123, 0.38);
-  box-shadow: 0 10px 24px rgba(176, 104, 14, 0.25);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffd086 0%, #c17e17 100%);
-}
-
-.btn-ghost {
-  background: rgba(20, 35, 54, 0.64);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-surface);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  color: var(--accent-hover);
-  border-color: var(--accent-border);
-  background: rgba(212, 160, 55, 0.12);
-}
-
-.surface {
-  background: rgba(15, 28, 43, 0.82);
-  border: 1px solid var(--border);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
 }
 
 .cm-shell {
-  min-height: 100svh;
+  height: 100svh;
   padding: var(--space-5);
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 75% 18%, rgba(255, 157, 64, 0.24), transparent 0 25%),
-    radial-gradient(circle at 14% 8%, rgba(79, 132, 168, 0.24), transparent 0 28%),
-    linear-gradient(135deg, #08111d 0%, #0f2132 52%, #111824 100%);
+  background-color: var(--bg-base);
+  background-image: url("../assets/dark_bg.png");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .cm-shell::before {
@@ -108,62 +20,44 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(255, 164, 62, 0.11), transparent 34%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 84px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 84px);
+  background: rgba(3, 9, 16, 0.18);
 }
 
 .cm-backdrop {
-  position: fixed;
-  inset: auto -8vw -18vw auto;
-  width: min(60vw, 760px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 167, 54, 0.18), transparent 62%);
-  filter: blur(10px);
+  display: none;
 }
 
 .cm-app-frame {
   width: min(1440px, 100%);
+  height: 100%;
   margin: 0 auto;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .cm-header {
   display: grid;
-  grid-template-columns: calc(180px + var(--space-6)) minmax(0, 1fr) auto auto; /*T*/
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--space-5); /* T */
-  margin-bottom: var(--space-5); /* T */
-}
-
-/* T */
-.cm-header-account .btn {
-  white-space: nowrap;
-}
-
-/* T: Separate the desktop theme control from account actions. */
-.cm-header-theme-slot { /* T */
-  justify-self: end; /* T */
-  padding-left: var(--space-5);
-  border-left: 1px solid var(--border);
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
 }
 
 .cm-brand {
-  display: inline-flex; /* T */
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-family: var(--font-display); /* T */
-  font-size: 32px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 44px);
   color: var(--accent-hover);
   text-shadow: 0 8px 28px rgba(212, 160, 55, 0.18);
-  white-space: nowrap; /* T */
 }
 
 .cm-brand i {
-  font-size: 32px;
+  font-size: 34px;
 }
 
 .cm-header-copy {
@@ -191,34 +85,52 @@ body {
 
 .cm-main-grid {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr); /* T */
+  grid-template-columns: 180px minmax(0, 1fr);
   gap: var(--space-5);
+  align-content: start;
+  flex: 1;
+  min-height: 0;
 }
 
-.cm-panel {
+.cm-panel,
+.cm-sidebar {
   border: 1px solid var(--border);
-  border-radius: 22px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(18px);
 }
 
-.cm-nav {
+.cm-sidebar {
+  align-self: start;
+  max-height: 100%;
+  min-height: 0;
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2);
+  overflow: auto;
+}
+
+.cm-nav,
+.cm-sidebar-actions {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .cm-nav-link {
   appearance: none;
-  width: 100%; /* T */
+  width: 100%;
   display: flex;
-  align-items: center; /* T */
+  align-items: center;
   gap: var(--space-3);
-  min-height: 52px;
-  padding: 0 var(--space-3); /* T */
-  background: var(--bg-surface);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  background: transparent;
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -246,6 +158,25 @@ body {
 
 .cm-content {
   min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-color: rgba(5, 13, 23, 0.95) rgba(5, 13, 23, 0.34);
+}
+
+.cm-content::-webkit-scrollbar,
+.cm-sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.cm-content::-webkit-scrollbar-track,
+.cm-sidebar::-webkit-scrollbar-track {
+  background: rgba(5, 13, 23, 0.34);
+}
+
+.cm-content::-webkit-scrollbar-thumb,
+.cm-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(5, 13, 23, 0.95);
+  border-color: rgba(5, 13, 23, 0.34);
 }
 
 .cm-footer {
@@ -258,6 +189,7 @@ body {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: var(--weight-regular);
+  flex-shrink: 0;
 }
 
 .cm-footer a {
@@ -271,6 +203,7 @@ body {
 .cm-page-grid {
   display: grid;
   gap: var(--space-5);
+  min-height: 0;
 }
 
 .cm-page-grid.two {
@@ -283,11 +216,13 @@ body {
 
 .cm-page-grid.chat {
   grid-template-columns: minmax(220px, 1fr) minmax(0, 4fr);
+  height: 100%;
 }
 
 .cm-panel {
-  background: linear-gradient(180deg, rgba(15, 33, 48, 0.84), rgba(8, 18, 30, 0.9));
+  background: var(--bg-elevated);
   overflow: hidden;
+  min-height: 0;
 }
 
 .cm-panel-header {
@@ -302,6 +237,7 @@ body {
 
 .cm-panel-body {
   padding: var(--space-5);
+  min-height: 0;
 }
 
 .cm-section-title {
@@ -319,10 +255,8 @@ body {
   flex-direction: column;
   justify-content: space-between;
   padding: var(--space-6);
-  border-radius: 22px;
-  background:
-    linear-gradient(120deg, rgba(6, 16, 28, 0.78), rgba(15, 34, 50, 0.66)),
-    radial-gradient(circle at 80% 38%, rgba(255, 177, 70, 0.25), transparent 0 26%);
+  border-radius: var(--radius-xl);
+  background: var(--bg-surface);
   border: 1px solid var(--accent-border);
   position: relative;
   overflow: hidden;
@@ -370,16 +304,36 @@ body {
   gap: var(--space-4);
 }
 
+@media (min-width: 1121px) {
+  .cm-dashboard-training {
+    grid-column: 1;
+  }
+
+  .cm-dashboard-history {
+    grid-column: 2;
+  }
+}
+
 .cm-action-card {
+  appearance: none;
+  display: block;
+  width: 100%;
   padding: var(--space-5);
   min-height: 126px;
   border-radius: var(--radius-xl);
-  background: rgba(12, 26, 42, 0.78);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text-on-dark);
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
   transition:
     transform var(--transition-base),
     border-color var(--transition-base);
+}
+
+button.cm-action-card {
+  cursor: pointer;
 }
 
 .cm-action-card:hover {
@@ -388,7 +342,6 @@ body {
 }
 
 .cm-action-card i {
-  color: var(--accent-hover);
   font-size: 28px;
   margin-bottom: var(--space-3);
   color: var(--text-on-dark);
@@ -408,7 +361,7 @@ body {
   gap: var(--space-3);
   padding: var(--space-3);
   border-radius: var(--radius-lg);
-  background: rgba(10, 22, 35, 0.68);
+  background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-on-dark);
   font: inherit;
@@ -422,10 +375,17 @@ button.cm-list-row {
   cursor: pointer;
 }
 
+.cm-list-row[role='button'] {
+  cursor: pointer;
+}
+
 button.cm-list-row:hover,
+.cm-list-row[role='button']:hover,
+.cm-list-row[role='button']:focus-visible,
 .cm-list-row.active {
   background: rgba(212, 160, 55, 0.14);
   border-color: var(--accent-border);
+  outline: none;
 }
 
 .cm-avatar-photo {
@@ -442,17 +402,20 @@ button.cm-list-row:hover,
 
 .cm-board-layout {
   display: grid;
-  /* Reserve compact game information, the board, and space for a future game chat. */
   grid-template-columns: minmax(180px, 220px) var(--cm-chessboard-card-size) minmax(240px, 1fr);
   gap: var(--space-5);
   align-items: start;
+}
+
+.cm-game-controls {
+  margin-bottom: var(--space-5);
 }
 
 .cm-game-card {
   padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: rgba(8, 20, 33, 0.82);
+  background: var(--bg-elevated);
   color: var(--text-on-dark);
 }
 
@@ -472,11 +435,10 @@ button.cm-list-row:hover,
 }
 
 .cm-chessboard-wrapper > div {
-  width: 100%; /* T */
-  height: 100%; /* T */
+  width: 100%;
+  height: 100%;
 }
 
-/* T: Override react-chessboard's pointer cursor for pieces the current player cannot move. */
 .cm-chessboard-wrapper[data-board-disabled='true'] [data-piece],
 .cm-chessboard-wrapper[data-player-color='w'] [data-piece^='b'],
 .cm-chessboard-wrapper[data-player-color='b'] [data-piece^='w'] {
@@ -516,7 +478,7 @@ button.cm-list-row:hover,
 
 .cm-tab {
   border: 1px solid var(--border);
-  background: rgba(8, 20, 33, 0.74);
+  background: var(--bg-elevated);
   color: var(--text-on-dark-secondary);
   border-radius: var(--radius-md);
   min-height: 36px;
@@ -531,8 +493,7 @@ button.cm-list-row:hover,
 
 .cm-profile-grid {
   display: grid;
-  /* T: Give match history more room while keeping profile and friends compact. */
-  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr); /* T */
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr);
   gap: var(--space-5);
 }
 
@@ -542,16 +503,69 @@ button.cm-list-row:hover,
   gap: var(--space-3);
 }
 
+.weekly-activity {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+}
+
+.weekly-activity__bars {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.weekly-activity__day {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.weekly-activity__track {
+  display: flex;
+  flex-direction: column;
+  height: calc(92px + 1.5em);
+  justify-content: flex-end;
+}
+
+.weekly-activity__bar {
+  display: grid;
+  grid-template-rows: repeat(12, 1fr);
+  gap: 2px;
+  flex-shrink: 0;
+  height: 92px;
+}
+
+.weekly-activity__bar span {
+  border-radius: var(--radius-sm);
+  background: var(--accent-muted);
+}
+
+.weekly-activity__bar span.active {
+  background: var(--accent);
+}
+
+.profile-avatar-action {
+  border: 0;
+}
+
+.profile-email {
+  font-size: var(--text-xs);
+}
+
 .cm-chat-shell {
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-height: 540px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+.cm-chat-messages {
+  overflow: auto;
 }
 
 .cm-message-list {
   display: grid;
   align-content: start;
-  justify-items: start; /* Taulant */
+  justify-items: start;
   gap: var(--space-3);
 }
 
@@ -559,9 +573,9 @@ button.cm-list-row:hover,
   max-width: 76%;
   padding: var(--space-3);
   border-radius: var(--radius-lg);
-  background: rgba(20, 35, 54, 0.82);
+  background: var(--bg-surface);
   color: var(--text-on-dark-secondary);
-  overflow-wrap: anywhere; /* Taulant */
+  overflow-wrap: anywhere;
 }
 
 .cm-message.mine {
@@ -571,50 +585,7 @@ button.cm-list-row:hover,
 }
 
 /* T: Keep the content-level friend action hidden on desktop. */
-.cm-friends-content-action {
-  display: none;
-}
-
 @media (max-width: 1120px) {
-  /* T: Give branding its own row and keep account controls beside the title. */
-  .cm-header {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  /* T: Place the theme beside the logo when navigation becomes compact. */
-  .cm-header-theme-slot {
-    grid-column: 2;
-    grid-row: 1;
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  /* T */
-  .cm-header-actions {
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
-  /* T: Restore the larger logo when it no longer shares the sidebar column. */
-  .cm-brand {
-    font-size: clamp(28px, 4vw, 44px);
-  }
-
-  /* T */
-  .cm-brand i {
-    font-size: 34px;
-  }
-
-  /* T: Move the friend action from the header to the page content. */
-  .cm-friends-header-action {
-    display: none;
-  }
-
-  /* T */
-  .cm-friends-content-action {
-    display: flex;
-  }
-
   .cm-main-grid,
   .cm-page-grid.two,
   .cm-page-grid.three,
@@ -624,204 +595,116 @@ button.cm-list-row:hover,
     grid-template-columns: 1fr;
   }
 
-  /* T: Show three labelled destinations above a centered pair. */
+  .cm-sidebar {
+    min-height: 0;
+  }
+
   .cm-nav {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cm-sidebar-actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cm-sidebar-actions .cm-nav-link {
+    grid-column: 2;
   }
 
   .cm-nav-link {
-    grid-column: span 2; /* T */
     justify-content: center;
-    min-width: 0; /* T */
-    padding: var(--space-2); /* T */
   }
 
-  /* T */
-  .cm-nav-link:nth-child(4) {
-    grid-column: 2 / span 2;
-  }
-
-  /* T */
-  .cm-nav-link:nth-child(5) {
-    grid-column: 4 / span 2;
-  }
-
-  /* T */
-  .cm-nav-link:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+  .cm-nav-link span {
+    display: none;
   }
 }
 
 @media (max-width: 700px) {
-  /* T */
   :root {
-    /* T: Fit the board to the mobile viewport after the layout becomes one column. */
-    --cm-chessboard-size: calc(100vw -(var(--space-4) * 4));
+    --cm-chessboard-size: calc(100vw - (var(--space-4) * 4));
   }
-  
+
   .cm-shell {
     padding: var(--space-3);
   }
 
-  /* T */
+  .cm-sidebar {
+    padding: var(--space-3);
+  }
+
+  .cm-nav {
+    gap: var(--space-2);
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cm-sidebar-actions {
+    gap: var(--space-2);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cm-nav-link {
+    min-height: 38px;
+    padding: 0 var(--space-2);
+  }
+
+  .cm-nav-link i {
+    font-size: 18px;
+  }
+
+  .cm-sidebar-actions .cm-nav-link {
+    grid-column: 2 / span 2;
+  }
+
+  .cm-header {
+    grid-template-columns: 1fr;
+  }
+
+  .cm-header-actions {
+    overflow-x: auto;
+  }
+
   .cm-action-grid,
   .cm-stat-grid {
     grid-template-columns: 1fr;
   }
 
-  /* T */
   .cm-panel-body,
   .cm-hero-card {
     padding: var(--space-4);
   }
 
-  /* T: Wrap only the dashboard description to leave room for the knight. */
   .cm-dashboard-description {
     max-width: 55%;
   }
 }
 
-/* T: Keep destination labels readable on the narrowest screens. */
-@media (max-width: 480px) {
-  /* T */
-  .cm-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .cm-nav-link:nth-child(4) {
-    grid-column: span 2;
-  }
-
-  .cm-nav-link:nth-child(5) {
-    grid-column: 2 / span 2;
-  }
-}
-
-/* Light theme overrides */
-html[data-theme='light'] {
-  color-scheme: light;
-
-  --bg-base: #f5f2eb;
-  --bg-surface: #fffaf0;
-  --bg-elevated: #ffffff;
-  --bg-overlay: rgba(255, 255, 255, 0.72);
-
-  --accent: #9f6b21;
-  --accent-hover: #b87a24;
-  --accent-muted: rgba(159, 107, 33, 0.13);
-  --accent-border: rgba(159, 107, 33, 0.3);
-  --accent-text: #fff8e8;
-
-  --text-primary: #17202a;
-  --text-secondary: #6f7f93;
-  --text-muted: #738196;
-  --text-hint: #9aa6b8;
-
-  /* These values stay light because they are used on dark surfaces */
-  --text-on-dark: #f7f9ff;
-  --text-on-dark-secondary: #dfe5f0;
-  --text-on-dark-muted: #aab6c7;
-
-  --border: rgba(88, 103, 124, 0.22);
-  --border-subtle: rgba(88, 103, 124, 0.16);
-  --border-surface: rgba(88, 103, 124, 0.28);
-
-  --color-win: #2f7d48;
-  --color-win-bg: rgba(47, 125, 72, 0.13);
-  --color-loss: #b24545;
-  --color-loss-bg: rgba(178, 69, 69, 0.12);
-  --color-draw: #6a7180;
-  --color-draw-bg: rgba(106, 113, 128, 0.12);
-
-  --color-online: #2f7d48;
-  --color-playing: #9f6b21;
-  --color-offline: #a4adba;
-
-  --color-danger: #b24545;
-  --color-danger-bg: rgba(178, 69, 69, 0.1);
-  --color-danger-border: rgba(178, 69, 69, 0.3);
-}
-
-html[data-theme='light'] body {
-  background: var(--bg-base);
-  color: var(--text-secondary); /* T */
-}
-
-/* T */
-html[data-theme='light'] .input {
-  background: rgba(255, 255, 255, 0.78);
-  color: var(--text-primary);
-  border-color: var(--border-surface);
-}
-
-/* T: Preserve visible focus and validation borders in light mode. */
-html[data-theme='light'] .input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-muted);
-}
-
-html[data-theme='light'] .input.error {
-  border-color: var(--color-danger);
-}
-
-html[data-theme='light'] .input.valid {
-  border-color: var(--color-win);
-}
-
-html[data-theme='light'] .btn-ghost {
-  background: rgba(255, 255, 255, 0.7); /* T */
-  color: var(--text-secondary);
-}
-
-html[data-theme='light'] .btn-ghost:hover:not(:disabled) {
-  background: rgba(159, 107, 33, 0.1);
-  color: var(--accent-hover); /* T */
-}
-
-/* T */
-html[data-theme='light'] .cm-panel {
+html[data-theme='light'] .cm-panel,
+html[data-theme='light'] .cm-sidebar {
   background: rgba(255, 250, 240, 0.78);
   border-color: var(--border);
   box-shadow: 0 18px 45px rgba(56, 42, 24, 0.12);
 }
 
-/* T: Give the nested chart a white surface and the same corners as match rows. */
-html[data-theme='light'] .surface {
-  background: var(--bg-elevated);
-  border-color: var(--border-subtle);
-  border-radius: var(--radius-lg);
-}
-
-/* T: Keep statistic cells white inside the tinted light-theme panel. */
-html[data-theme='light'] .stat-cell {
-  background: var(--bg-elevated);
-}
-
-/* T: Keep tabs readable on light panels and distinguish the selected tab. */
 html[data-theme='light'] .cm-tab {
   background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
-/* T */
 html[data-theme='light'] .cm-tab.active {
   background: var(--accent-muted);
   color: var(--accent);
 }
 
-/* T: Keep incoming messages readable on light chat panels. */
 html[data-theme='light'] .cm-message {
   background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
-/* T: Distinguish outgoing messages using existing accent background. */
 html[data-theme='light'] .cm-message.mine {
   background: var(--accent-muted);
 }
 
-/* T: Share light surface and text defaults across cards and rows. */
 html[data-theme='light'] .cm-list-row,
 html[data-theme='light'] .cm-action-card,
 html[data-theme='light'] .cm-hero-card,
@@ -835,13 +718,17 @@ html[data-theme='light'] .cm-game-card {
   color: var(--text-primary);
 }
 
-/* T: Keep the decorative knight visible but subtle on the light hero surface. */
+html[data-theme='light'] .cm-list-row {
+  background: transparent;
+}
+
 html[data-theme='light'] .cm-hero-card::after {
   color: var(--accent-muted);
 }
 
-/* T: Keep interactive rows light when hovered. */
-html[data-theme='light'] button.cm-list-row:hover {
+html[data-theme='light'] button.cm-list-row:hover,
+html[data-theme='light'] .cm-list-row[role='button']:hover,
+html[data-theme='light'] .cm-list-row[role='button']:focus-visible {
   background: var(--bg-surface);
   border-color: var(--accent-border);
 }
@@ -853,16 +740,10 @@ html[data-theme='light'] .cm-game-card {
 }
 
 html[data-theme='light'] .cm-shell {
-  background:
-    radial-gradient(circle at 75% 18%, rgba(42, 58, 74, 0.84), transparent 0 25%),
-    radial-gradient(circle at 14% 8%, rgba(122, 147, 170, 0.18), transparent 0 28%),
-    linear-gradient(135deg, #f5f2eb 0%, #fffaf0 52%, #ece9e0 100%); /* T */
+  background-color: var(--bg-base);
+  background-image: url("../assets/light_bg1.jpeg");
 }
 
-/* T */
 html[data-theme='light'] .cm-shell::before {
-  background:
-    linear-gradient(180deg, rgba(184, 122, 36, 0.08), transparent 34%),
-    repeating-linear-gradient(90deg, rgba(23, 32, 42, 0.035) 0 1px, transparent 1px 84px),
-    repeating-linear-gradient(0deg, rgba(23, 32, 42, 0.025) 0 1px, transparent 1px 84px);
+  background: rgba(255, 250, 240, 0.22);
 }
