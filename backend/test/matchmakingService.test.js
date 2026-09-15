@@ -6,6 +6,7 @@ const {
 } = require('../src/services/matchmakingService');
 const { createGame } = require('../src/repositories/gameRepository');
 const { error } = require('node:console');
+const { match } = require('node:assert');
 
 test('keeps the first player waiting for an opponent', async () => {
   // Count game creation attempts to prove that one player is not enough to start a multiplayer game.
@@ -252,4 +253,63 @@ test('preserves the queue when availability checking joins', async () => {
 
   assert.equal(result.status, 'MATCHED');
   assert.deepEqual(createdPairs, [{ whiteId: 1, blackId: 3 }]);
+});
+
+test('blocks repeated joins during and after game creation', async () => {
+  const { GameService } = require('../src/services/gameService');
+  const createdPairs = [];
+  let resolveCreation;
+
+  const gameService = new GameService({
+    gameRepository: {
+      async createGame(players) {
+        createdPairs.push(players);
+        const id = createdPairs.length;
+
+        // Keep the first database operation pending until the test releases it.
+        if (id === 1) {
+          await new Promise((resolve) => {
+            resolveCreation = resolve;
+          });
+        }
+
+        return { id };
+      },
+    },
+  });
+
+  const matchmakingService = new MatchmakingService({ gameService });
+
+  await matchmakingService.join(1);
+  const pendingMatch = matchmakingService.join(2);
+
+  try {
+    for (const playerId of [1, 2]) {
+      await assert.rejects(
+        () => matchmakingService.join(playerId),
+        /Player already has an active or pending game/,
+      );
+    }
+
+    assert.deepEqual(await matchmakingService.join(3), { status: 'WAITING' });
+    assert.equal(createdPairs.length, 1);
+  } finally {
+    resolveCreation();
+    await pendingMatch;
+  }
+
+  for (const playerId of [1, 2]) {
+      await assert.rejects(
+        () => matchmakingService.join(playerId),
+        /Player already has an active or pending game/,
+      );
+  }
+
+  const nextMatch = await matchmakingService.join(4);
+
+  assert.equal(nextMatch.status, 'MATCHED');
+  assert.deepEqual(createdPairs, [
+    { whiteId: 1, blackId: 2 },
+    { whiteId: 3, blackId: 4 },
+  ]);
 });
