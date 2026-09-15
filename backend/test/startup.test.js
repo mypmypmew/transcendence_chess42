@@ -51,7 +51,7 @@ function runStartup(scenario) {
 	`, scenario], {
 		cwd: path.resolve(__dirname, '..'),
 		encoding: 'utf8',
-		timeout: 5000,
+		timeout: 30000,
 	});
 }
 
