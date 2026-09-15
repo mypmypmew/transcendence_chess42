@@ -33,4 +33,18 @@ router.get('/leaderboard', requireAuth, async (req, res, next) => {
     }
 });
 
+router.patch('/me', requireAuth, async (req, res, next) => {
+    try {
+        const user = await userService.updateProfile(req.userId, req.body);
+
+        res.status(200).json({ user });
+    } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ error: err.message });
+        }
+
+        next(err);
+    }
+});
+
 module.exports = router;

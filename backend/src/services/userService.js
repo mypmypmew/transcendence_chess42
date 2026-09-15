@@ -45,7 +45,7 @@ async function getLeaderboard() {
   }));
 }
 
-async function updateProfile(userId, { username, email }) {
+async function updateProfile(userId, { username, email } = {}) {
   const errors = authValidator.validateProfileUpdateInput({ username, email });
   if (errors.length > 0) {
     throw httpError(400, errors.join('; '));
@@ -58,7 +58,7 @@ async function updateProfile(userId, { username, email }) {
   if (emailOwner && emailOwner.id !== userId) {
     throw httpError(409, 'Email already in use');
   }
-  
+
   const usernameOwner = await userRepository.findUserByUsername(trimmedUsername);
   if (usernameOwner && usernameOwner.id !== userId) {
     throw httpError(409, 'Username already in use');
