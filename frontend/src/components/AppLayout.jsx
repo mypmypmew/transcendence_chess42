@@ -14,7 +14,6 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [logoutError, setLogoutError] = useState('')
 
-  // Share logout state and disable both buttons while the request is pending.
   async function handleLogout() {
     if (isLoggingOut) {
       return
@@ -60,14 +59,11 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
         </header>
         <div className="cm-main-grid">
           <Sidebar
-            isLoggingOut={isLoggingOut}
-            logoutError={logoutError}
-            onLogout={handleLogout}
             onOpenLeaderboard={openLeaderboard}
           />
           <main className="cm-content">
             {typeof children === 'function'
-              ? children({ openLeaderboard, handleLogout, isLoggingOut })
+              ? children({ openLeaderboard, handleLogout, isLoggingOut, logoutError })
               : children}
           </main>
         </div>

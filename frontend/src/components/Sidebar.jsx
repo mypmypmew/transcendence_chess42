@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
 
 import {
-  Alert,
   Icon,
 } from './ui.jsx'
 
@@ -14,7 +13,7 @@ const navigationItems = [
   { to: '/chat', label: 'Chat', icon: 'messages' },
 ]
 
-function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeaderboard }) {
+function Sidebar({ onOpenLeaderboard }) {
   return (
     <aside className="cm-sidebar" aria-label="Main navigation">
       <nav className="cm-nav">
@@ -52,20 +51,6 @@ function Sidebar({ isLoggingOut = false, logoutError = '', onLogout, onOpenLeade
         })}
       </nav>
 
-      <div className="cm-sidebar-actions">
-        <button
-          className="cm-nav-link"
-          type="button"
-          disabled={isLoggingOut}
-          onClick={onLogout}
-        >
-          <Icon name="logout" />
-          <span>{isLoggingOut ? 'Logging out…' : 'Logout'}</span>
-        </button>
-        {logoutError && (
-          <Alert>{logoutError}</Alert>
-        )}
-      </div>
     </aside>
   )
 }

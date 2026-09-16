@@ -143,7 +143,7 @@ function Profile() {
     eyebrow="Personal account"
     title="My profile"
   >
-    {({ handleLogout, isLoggingOut }) => (
+    {({ handleLogout, isLoggingOut, logoutError }) => (
     <>
       <div className="cm-profile-grid">
       <Panel aria-labelledby="profile-title">
@@ -201,9 +201,14 @@ function Profile() {
           <span aria-hidden="true" />
         </ListRow>
 
-        <Button icon="logout" type="button" variant="ghost" disabled={isLoggingOut} onClick={handleLogout}>
-          {isLoggingOut ? 'Logging out...' : 'Log out'}
-        </Button>
+        <div className="flex flex-col gap-3 items-center">
+          <Button icon="logout" size="sm" type="button" variant="ghost" disabled={isLoggingOut} onClick={handleLogout}>
+            {isLoggingOut ? 'Logging out...' : 'Log out'}
+          </Button>
+          {logoutError && (
+            <Alert>{logoutError}</Alert>
+          )}
+        </div>
         </PanelBody>
       </Panel>
 
