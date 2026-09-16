@@ -294,6 +294,7 @@ code {
 .status-dot.online  { background: var(--color-online); }
 .status-dot.offline { background: var(--color-offline); }
 .status-dot.playing { background: var(--color-playing); }
+.status-dot.unavailable { background: var(--color-offline); opacity: 0.4; }
 
 /* ----------------------------------------------------------------
    Buttons

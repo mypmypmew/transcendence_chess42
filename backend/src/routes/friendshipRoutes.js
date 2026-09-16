@@ -2,6 +2,7 @@ const express = require('express');
 
 const requireAuth = require('../middlewares/requireAuth');
 const friendshipService = require('../services/friendshipService');
+const { notifyNewFriendship } = require('../sockets/presenceSocket');
 
 const router = express.Router();
 
@@ -32,6 +33,18 @@ router.post('/friend-requests/:requestId/accept',
             req.userId,
             requestId,
         );
+
+        const io = req.app.get('io');
+        const presenceService = req.app.get('presenceService');
+
+        if (io && presenceService) {
+            notifyNewFriendship(
+                io,
+                presenceService,
+                friendship.userAId,
+                friendship.userBId,
+            );
+        }
 
         res.status(200).json({friendship });
     } catch (err) {

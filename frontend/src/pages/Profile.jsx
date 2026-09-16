@@ -4,6 +4,7 @@ import Avatar from '../components/Avatar'
 import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
 import UserProfileModal from '../components/UserProfileModal'
+import PresenceStatus from '../components/PresenceStatus'
 import {
   Alert,
   Badge,
@@ -246,6 +247,7 @@ function Profile() {
 						<div className="min-w-0 text-left">
 							<p className="text-primary truncate">{friendship.user.username}</p>
 							<p className="cm-muted">Rating {friendship.user.rating}</p>
+							<PresenceStatus userId={friendship.user.id} />
 						</div>
 
 						<Icon className="cm-muted" name="chevron-right" />

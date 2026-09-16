@@ -364,7 +364,7 @@ export function Table({ children, className = '', ...props }) {
 
 export function MessageBubble({ children, isMine = false, ...props }) {
   return (
-    <div className={isMine ? 'cm-message mine' : 'cm-message'} {...props}>
+    <div className={isMine ? 'cm-message mine min-w-0' : 'cm-message min-w-0'} {...props}>
       {children}
     </div>
   )

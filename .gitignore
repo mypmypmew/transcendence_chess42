@@ -10,3 +10,5 @@ build/
 *.log
 
 jar.txt
+
+backend/uploads/

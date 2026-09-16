@@ -6,6 +6,9 @@ const gameRoutes = require('./src/routes/gameRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const socketAuth = require('./src/middlewares/socketAuth');
 const registerChatHandlers = require('./src/sockets/chatSocket');
+const registerPresenceHandlers = require('./src/sockets/presenceSocket');
+const { broadcastPresenceChange } = require('./src/sockets/presenceSocket');
+const { PresenceService } = require('./src/services/presenceService');
 const { GameService } = require('./src/services/gameService');
 const { cancelInterruptedGames } = require('./src/repositories/gameRepository');
 const { MatchmakingService } = require('./src/services/matchmakingService');
@@ -19,6 +22,7 @@ const FRONTEND_ORIGIN = 'http://localhost:5173';
 const httpServer = http.createServer(app);
 const userRoutes = require('./src/routes/userRoutes');
 const friendshipRoutes = require('./src/routes/friendshipRoutes');
+const { UPLOADS_DIR } = require('./src/services/avatarService');
 
 const io = new Server(httpServer, {
   cors: {
@@ -38,12 +42,19 @@ const matchmakingService = new MatchmakingService({
   gameService,
 });
 
+const presenceService = new PresenceService();
+
+presenceService.onChange((change) => broadcastPresenceChange(io, change));
+
+app.set('presenceService', presenceService);
+
 io.use(socketAuth);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id} (user ${socket.data.userId})`);
 
   registerChatHandlers(io, socket);
+  registerPresenceHandlers(socket, presenceService);
   // Connect this authenticated socket to the shared matchmaking services.
   registerMatchmakingHandlers({
     io,
@@ -77,6 +88,7 @@ app.use('/api/conversations', chatRoutes);
 
 app.use('/api/users', userRoutes);
 app.use('/api', friendshipRoutes);
+app.use('/uploads', express.static(UPLOADS_DIR));
 app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
 });

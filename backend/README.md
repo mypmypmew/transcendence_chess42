@@ -71,6 +71,40 @@ expd: client receives `server:pong`; server logs `Socket connected: <id> (user <
 
 Delete `jar.txt` afterwards — it contains a live session token.
 
+## Profile and avatar manual verification
+
+Log in and keep the session cookie:
+
+    curl -s -c jar.txt -X POST http://localhost:3000/api/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"email":"<email>","password":"<password>"}'
+
+Update username and email (`PATCH /api/users/me`):
+
+    curl -s -b jar.txt -X PATCH http://localhost:3000/api/users/me \
+      -H "Content-Type: application/json" \
+      -d '{"username":"<new username>","email":"<new email>"}'
+
+expd: `200` with the updated user; `400` for invalid values; `409` when the
+username or email belongs to another account.
+
+Upload an avatar (`POST /api/users/me/avatar`, form field `avatar`, PNG, JPEG
+or WebP, 2 MB maximum):
+
+    curl -s -b jar.txt -X POST http://localhost:3000/api/users/me/avatar \
+      -F avatar=@<image file>
+
+expd: `200` with `avatar` set to `/uploads/avatars/<file>`; `400` for a missing,
+oversized or unsupported file. The previous avatar file is deleted.
+
+Open `http://localhost:3000<avatar path>` in the browser to view the image.
+
+Delete `jar.txt` afterwards.
+
+Avatars are stored under `backend/uploads/avatars`. Development mounts that
+folder from the host; production uses the `backend_uploads` Docker volume. Set
+`UPLOADS_DIR` to store them elsewhere.
+
 ## Environment
 
 The local configuration is stored in `backend/.env`:

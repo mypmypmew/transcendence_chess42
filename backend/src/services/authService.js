@@ -18,6 +18,7 @@ function toPublicUser(user) {
     username: user.username,
     email: user.email,
     rating: user.rating,
+    avatar: user.avatar,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

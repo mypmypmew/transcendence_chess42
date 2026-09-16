@@ -11,6 +11,7 @@ services:
       - "3000"
     volumes:
       - backend_data:/data
+      - backend_uploads:/app/uploads
 
   gateway:
     build:
@@ -31,3 +32,4 @@ volumes:
   backend_data:
   caddy_data:
   caddy_config:
+  backend_uploads:
