@@ -1,4 +1,5 @@
 const gameRepository = require('../repositories/gameRepository');
+const userRepository = require('../repositories/userRepository');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -39,6 +40,20 @@ async function listGames(userId) {
   return games.map(toGameSummary);
 }
 
+async function listPlayerGames(playerId) {
+  if (!Number.isSafeInteger(playerId) || playerId <= 0) {
+    throw httpError(400, 'playerId must be a positive integer');
+  }
+
+  const player = await userRepository.findPublicUserById(playerId);
+
+  if (!player) {
+    throw httpError(404, 'Player not found');
+  }
+
+  return listGames(playerId);
+}
+
 async function getGame(userId, gameId) {
   if (!Number.isInteger(gameId) || gameId <= 0) {
     throw httpError(400, 'gameId must be a positive integer');
@@ -55,6 +70,7 @@ async function getGame(userId, gameId) {
 
 module.exports = {
   listGames,
+  listPlayerGames,
   getGame,
   toGameSummary,
   toGameDetail,
