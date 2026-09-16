@@ -64,10 +64,20 @@ async function updateProfile(userId, { username, email } = {}) {
     throw httpError(409, 'Username already in use');
   }
 
-  const user = await userRepository.updateUser(userId, {
-    username: trimmedUsername,
-    email: normalizedEmail,
-  });
+  let user;
+
+  try {
+    user = await userRepository.updateUser(userId, {
+      username: trimmedUsername,
+      email: normalizedEmail,
+    });
+  } catch (err) {
+    if (err?.code === 'P2002') {
+      throw httpError(409, 'Username or email already in use');
+    }
+
+    throw err;
+  }
 
   return toAccountUser(user);
 }
