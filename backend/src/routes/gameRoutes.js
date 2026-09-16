@@ -16,6 +16,16 @@ router.get('/', requireAuth, async (req, res, next) => {
   }
 });
 
+router.get('/active', requireAuth, (req, res, next) => {
+  try {
+    const gameService = req.app.get('gameService');
+    const game = gameService.getActiveGame(req.userId);
+    res.status(200).json({ game });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/:gameId', requireAuth, async (req, res, next) => {
   try {
     const gameId = Number(req.params.gameId);

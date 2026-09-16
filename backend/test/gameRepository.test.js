@@ -145,3 +145,51 @@ test('game history repository rejects invalid IDs before querying Prisma', async
     assert.equal(findManyCalls.length, 0);
     assert.equal(findUniqueCalls.length, 0);
 });
+
+test('interrupted game cancellation targets only in-progress games', async (t) => {
+    const expectedResult = { count: 2 };
+    const updateCalls = mockGameMethod(
+        t,
+        'updateMany',
+        async () => expectedResult,
+    );
+
+    const before = Date.now();
+    const result = await gameRepository.cancelInterruptedGames();
+    const after = Date.now();
+
+    assert.equal(updateCalls.length, 1);
+
+    const query = updateCalls[0][0];
+
+    assert.deepEqual(query.where, { status: 'IN_PROGRESS' });
+    assert.ok(query.data.endedAt.getTime() >= before);
+    assert.ok(query.data.endedAt.getTime() <= after);
+
+    assert.deepEqual(query.data, {
+        status: 'CANCELLED',
+        result: null,
+        winnerId: null,
+        endedAt: query.data.endedAt,
+    });
+    assert.strictEqual(result, expectedResult);
+});
+
+test('interrupted game cancellation returns zero when nothing was updated', async (t) => {
+    mockGameMethod(t, 'updateMany', async () => ({ count: 0}));
+
+    const result = await gameRepository.cancelInterruptedGames();
+
+    assert.deepEqual(result, { count: 0 });
+});
+
+test('interrupted game cancellation propagates database errors', async (t) => {
+    const databaseError = new Error('Database unavailable');
+
+    mockGameMethod(t, 'updateMany', async () => { throw databaseError });
+
+    await assert.rejects(
+        () => gameRepository.cancelInterruptedGames(),
+        (error) => error === databaseError,
+    );
+});

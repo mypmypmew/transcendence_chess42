@@ -10,6 +10,7 @@ const registerPresenceHandlers = require('./src/sockets/presenceSocket');
 const { broadcastPresenceChange } = require('./src/sockets/presenceSocket');
 const { PresenceService } = require('./src/services/presenceService');
 const { GameService } = require('./src/services/gameService');
+const { cancelInterruptedGames } = require('./src/repositories/gameRepository');
 const { MatchmakingService } = require('./src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
 const { registerGameHandlers } = require('./src/socket/gameSocket');
@@ -34,6 +35,9 @@ app.set('io', io);
 
 // Keep one authoritative game store and one matchmaking queue shared by every authenticated Socket.IO connection.
 const gameService = new GameService();
+// Share the existing game state with HTTP routes.
+app.set('gameService', gameService);
+
 const matchmakingService = new MatchmakingService({
   gameService,
 });
@@ -89,6 +93,22 @@ app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
 });
 
-httpServer.listen(PORT, () => {
-    console.log(`Hello, Backend running on http://localhost:${PORT}`);
-});
+async function startServer() {
+  try {
+    // Resolve games with lost in-memory state before accepting connections.
+    const { count } = await cancelInterruptedGames();
+
+    if (count > 0) {
+      console.log(`Cancelled ${count} interrupted game(s) after restart.`);
+    }
+
+    httpServer.listen(PORT, () => {
+        console.log(`Hello, Backend running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Backend startup failed:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

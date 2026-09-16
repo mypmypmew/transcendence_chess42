@@ -2,12 +2,12 @@ class MatchmakingService {
 	constructor({ gameService } = {}) {
 		// Matchmaking delegates actual game creation to GameService.
 		// Validating the dependency here prevents a later unclear runtime error.
-		if (
-			!gameService ||
-			typeof gameService.createGame !== 'function'
+		if (!gameService ||
+			typeof gameService.createGame !== 'function' ||
+			typeof gameService.isPlayerBusy !== 'function'
 		) {
 			throw new TypeError(
-				'gameService with a createGame method is required',
+				'gameService with createGame and isPlayerBusy methods is required',
 			);
 		}
 
@@ -22,6 +22,11 @@ class MatchmakingService {
 		// Only positive database user IDs may enter matchmaking.
 		if (!Number.isInteger(playerId) || playerId <= 0)
 			throw new TypeError('playerId must be a positive integer');
+
+		// Reject busy players before changing the matchmaking queue.
+		if (this.gameService.isPlayerBusy(playerId)) {
+			throw new Error('Player already has an active or pending game');
+		}
 
 		// The first player occupies the waiting slot and waits for an opponent.
 		if (this.waitingPlayerId === null) {
