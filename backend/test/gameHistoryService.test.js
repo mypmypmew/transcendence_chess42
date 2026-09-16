@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const gameRepository = require('../src/repositories/gameRepository');
+const userRepository = require('../src/repositories/userRepository');
 const gameHistoryService = require('../src/services/gameHistoryService');
 
 function fakeGame(overrides = {}) {
@@ -138,5 +139,130 @@ test('returns 404 when the current user is not a participant', async (t) => {
       err.status === 404
       && err.message === 'Game not found'
     ),
+  );
+});
+
+test('lists public history for the selected player', async (t) => {
+  const findPlayer = t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async () => ({ id: 84 }),
+  );
+  const findGames = t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [fakeGame()],
+  );
+
+  const games = await gameHistoryService.listPlayerGames(84);
+
+  assert.equal(findPlayer.mock.callCount(), 1);
+  assert.deepEqual(findPlayer.mock.calls[0].arguments, [84]);
+  assert.equal(findGames.mock.callCount(), 1);
+  assert.deepEqual(findGames.mock.calls[0].arguments, [84]);
+
+  assert.equal(games.length, 1);
+  assert.equal(games[0].id, 10);
+  assert.equal(Object.hasOwn(games[0], 'pgn'), false);
+  assert.deepEqual(games[0].white, {
+    id: 42,
+    username: 'whitePlayer',
+    rating: 1200,
+  });
+  assert.deepEqual(games[0].black, {
+    id: 84,
+    username: 'blackPlayer',
+    rating: 1250,
+  });
+});
+
+test('returns empty history for an existing player without games', async (t) => {
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async () => ({ id: 42 }),
+  );
+
+  t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [],
+  );
+
+  assert.deepEqual(await gameHistoryService.listPlayerGames(42), []);
+});
+
+test('rejects invalid player IDs before querying repositories', async (t) => {
+  const findPlayer = t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async () => null,
+  );
+
+  const findGames = t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [],
+  );
+
+  for (const playerId of [
+    undefined, null, '42', 0, -1, 1.5, NaN, Infinity,
+    Number.MAX_SAFE_INTEGER + 1,
+  ]) {
+    await assert.rejects(
+      () => gameHistoryService.listPlayerGames(playerId),
+      {
+        status: 400,
+        message: 'playerId must be a positive integer',
+      },
+    );
+  }
+
+  assert.equal(findPlayer.mock.callCount(), 0);
+  assert.equal(findGames.mock.callCount(), 0);
+});
+
+test('returns 404 for a missing player without querying games', async (t) => {
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async () => null,
+  );
+
+  const findGames = t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [],
+  );
+
+  await assert.rejects(
+    () => gameHistoryService.listPlayerGames(999),
+    {
+      status: 404,
+      message: 'Player not found',
+    },
+  );
+
+  assert.equal(findGames.mock.callCount(), 0);
+});
+
+test('propagates history lookup failures instead of returning an empty list', async (t) => {
+  const databaseError = new Error('History lookup failed');
+
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async () => ({ id: 42 }),
+  );
+
+  t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => { throw databaseError; },
+  );
+
+  await assert.rejects(
+    () => gameHistoryService.listPlayerGames(42),
+    (error) => error === databaseError,
   );
 });
