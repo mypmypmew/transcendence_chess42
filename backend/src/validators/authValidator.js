@@ -49,8 +49,22 @@ function validateLoginInput({ email, password }) {
   return errors;
 }
 
+function validateProfileUpdateInput({ username, email }) {
+  const errors = [];
+
+  if (typeof username !== 'string' || !USERNAME_RE.test(username.trim())) {
+    errors.push('username must be 3-20 characters: letters, numbers, underscore');
+  }
+  if (typeof email !== 'string' || !EMAIL_RE.test(normalizeEmail(email))) {
+    errors.push('email must be a valid email address');
+  }
+
+  return errors;
+}
+
 module.exports = {
   normalizeEmail,
   validateRegisterInput,
   validateLoginInput,
+  validateProfileUpdateInput,
 };

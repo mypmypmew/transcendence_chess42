@@ -4,6 +4,7 @@ const PUBLIC_USER_SELECT = {
   id: true,
   username: true,
   rating: true,
+  avatar: true,
 };
 
 async function findPublicUserById(userId) {
@@ -67,6 +68,12 @@ async function findUserByUsername(username) {
   });
 }
 
+async function findUserById(userId) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+  });
+}
+
 async function createUser({ email, username, passwordHash }) {
   return prisma.user.create({
     data: {
@@ -77,11 +84,20 @@ async function createUser({ email, username, passwordHash }) {
   });
 }
 
+async function updateUser(userId, data) {
+  return prisma.user.update({
+    where: { id: userId },
+    data,
+  });
+}
+
 module.exports = {
   findUserByEmail,
   findUserByUsername,
+  findUserById,
   findPublicUserById,
   searchPublicUsersByUsername,
   findLeaderboardPlayers,
   createUser,
+  updateUser,
 };

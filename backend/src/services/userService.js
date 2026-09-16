@@ -1,4 +1,6 @@
 const userRepository = require('../repositories/userRepository');
+const authValidator = require('../validators/authValidator');
+const { toPublicUser: toAccountUser } = require('./authService');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -11,6 +13,7 @@ function toPublicUser(user) {
     id: user.id,
     username: user.username,
     rating: user.rating,
+    avatar: user.avatar,
   };
 }
 
@@ -43,7 +46,45 @@ async function getLeaderboard() {
   }));
 }
 
+async function updateProfile(userId, { username, email } = {}) {
+  const errors = authValidator.validateProfileUpdateInput({ username, email });
+  if (errors.length > 0) {
+    throw httpError(400, errors.join('; '));
+  }
+
+  const trimmedUsername = username.trim();
+  const normalizedEmail = authValidator.normalizeEmail(email);
+
+  const emailOwner = await userRepository.findUserByEmail(normalizedEmail);
+  if (emailOwner && emailOwner.id !== userId) {
+    throw httpError(409, 'Email already in use');
+  }
+
+  const usernameOwner = await userRepository.findUserByUsername(trimmedUsername);
+  if (usernameOwner && usernameOwner.id !== userId) {
+    throw httpError(409, 'Username already in use');
+  }
+
+  let user;
+
+  try {
+    user = await userRepository.updateUser(userId, {
+      username: trimmedUsername,
+      email: normalizedEmail,
+    });
+  } catch (err) {
+    if (err?.code === 'P2002') {
+      throw httpError(409, 'Username or email already in use');
+    }
+
+    throw err;
+  }
+
+  return toAccountUser(user);
+}
+
 module.exports = {
   searchUsers,
   getLeaderboard,
+  updateProfile,
 };

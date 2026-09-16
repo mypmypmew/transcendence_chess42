@@ -21,6 +21,7 @@ const FRONTEND_ORIGIN = 'http://localhost:5173';
 const httpServer = http.createServer(app);
 const userRoutes = require('./src/routes/userRoutes');
 const friendshipRoutes = require('./src/routes/friendshipRoutes');
+const { UPLOADS_DIR } = require('./src/services/avatarService');
 
 const io = new Server(httpServer, {
   cors: {
@@ -83,6 +84,7 @@ app.use('/api/conversations', chatRoutes);
 
 app.use('/api/users', userRoutes);
 app.use('/api', friendshipRoutes);
+app.use('/uploads', express.static(UPLOADS_DIR));
 app.get('/api/health', (req, res) => {
     res.json({status: 'ok'});
 });

@@ -12,6 +12,7 @@ test('leaderboard returns public fields and totals for both colors', async (t) =
 			username: 'experienced',
 			rating: 1500,
 			email: 'private@example.com',
+			avatar: '/uploads/avatars/2.png',
 			passwordHash: 'private-hash',
 			_count: { gamesAsWhite: 3, gamesAsBlack: 5 },
 		},
@@ -19,6 +20,7 @@ test('leaderboard returns public fields and totals for both colors', async (t) =
 			id: 1,
 			username: 'newcomer',
 			rating: 1200,
+			avatar: null,
 			_count: { gamesAsWhite: 0, gamesAsBlack: 0 },
 		}
 	]);
@@ -26,8 +28,8 @@ test('leaderboard returns public fields and totals for both colors', async (t) =
 	const players = await userService.getLeaderboard();
 
 	assert.deepEqual(players, [
-		{ id: 2, username: 'experienced', rating: 1500, games: 8 },
-		{ id: 1, username: 'newcomer', rating: 1200, games: 0 },
+		{ id: 2, username: 'experienced', rating: 1500, avatar: '/uploads/avatars/2.png', games: 8 },
+		{ id: 1, username: 'newcomer', rating: 1200, avatar: null, games: 0 },
 	]);
 });
 
