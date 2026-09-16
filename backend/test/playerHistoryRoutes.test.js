@@ -20,14 +20,14 @@ async function startServer(t, {
 	));
 
 	const findPlayer = t.mock.method(
-		userRepository, 
-		'findPublicUserById', 
+		userRepository,
+		'findPublicUserById',
 		async (id) => playerExists ? { id } : null,
 	);
 
 	const findGames = t.mock.method(
-		gameRepository, 
-		'findGamesByUserId', 
+		gameRepository,
+		'findGamesByUserId',
 		async () => {
 			if (historyError) {
 				throw historyError;
