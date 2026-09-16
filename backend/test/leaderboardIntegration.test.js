@@ -122,7 +122,7 @@ test('leaderboard orders players and counts only completed games', async (t) => 
 		assert.equal(player.username, `test-player-${player.id}`);
 		assert.deepEqual(
 			Object.keys(player).sort(),
-			['games', 'id', 'rating', 'username'],
+			['avatar', 'games', 'id', 'rating', 'username'],
 		);
 	}
 });

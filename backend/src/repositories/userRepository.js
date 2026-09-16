@@ -4,6 +4,7 @@ const PUBLIC_USER_SELECT = {
   id: true,
   username: true,
   rating: true,
+  avatar: true,
 };
 
 async function findPublicUserById(userId) {

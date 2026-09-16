@@ -7,6 +7,7 @@ const PUBLIC_USER_INCLUDE = {
     id: true,
     username: true,
     rating: true,
+    avatar: true,
   },
 };
 

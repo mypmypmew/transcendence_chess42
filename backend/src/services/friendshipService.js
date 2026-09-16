@@ -14,6 +14,7 @@ function toPublicUser(user) {
         id: user.id,
         username: user.username,
         rating: user.rating,
+        avatar: user.avatar,
     };
 }
 
