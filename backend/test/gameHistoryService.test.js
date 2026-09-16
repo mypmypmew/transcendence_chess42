@@ -266,3 +266,127 @@ test('propagates history lookup failures instead of returning an empty list', as
     (error) => error === databaseError,
   );
 });
+
+test('calculates completed game outcomes for both player colors', async (t) => {
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async (id) => ({ id }),
+  );
+
+  const games = [
+    fakeGame({ id: 1, result: 'WHITE_WIN', winnerId: 42 }),
+    fakeGame({ id: 2, result: 'BLACK_WIN', winnerId: 84 }),
+    fakeGame({ id: 3, result: 'DRAW', winnerId: null }),
+  ];
+
+  t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => games,
+  );
+
+  const whiteHistory = await gameHistoryService.listPlayerGames(42);
+  const blackHistory = await gameHistoryService.listPlayerGames(84);
+
+  assert.deepEqual(
+    whiteHistory.map((game) => game.outcome),
+    ['WIN', 'LOSS', 'DRAW'],
+  );
+  assert.deepEqual(
+    blackHistory.map((game) => game.outcome),
+    ['LOSS', 'WIN', 'DRAW'],
+  );
+
+  assert.deepEqual(
+    whiteHistory.map((game) => game.result),
+    ['WHITE_WIN', 'BLACK_WIN', 'DRAW'],
+  );
+  assert.deepEqual(
+    blackHistory.map((game) => game.result),
+    ['WHITE_WIN', 'BLACK_WIN', 'DRAW'],
+  );
+});
+
+test('does not count unfinished or cancelled games as losses', async (t) => {
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async (id) => ({ id }),
+  );
+  t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [
+      fakeGame({
+        id: 1,
+        status: 'IN_PROGRESS',
+        result: null,
+        winnerId: null,
+        endedAt: null,
+      }),
+      fakeGame({
+        id: 2,
+        status: 'CANCELLED',
+        result: null,
+        winnerId: null,
+      }),
+    ],
+  );
+
+  for (const playerId of [42, 84]) {
+    const games = await gameHistoryService.listPlayerGames(playerId);
+
+    assert.deepEqual(
+      games.map((game) => game.outcome),
+      ['IN_PROGRESS', 'CANCELLED'],
+    );
+  }
+});
+
+test('rejects invalid completed results instead of inventing an outcome', async (t) => {
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async (id) => ({ id: 42 }),
+  );
+
+  let storedResult;
+  t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [
+      fakeGame({ result: storedResult }),
+    ],
+  );
+
+  for (const result of [null, 'UNKNOWN']) {
+    storedResult = result;
+
+    await assert.rejects(
+      () => gameHistoryService.listPlayerGames(42),
+      /Completed game has an invalid result/,
+    );
+  }
+});
+
+test('rejects unexpected game statuses', async (t) => {
+  t.mock.method(
+    userRepository,
+    'findPublicUserById',
+    async () => ({ id: 42 }),
+  );
+
+  t.mock.method(
+    gameRepository,
+    'findGamesByUserId',
+    async () => [
+      fakeGame({ status: 'UNKNOWN' }),
+    ],
+  );
+
+  await assert.rejects(
+    () => gameHistoryService.listPlayerGames(42),
+    /Unexpected game status/,
+  );
+});
