@@ -182,4 +182,54 @@ test('persists game points once for wins and draws', async (t) => {
 			playersBefore.map((player) => player.rating + 30),
 		);
 	});
+
+	await t.test('awards points once for concurrent completion requests', async () => {
+		const game = await repository.createGame({
+			whiteId: 1,
+			blackId: 2,
+		});
+		const pointsBefore = await readPoints();
+		const completion = {
+			result: 'WHITE_WIN',
+			pgn: '1-0',
+		};
+
+		const attempts = await Promise.allSettled([
+			repository.finishGame(game.id, completion),
+			repository.finishGame(game.id, completion),
+		]);
+
+		const successful = attempts.filter(
+			(attempt) => attempt.status === 'fulfilled',
+		);
+
+		assert.ok(
+			successful.length >= 1,
+			'At least one completion request must succeed',
+		);
+
+		for (const attempt of successful) {
+			assert.equal(attempt.value.id, game.id);
+			assert.equal(attempt.value.status, 'COMPLETED');
+			assert.equal(attempt.value.result, 'WHITE_WIN');
+		}
+
+		const expectedPoints = [
+			pointsBefore[0] + 100,
+			pointsBefore[1],
+		];
+
+		assert.deepEqual(await readPoints(), expectedPoints);
+
+		// A sequential retry must succeed without awarding points again.
+		const retried = await repository.finishGame(game.id, completion);
+
+		assert.equal(retried.status, 'COMPLETED');
+		assert.equal(retried.winnerId, 1);
+		assert.deepEqual(await readPoints(), expectedPoints);
+		assert.deepEqual(
+			await prisma.game.findUnique({ where: { id: game.id } }),
+			retried,
+		);
+	});
 });
