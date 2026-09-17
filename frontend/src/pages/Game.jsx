@@ -4,6 +4,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AppLayout from '../components/AppLayout.jsx'
 import ChessGame from '../components/ChessGame.jsx'
 import ChessGuideModal from '../components/ChessGuideModal.jsx'
+import {
+  Alert,
+  Button,
+  EmptyState,
+  Panel,
+  PanelBody,
+} from '../components/ui.jsx'
 import useMultiplayerGame from '../hooks/useMultiplayerGame.js'
 
 function Game() {
@@ -47,15 +54,15 @@ function Game() {
   if (isLoading) {
     return (
       <AppLayout eyebrow="Game Screen" title="Multiplayer Chess" showLegalFooter={false}>
-        <section className="cm-panel" aria-live="polite">
-          <div className="cm-panel-body">
-            <div className="empty-state">
-              <i className="ti ti-loader-2 text-accent" aria-hidden="true" />
-              <p className="text-primary">Loading game...</p>
-              <span className="text-muted">Waiting for the latest server state.</span>
-            </div>
-          </div>
-        </section>
+        <Panel aria-live="polite">
+          <PanelBody>
+            <EmptyState
+              icon="loader-2"
+              subtitle="Waiting for the latest server state."
+              title="Loading game..."
+            />
+          </PanelBody>
+        </Panel>
       </AppLayout>
     )
   }
@@ -63,16 +70,14 @@ function Game() {
   if (!game) {
     return (
       <AppLayout eyebrow="Game Screen" title="Game Unavailable" showLegalFooter={false}>
-        <section className="cm-panel">
-          <div className="cm-panel-body flex flex-col gap-4">
-            <p className="text-muted" role="alert">
-              {gameError || 'Unable to load the game'}
-            </p>
-            <button className="btn btn-primary" type="button" onClick={returnToLobby}>
+        <Panel>
+          <PanelBody className="flex flex-col gap-4">
+            <Alert>{gameError || 'Unable to load the game'}</Alert>
+            <Button type="button" onClick={returnToLobby}>
               Return to game lobby
-            </button>
-          </div>
-        </section>
+            </Button>
+          </PanelBody>
+        </Panel>
       </AppLayout>
     )
   }
@@ -80,13 +85,11 @@ function Game() {
   return (
     <AppLayout eyebrow="Game Screen" title="Multiplayer Chess" showLegalFooter={false}>
       {gameError && (
-        <section className="cm-panel">
-          <div className="cm-panel-body">
-            <p className="text-muted" role="alert">
-              {gameError}
-            </p>
-          </div>
-        </section>
+        <Panel>
+          <PanelBody>
+            <Alert>{gameError}</Alert>
+          </PanelBody>
+        </Panel>
       )}
       
       <ChessGame

@@ -5,12 +5,12 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
 import Avatar from '../components/Avatar.jsx'
 import AppLayout from '../components/AppLayout.jsx'
+import UserListRow from '../components/UserListRow.jsx'
 import {
   Button,
   EmptyState,
   IconButton,
   Input,
-  ListRow,
   MessageBubble,
   Panel,
   PanelBody,
@@ -299,7 +299,7 @@ function Chat() {
   return (
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
       <div className="cm-page-grid chat">
-        <Panel aria-labelledby="chat-list-title">
+        <Panel aria-labelledby="chat-list-title" className="cm-scroll-panel">
           <PanelHeader title="Conversations" titleId="chat-list-title">
             <Input
               className="flex-1"
@@ -319,18 +319,13 @@ function Chat() {
                   <p className="cm-muted">No users found</p>
                 )}
                 {!isSearchLoading && !searchError && searchResults.map((result) => (
-                  <ListRow
-                    as="button"
+                  <UserListRow
                     key={result.id}
-                    type="button"
+                    avatar={result.avatar}
+                    meta={`Rating ${result.rating}`}
+                    name={result.username}
                     onClick={() => handleSelectUser(result)}
-                  >
-                    <Avatar avatar={null} name={result.username} className="avatar avatar-md" />
-                    <div className="min-w-0">
-                      <strong className="text-primary">{result.username}</strong>
-                      <p className="cm-muted">Rating {result.rating}</p>
-                    </div>
-                  </ListRow>
+                  />
                 ))}
               </div>
             )}
@@ -357,19 +352,14 @@ function Chat() {
             {!isSearching && !isLoading && !loadError && hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
-                  <ListRow
-                    as="button"
+                  <UserListRow
                     className={activeConversationId === conversation.id ? 'active' : ''}
                     key={conversation.id}
-                    type="button"
+                    avatar={conversation.user.avatar}
+                    meta={`Rating ${conversation.user.rating}`}
+                    name={conversation.user.username}
                     onClick={() => setActiveConversationId(conversation.id)}
-                  >
-                    <Avatar avatar={null} name={conversation.user.username} className="avatar avatar-md" />
-                    <div className="min-w-0">
-                      <strong className="text-primary">{conversation.user.username}</strong>
-                      <p className="cm-muted">Rating {conversation.user.rating}</p>
-                    </div>
-                  </ListRow>
+                  />
                 ))}
               </div>
             )}
@@ -387,17 +377,18 @@ function Chat() {
           )}
           {activeConversation && (
             <>
-              <div className="cm-panel-header">
+              <PanelHeader
+                action={<IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />}
+              >
                 <div className="flex items-center gap-3">
-                  <Avatar avatar={null} name={activeConversation.user.username} className="avatar avatar-md" />
+                  <Avatar avatar={activeConversation.user.avatar} name={activeConversation.user.username} className="avatar avatar-md" />
                   <div>
                     <h2 className="cm-section-title" id="chat-active-title">{activeConversation.user.username}</h2>
                     <p className="cm-muted">Rating {activeConversation.user.rating}</p>
                   </div>
                 </div>
-                <IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />
-              </div>
-              <PanelBody>
+              </PanelHeader>
+              <PanelBody className="cm-chat-messages">
                 {isMessagesLoading && messages.length === 0 && (
                   <EmptyState icon="message" title="Loading messages..." />
                 )}

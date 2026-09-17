@@ -1,4 +1,13 @@
 import AppLayout from '../components/AppLayout.jsx'
+import {
+  Alert,
+  Button,
+  EmptyState,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  StatusDot,
+} from '../components/ui.jsx'
 import useMatchmaking from '../hooks/useMatchmaking.js'
 
 function getConnectionLabel(socketStatus) {
@@ -28,60 +37,57 @@ function GameLobby() {
   } = useMatchmaking()
 
   const isConnected = socketStatus === 'connected'
+  const connectionStatus = isConnected ? 'online' : 'offline'
 
   return (
     <AppLayout eyebrow="Game Lobby" title="Find an Opponent" showLegalFooter={false}>
-      <section className="cm-panel" aria-labelledby="matchmaking-title">
-        <div className="cm-panel-header">
-          <div>
-            <p className="cm-eyebrow">Online multiplayer</p>
-            <h2 className="cm-section-title" id="matchmaking-title">
-              Quick match
-            </h2>
-          </div>
+      <Panel aria-labelledby="matchmaking-title">
+        <PanelHeader
+          eyebrow="Online multiplayer"
+          title="Quick match"
+          titleId="matchmaking-title"
+          action={(
+            <span className={`flex items-center gap-2 ${isConnected ? 'text-primary' : 'text-muted'}`}>
+              <StatusDot status={connectionStatus} />
+              {getConnectionLabel(socketStatus)}
+            </span>
+          )}
+        />
 
-          <span className={isConnected ? 'text-primary' : 'text-muted'}>
-            {getConnectionLabel(socketStatus)}
-          </span>
-        </div>
-
-        <div className="cm-panel-body flex flex-col gap-4">
+        <PanelBody className="flex flex-col gap-4">
           {isSearching ? (
             <>
-              <div className="empty-state" aria-live="polite">
-                <i className="ti ti-loader-2 text-accent" aria-hidden="true"/>
-                <p className="text-primary">
-                  Searching for an opponent...
-                </p>
-                <span className="text-muted">
-                  The game will open automatically when another player joins.
-                </span>
-              </div>
+              <EmptyState
+                aria-live="polite"
+                icon="loader-2"
+                subtitle="The game will open automatically when another player joins."
+                title="Searching for an opponent..."
+              />
 
-              <button className="btn btn-ghost" type="button" onClick={cancelSearch}>
+              <Button type="button" variant="ghost" onClick={cancelSearch}>
                 Cancel search
-              </button>
+              </Button>
             </>
           ) : (
-            <>
-              <p className="cm-muted">
+            <div className="flex items-center justify-between gap-4">
+              <p className="cm-muted min-w-0">
                 Join the queue and play a real-time game against another
                 authenticated player.
               </p>
 
-              <button className="btn btn-primary" type="button" disabled={!isConnected} onClick={startSearch}>
+              <Button type="button" disabled={!isConnected} onClick={startSearch}>
                 Find opponent
-              </button>
-            </>
+              </Button>
+            </div>
           )}
 
           {matchmakingError && (
-            <p className="text-muted" role="alert">
+            <Alert>
               {matchmakingError}
-            </p>
+            </Alert>
           )}
-        </div>
-      </section>
+        </PanelBody>
+      </Panel>
     </AppLayout>
   )
 }

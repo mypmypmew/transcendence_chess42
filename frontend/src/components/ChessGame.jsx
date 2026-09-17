@@ -113,8 +113,7 @@ function ChessGame({
     (styles, square) => ({
       ...styles,
       [square]: {
-        background:
-          'radial-gradient(circle, rgba(118, 150, 86, 0.75) 0 22%, transparent 24%)',
+        background: 'rgba(118, 150, 86, 0.38)',
       },
     }),
     legalMoveSquares.length > 0
@@ -168,7 +167,7 @@ function ChessGame({
 
       setSelectedSquare(null)
 
-      // Open the existing promotion selector when a pawn reachesits final rank.
+      // Open the existing promotion selector when a pawn reaches its final rank.
       if (selectedPiece?.type === 'p' &&
         ((selectedPiece.color === 'w' && square[1] === '8') ||
         (selectedPiece.color === 'b' && square[1] === '1'))
@@ -233,7 +232,7 @@ function ChessGame({
 
   return (
     <>
-      <div className="flex gap-3" aria-label="Game controls">
+      <div className="cm-game-controls flex gap-3" aria-label="Game controls">
         {playerColorCode ? (
           <Button
             type="button"
@@ -265,7 +264,6 @@ function ChessGame({
           </>
         )}
 
-        {/* Keep the rules reference beside the game actions. */}
         {onOpenRules && (
           <Button type="button" variant="ghost" aria-haspopup="dialog" onClick={onOpenRules}>
             <span aria-hidden="true">?</span>
@@ -274,9 +272,9 @@ function ChessGame({
         )}
 
         {showRestart && (
-        <Button type="button" disabled={isWaitingForServer} variant="ghost" onClick={handleRestart}>
-          Restart
-        </Button>
+          <Button type="button" disabled={isWaitingForServer} variant="ghost" onClick={handleRestart}>
+            Restart
+          </Button>
         )}
       </div>
 
@@ -294,7 +292,6 @@ function ChessGame({
           </Panel>
 
           <Panel className="cm-game-card">
-            {/* Display public opponent details in a separate compact card. */}
             <p className="label">Opponent</p>
             {opponent ? (
               <>

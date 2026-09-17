@@ -53,8 +53,8 @@ test('conversation list selects only public participant fields', async () => {
     await chatRepository.findConversationsByUserId(5);
 
     assert.deepEqual(query.where.OR, [{ userAId: 5 }, { userBId: 5 }]);
-    assert.deepEqual(query.include.userA.select, { id: true, username: true, rating: true });
-    assert.deepEqual(query.include.userB.select, { id: true, username: true, rating: true });
+    assert.deepEqual(query.include.userA.select, { id: true, username: true, rating: true, avatar: true });
+    assert.deepEqual(query.include.userB.select, { id: true, username: true, rating: true, avatar: true });
     assert.deepEqual(query.orderBy, { createdAt: 'desc' });
   } finally {
     prisma.conversation.findMany = originalFindMany;
@@ -75,7 +75,7 @@ test('message history is ordered oldest first with public senders', async () => 
 
     assert.deepEqual(query.where, { conversationId: 12 });
     assert.deepEqual(query.orderBy, { createdAt: 'asc' });
-    assert.deepEqual(query.include.sender.select, { id: true, username: true, rating: true });
+    assert.deepEqual(query.include.sender.select, { id: true, username: true, rating: true, avatar: true });
   } finally {
     prisma.message.findMany = originalFindMany;
   }
@@ -94,7 +94,7 @@ test('message creation returns the sender for broadcasting', async () => {
     await chatRepository.createMessage({ conversationId: 12, senderId: 5, body: 'hello' });
 
     assert.deepEqual(query.data, { conversationId: 12, senderId: 5, body: 'hello' });
-    assert.deepEqual(query.include.sender.select, { id: true, username: true, rating: true });
+    assert.deepEqual(query.include.sender.select, { id: true, username: true, rating: true, avatar: true });
   } finally {
     prisma.message.create = originalCreate;
   }

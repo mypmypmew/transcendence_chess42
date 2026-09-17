@@ -59,6 +59,7 @@ function getGameResult(game, currentUserId) {
  * Rows are not clickable in this version (no game details view yet).
  */
 function MatchHistory({
+  className = '',
   games = [],
   currentUserId,
   error = null,
@@ -66,7 +67,7 @@ function MatchHistory({
   title = 'Match history'
 }) {
   return (
-    <Panel aria-labelledby="history-title">
+    <Panel aria-labelledby="history-title" className={className}>
       <PanelHeader
         action={<Badge>{games.length}</Badge>}
         eyebrow="Games"

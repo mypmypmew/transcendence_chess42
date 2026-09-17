@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react'
 
 import { getLeaderboard } from '../api/userApi'
 import Avatar from './Avatar.jsx'
+import Modal from './Modal.jsx'
 import {
   EmptyState,
   IconButton,
-  Panel,
   PanelBody,
-  PanelHeader,
+  Tab,
+  Tabs,
+  Table,
 } from './ui.jsx'
-import './Modal.css'
 
 function LeaderboardModal({ onClose }) {
   const [players, setPlayers] = useState([])
@@ -50,23 +51,20 @@ function LeaderboardModal({ onClose }) {
   }, [])
 
   return (
-    <div className="cm-modal" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
-      <button className="cm-modal__backdrop" type="button" aria-label="Close leaderboard modal" onClick={onClose} />
-      <Panel as="div" className="cm-modal__content">
-        <PanelHeader
-          action={(
-            <div className="cm-modal__header-actions">
-              <span className="cm-tab active flex items-center justify-center">Global</span>
-              <IconButton aria-label="Close leaderboard modal" icon="x" onClick={onClose} />
-            </div>
-          )}
-          title="Leaderboard"
-          titleId="leaderboard-title"
-        >
-          <p className="cm-muted">Top 10 players sorted by rating</p>
-        </PanelHeader>
-
-        {/* Show loading, failure, and empty results separately. */}
+    <Modal
+      actions={(
+        <div className="cm-modal__header-actions">
+          <Tabs>
+            <Tab active>Global</Tab>
+          </Tabs>
+          <IconButton aria-label="Close leaderboard modal" icon="x" onClick={onClose} />
+        </div>
+      )}
+      description="Top 10 players sorted by rating"
+      onClose={onClose}
+      title="Leaderboard"
+      titleId="leaderboard-title"
+    >
         <PanelBody>
           {isLoading && (
             <EmptyState icon="trophy" title="Loading leaderboard..." />
@@ -80,9 +78,8 @@ function LeaderboardModal({ onClose }) {
             <EmptyState icon="trophy" title="No players yet." />
           )}
 
-          {/* Preserve the server ranking and display only real player data. */}
           {!isLoading && !error && players.length > 0 && (
-            <table className="cm-table">
+            <Table>
               <thead>
                 <tr>
                   <th scope="col">#</th>
@@ -97,7 +94,7 @@ function LeaderboardModal({ onClose }) {
                     <td>{index + 1}</td>
                     <td>
                       <div className="flex items-center gap-3">
-                        <Avatar avatar={null} name={player.username} className="avatar avatar-md" />
+                        <Avatar avatar={player.avatar} name={player.username} className="avatar avatar-md" />
                         <span className="stat-num text-primary">
                           {player.username}
                         </span>
@@ -108,11 +105,10 @@ function LeaderboardModal({ onClose }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           )}
         </PanelBody>
-      </Panel>
-    </div>
+    </Modal>
   )
 }
 

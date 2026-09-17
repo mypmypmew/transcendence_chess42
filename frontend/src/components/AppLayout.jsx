@@ -4,7 +4,7 @@ import Sidebar from './Sidebar.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import LeaderboardModal from './LeaderboardModal.jsx'
 import LegalFooter from './LegalFooter.jsx'
-import { Alert, Button, Icon } from './ui.jsx'
+import { Icon } from './ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 
 function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }) {
@@ -14,7 +14,6 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [logoutError, setLogoutError] = useState('')
 
-  // Share logout state and disable both buttons while the request is pending.
   async function handleLogout() {
     if (isLoggingOut) {
       return
@@ -45,45 +44,27 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
       <div className="cm-backdrop" aria-hidden="true" />
       <div className="cm-app-frame">
         <header className="cm-header">
-          {/* Keep the theme control separate from account actions. */}
-          <div className="flex items-center min-w-0">
-            <NavLink className="cm-brand" to="/dashboard" aria-label="ChessMate dashboard">
-              <Icon name="crown" />
-              <span>ChessMate</span>
-            </NavLink>
-          </div>
-
+          <NavLink className="cm-brand" to="/dashboard" aria-label="ChessMate dashboard">
+            <Icon name="crown" />
+            <span>ChessMate</span>
+          </NavLink>
           <div className="cm-header-copy">
             <p className="cm-eyebrow">{eyebrow}</p>
             <h1>{title}</h1>
           </div>
-
           <div className="cm-header-actions">
             {actions}
-            {/* Keep Profile and Log out together at every screen width. */}
-            <div className="cm-header-account flex items-center gap-3">
-              <NavLink to="/profile" aria-label="My profile" title="My profile" className={({ isActive }) => (`btn flex-shrink-0 ${isActive ? 'btn-primary' : 'btn-ghost'}`)}>
-                <Icon name="user-circle" />
-                <span>Profile</span>
-              </NavLink>
-              <Button className="flex-shrink-0" type="button" variant="ghost" icon="logout" disabled={isLoggingOut} onClick={handleLogout}>
-                {isLoggingOut ? 'Logging out...' : 'Log out'}
-              </Button>
-            </div>
-          </div>
-
-          {/* Position the theme separately from account actions. */}
-          <div className="cm-header-theme-slot flex items-center">
-            <ThemeToggle iconOnly className="flex-shrink-0"/>
+            <span className="flex-1" aria-hidden="true" />
+            <ThemeToggle />
           </div>
         </header>
         <div className="cm-main-grid">
-          <Sidebar onOpenLeaderboard={openLeaderboard} />
+          <Sidebar
+            onOpenLeaderboard={openLeaderboard}
+          />
           <main className="cm-content">
-            {/* Keep logout failures visible while the account stays signed in. */}
-            {logoutError && <Alert>{logoutError}</Alert>}
             {typeof children === 'function'
-              ? children({ openLeaderboard, handleLogout, isLoggingOut })
+              ? children({ openLeaderboard, handleLogout, isLoggingOut, logoutError })
               : children}
           </main>
         </div>

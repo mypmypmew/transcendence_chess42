@@ -1,23 +1,24 @@
 import { NavLink } from 'react-router-dom'
 
-import { Icon } from './ui.jsx'
+import {
+  Icon,
+} from './ui.jsx'
 
-// Keep account actions in the header and reserve the sidebar for navigation.
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-  // Open matchmaking before navigating the player to a server-created game.
   { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
+  { action: 'leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
+  { to: '/profile', label: 'Profile', icon: 'user-circle' },
   { to: '/chat', label: 'Chat', icon: 'messages' },
 ]
 
 function Sidebar({ onOpenLeaderboard }) {
   return (
-    <aside className="min-w-0" aria-label="Main navigation">
+    <aside className="cm-sidebar" aria-label="Main navigation">
       <nav className="cm-nav">
         {navigationItems.map((item) => {
-          if (item.label === 'Leaderboard') {
+          if (item.action === 'leaderboard') {
             return (
               <button
                 className="cm-nav-link"
@@ -49,6 +50,7 @@ function Sidebar({ onOpenLeaderboard }) {
           )
         })}
       </nav>
+
     </aside>
   )
 }

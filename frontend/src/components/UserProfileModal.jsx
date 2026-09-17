@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
+import Modal from './Modal.jsx'
 import {
   Alert,
   Badge,
@@ -9,9 +10,7 @@ import {
   Icon,
   IconButton,
   ListRow,
-  Panel,
   PanelBody,
-  PanelHeader,
 } from './ui.jsx'
 
 function getMockMatchHistory(profileOwner) {
@@ -107,12 +106,10 @@ function UserProfileModal({
   }
 
   return (
-    <div className="cm-modal cm-modal--nested" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
-      <button className="cm-modal__backdrop" type="button" aria-label="Close profile modal" onClick={onClose} />
-      <Panel as="div" className="cm-modal__content cm-modal__content--sm">
-        <PanelHeader
-          action={<IconButton aria-label="Close profile modal" icon="x" onClick={onClose} />}
-        >
+    <Modal
+      className="cm-modal--nested"
+      header={(
+        <div className="cm-panel-header">
           <div className="flex items-center gap-3">
             <Avatar avatar={player.avatar} name={player.nickname} className="avatar avatar-md" aria-hidden="true" />
             <div>
@@ -120,8 +117,13 @@ function UserProfileModal({
               <p className="cm-muted">Rating {player.rating}</p>
             </div>
           </div>
-        </PanelHeader>
-
+          <IconButton aria-label="Close profile modal" icon="x" onClick={onClose} />
+        </div>
+      )}
+      onClose={onClose}
+      size="sm"
+      titleId="profile-modal-title"
+    >
         <PanelBody>
           {actionError && (
             <Alert>{actionError}</Alert>
@@ -144,13 +146,10 @@ function UserProfileModal({
               )
             })}
           </div>
-		  
-		  <div className="cm-modal__actions">
+      
+      <div className="cm-modal__actions">
             <Button as={Link} to="/chat" onClick={onClose}>
               Message
-            </Button>
-            <Button as={Link} to="/game-lobby" variant="ghost" onClick={onClose}>
-              Challenge
             </Button>
             <Button
               type="button"
@@ -162,8 +161,7 @@ function UserProfileModal({
             </Button>
           </div>
         </PanelBody>
-      </Panel>
-    </div>
+    </Modal>
   )
 }
 

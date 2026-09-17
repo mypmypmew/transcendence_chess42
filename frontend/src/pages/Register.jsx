@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import LegalFooter from '../components/LegalFooter.jsx'
+import ThemeToggle from '../components/ThemeToggle.jsx'
 import {
   Alert,
   Button,
@@ -13,7 +14,6 @@ import {
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
-import './App.css'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
@@ -127,6 +127,8 @@ function Register() {
       <section className="auth-panel" aria-labelledby="register-title">
         <div className="auth-card">
           <header className="auth-card-intro">
+            <ThemeToggle />
+
             <div className="auth-mark" aria-hidden="true">
               <Icon name="chess-knight" />
             </div>
