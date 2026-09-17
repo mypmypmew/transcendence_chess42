@@ -2,6 +2,7 @@ const express = require('express');
 
 const requireAuth = require('../middlewares/requireAuth');
 const userService = require('../services/userService');
+const gameHistoryService = require('../services/gameHistoryService');
 const multer = require('multer');
 const avatarService = require('../services/avatarService');
 
@@ -69,6 +70,22 @@ router.post('/me/avatar', requireAuth, uploadAvatar, async (req, res, next) => {
         const user = await avatarService.saveAvatar(req.userId, req.file);
 
         res.status(200).json({ user });
+    } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ error: err.message });
+        }
+
+        next(err);
+    }
+});
+
+// Authenticated users may view any player's public match history.
+router.get('/:userId/games', requireAuth, async (req, res, next) => {
+    try {
+        const playerId = Number(req.params.userId);
+        const games = await gameHistoryService.listPlayerGames(playerId);
+
+        res.status(200).json({ games });
     } catch (err) {
         if (err.status) {
             return res.status(err.status).json({ error: err.message });

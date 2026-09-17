@@ -1,4 +1,5 @@
 const gameRepository = require('../repositories/gameRepository');
+const userRepository = require('../repositories/userRepository');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -39,6 +40,49 @@ async function listGames(userId) {
   return games.map(toGameSummary);
 }
 
+function getPlayerOutcome(game, playerId) {
+  if (game.status === 'IN_PROGRESS' || game.status === 'CANCELLED') {
+    return game.status;
+  }
+
+  if (game.status !== 'COMPLETED') {
+    throw new Error('Unexpected game status');
+  }
+
+  if (game.result === 'DRAW') {
+    return 'DRAW';
+  }
+
+  if (game.result !== 'WHITE_WIN' && game.result !== 'BLACK_WIN') {
+    throw new Error('Completed game has an invalid result');
+  }
+
+  const winningPlayerId = game.result === 'WHITE_WIN'
+    ? game.white.id
+    : game.black.id;
+
+  return winningPlayerId === playerId ? 'WIN' : 'LOSS';
+}
+
+async function listPlayerGames(playerId) {
+  if (!Number.isSafeInteger(playerId) || playerId <= 0) {
+    throw httpError(400, 'playerId must be a positive integer');
+  }
+
+  const player = await userRepository.findPublicUserById(playerId);
+
+  if (!player) {
+    throw httpError(404, 'Player not found');
+  }
+
+  const games = await listGames(playerId);
+
+  return games.map((game) => ({
+    ...game,
+    outcome: getPlayerOutcome(game, playerId),
+  }));
+}
+
 async function getGame(userId, gameId) {
   if (!Number.isInteger(gameId) || gameId <= 0) {
     throw httpError(400, 'gameId must be a positive integer');
@@ -55,6 +99,7 @@ async function getGame(userId, gameId) {
 
 module.exports = {
   listGames,
+  listPlayerGames,
   getGame,
   toGameSummary,
   toGameDetail,
