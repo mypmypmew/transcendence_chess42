@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
 import Modal from './Modal.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import {
   Alert,
   Badge,
@@ -69,18 +69,28 @@ function UserProfileModal({
   player,
   onClose,
   onAddFriend,
+  onMessage,
   onRemoveFriend,
 }) {
+  const { user } = useAuth()
   const matchHistory = getMockMatchHistory(player.nickname)
   const [pendingAction, setPendingAction] = useState(null)
   const [actionError, setActionError] = useState(null)
   const hasBackendUserId = Number.isInteger(player.id) && player.id > 0
+  const isCurrentUser = hasBackendUserId && player.id === user?.id
   const hasPendingFriendRequest = player.hasPendingFriendRequest === true
   const friendAction = player.isFriend ? onRemoveFriend : onAddFriend
   const friendActionLabel = hasPendingFriendRequest
     ? player.friendActionLabel || 'Request sent'
     : player.isFriend ? 'Remove friend' : 'Add friend'
   const isFriendActionPending = pendingAction === 'friend'
+  const isMessageActionPending = pendingAction === 'message'
+  const isMessageActionDisabled = (
+    !hasBackendUserId
+    || isCurrentUser
+    || !onMessage
+    || pendingAction !== null
+  )
   const isFriendActionDisabled = (
     !hasBackendUserId
     || hasPendingFriendRequest
@@ -148,8 +158,12 @@ function UserProfileModal({
           </div>
       
       <div className="cm-modal__actions">
-            <Button as={Link} to="/chat" onClick={onClose}>
-              Message
+            <Button
+              type="button"
+              disabled={isMessageActionDisabled}
+              onClick={() => runAction('message', onMessage)}
+            >
+              {isMessageActionPending ? 'Opening...' : 'Message'}
             </Button>
             <Button
               type="button"

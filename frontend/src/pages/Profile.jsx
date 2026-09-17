@@ -22,6 +22,7 @@ import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
 import { updateCurrentUser, uploadCurrentUserAvatar } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useOpenConversation } from '../hooks/useOpenConversation.js'
 import { toModalPlayer } from '../utils/userProfile.js'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -68,6 +69,7 @@ function getUserFormValues(user) {
 
 function Profile() {
   const { user, refreshUser, replaceUser } = useAuth()
+  const { startConversation } = useOpenConversation()
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [isAvatarUploading, setIsAvatarUploading] = useState(false)
@@ -302,6 +304,12 @@ function Profile() {
     setSelectedFriend(null)
   }
 
+  async function handleOpenMessage(player) {
+    await startConversation(player, {
+      onSuccess: () => setSelectedFriend(null),
+    })
+  }
+
   if (!user) {
     return null
   }
@@ -316,7 +324,7 @@ function Profile() {
       {({ handleLogout, isLoggingOut, logoutError }) => (
         <>
           <div className="cm-profile-grid">
-            <Panel aria-labelledby="profile-title" className="cm-profile-account-panel">
+            <Panel aria-labelledby="profile-title" className="cm-profile-account-panel cm-profile-panel">
               <PanelBody className="flex flex-col gap-4 text-center">
                 <input
                   accept={ALLOWED_AVATAR_TYPES.join(',')}
@@ -473,14 +481,14 @@ function Profile() {
             </Panel>
 
             <MatchHistory
-              className="cm-scroll-panel"
+              className="cm-profile-panel cm-scroll-panel"
               games={games}
               currentUserId={user.id}
               error={historyError}
               isLoading={isHistoryLoading}
             />
 
-            <Panel aria-labelledby="friends-title" className="cm-profile-friends-panel">
+            <Panel aria-labelledby="friends-title" className="cm-profile-friends-panel cm-profile-panel">
               <PanelHeader
                 action={<Badge>{friends.length}</Badge>}
                 eyebrow="Community"
@@ -520,6 +528,7 @@ function Profile() {
           {selectedFriend && (
             <UserProfileModal
               player={selectedFriend}
+              onMessage={handleOpenMessage}
               onRemoveFriend={handleRemoveFriend}
               onClose={() => setSelectedFriend(null)}
             />

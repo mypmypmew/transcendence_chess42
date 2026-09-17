@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getMessages, listConversations, openConversation } from '../api/chatApi.js'
 import { searchUsers } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -30,10 +31,19 @@ function mergeMessages(current, incoming) {
   return [...byId.values()].sort((a, b) => a.id - b.id)
 }
 
+function getConversationIdFromSearch(search) {
+  const conversationId = Number(new URLSearchParams(search).get('conversationId'))
+  return Number.isInteger(conversationId) && conversationId > 0 ? conversationId : null
+}
+
 function Chat() {
   const { user } = useAuth()
   const { socket } = useSocket()
-  const [activeConversationId, setActiveConversationId] = useState(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [activeConversationId, setActiveConversationId] = useState(
+    () => getConversationIdFromSearch(location.search),
+  )
   const [messageText, setMessageText] = useState('')
   const [conversationList, setConversationList] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -259,6 +269,7 @@ function Chat() {
       const listData = await listConversations()
       setConversationList(listData.conversations)
       setActiveConversationId(data.conversation.id)
+      navigate(`/chat?conversationId=${data.conversation.id}`, { replace: true })
       setSearchTerm('')
       setSearchState({ term: '', results: [] })
       setLoadError(null)
@@ -270,6 +281,7 @@ function Chat() {
   function handleCloseConversation() {
     setActiveConversationId(null)
     setMessageText('')
+    navigate('/chat', { replace: true })
   }
 
   function handleSendMessage(event) {
@@ -299,17 +311,23 @@ function Chat() {
   return (
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
       <div className="cm-page-grid chat">
-        <Panel aria-labelledby="chat-list-title" className="cm-scroll-panel">
-          <PanelHeader title="Conversations" titleId="chat-list-title">
-            <Input
-              className="flex-1"
-              type="text"
-              value={searchTerm}
-              placeholder="Search users..."
-              aria-label="Search users to message"
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
-          </PanelHeader>
+        <Panel aria-labelledby="chat-list-title" className="cm-chat-search-panel">
+          <PanelHeader
+            title="Players"
+            titleId="chat-list-title"
+            action={(
+              <Input
+                className="flex-1 min-w-0"
+                type="text"
+                value={searchTerm}
+                placeholder="Search users..."
+                aria-label="Search users to message"
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            )}
+          />
+        </Panel>
+        <Panel className="cm-chat-list-panel cm-scroll-panel">
           <PanelBody>
             {isSearching && (
               <div className="cm-list">
@@ -324,6 +342,7 @@ function Chat() {
                     avatar={result.avatar}
                     meta={`Rating ${result.rating}`}
                     name={result.username}
+                    title={`${result.username} · Rating ${result.rating}`}
                     onClick={() => handleSelectUser(result)}
                   />
                 ))}
@@ -358,7 +377,11 @@ function Chat() {
                     avatar={conversation.user.avatar}
                     meta={`Rating ${conversation.user.rating}`}
                     name={conversation.user.username}
-                    onClick={() => setActiveConversationId(conversation.id)}
+                    title={`${conversation.user.username} · Rating ${conversation.user.rating}`}
+                    onClick={() => {
+                      setActiveConversationId(conversation.id)
+                      navigate(`/chat?conversationId=${conversation.id}`, { replace: true })
+                    }}
                   />
                 ))}
               </div>
