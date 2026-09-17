@@ -6,6 +6,7 @@ import {
   Button,
   Icon,
   Panel,
+  Toolbar,
 } from './ui.jsx'
 
 const PROMOTION_OPTIONS = [
@@ -77,6 +78,7 @@ function ChessGame({
   isGameOver,
   gameOverInfo,
   opponent,
+  opponentAction,
   opponentError,
   playerColor,
   isPlayerTurn = true,
@@ -294,10 +296,13 @@ function ChessGame({
           <Panel className="cm-game-card">
             <p className="label">Opponent</p>
             {opponent ? (
-              <>
-                <h2 className="cm-section-title">{opponent.username}</h2>
-                <p className="text-muted">Rating: {opponent.rating}</p>
-              </>
+              <Toolbar className="justify-between">
+                <div className="min-w-0">
+                  <h2 className="cm-section-title truncate">{opponent.username}</h2>
+                  <p className="text-muted">Rating: {opponent.rating}</p>
+                </div>
+                {opponentAction}
+              </Toolbar>
             ) : (
               <p className="text-muted">
                 {opponentError || 'Loading...'}
