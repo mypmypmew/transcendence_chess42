@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { mkdtemp, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 
 test('recalculates stored points safely from completed games', async (t) => {
 	const directory = await mkdtemp(path.join(tmpdir(), 'points-recalculation-'));
@@ -157,4 +157,61 @@ test('recalculates stored points safely from completed games', async (t) => {
 	await recalculatePoints({ apply: true });
 	assert.deepEqual(await readPlayers(), savedPlayers);
 	assert.deepEqual(await readGames(), historyBeforeApply);
+
+	await t.test('CLI previews, applies and rejects invalid arguments', async () => {
+		await prisma.user.updateMany({
+			data: { rating: 1200 },
+		});
+		const beforeCommand = await readPlayers();
+
+		function runCommand(args = []) {
+			const result = spawnSync(
+				process.execPath,
+				[
+					path.resolve(__dirname, '../scripts/recalculatePoints.js'),
+					...args,
+				],
+				{
+					env: { ...process.env, DATABASE_URL: databaseUrl },
+					encoding: 'utf8',
+					timeout: 15000,
+				},
+			);
+
+			assert.ifError(result.error);
+			return result;
+		}
+
+		const previewCommand = runCommand();
+		assert.equal(previewCommand.status, 0, previewCommand.stderr);
+		assert.match(
+			previewCommand.stdout,
+			/Preview only: 3 player\(s\) would change\. No data written\./,
+		);
+		assert.deepEqual(await readPlayers(), beforeCommand);
+
+		for (const args of [['--unknown'], ['--apply', '--unknown']]) {
+			const invalidCommand = runCommand(args);
+			assert.equal(invalidCommand.status, 1, invalidCommand.stderr);
+			assert.match(invalidCommand.stderr, /Usage:/);
+			assert.deepEqual(await readPlayers(), beforeCommand);
+		}
+
+		const applyCommand = runCommand(['--apply']);
+		assert.equal(applyCommand.status, 0, applyCommand.stderr);
+		assert.match(applyCommand.stdout, /Updated 3 player\(s\)\./);
+
+		const afterCommand = await readPlayers();
+		assert.deepEqual(
+			afterCommand.map((player) => player.rating),
+			[130, 30, 0],
+		);
+		assert.deepEqual(await readGames(), historyBeforeApply);
+
+		const repeatedCommand = runCommand(['--apply']);
+		assert.equal(repeatedCommand.status, 0, repeatedCommand.stderr);
+		assert.match(repeatedCommand.stdout, /Updated 0 player\(s\)\./);
+		assert.deepEqual(await readPlayers(), afterCommand);
+		assert.deepEqual(await readGames(), historyBeforeApply);
+	});
 });
