@@ -92,6 +92,20 @@ function Profile() {
   }, [avatarPreview])
 
   useEffect(() => {
+    if (!profileMessage) {
+      return undefined
+    }
+
+    const hideMessageTimer = window.setTimeout(() => {
+      setProfileMessage(null)
+    }, 3000)
+
+    return () => {
+      window.clearTimeout(hideMessageTimer)
+    }
+  }, [profileMessage])
+
+  useEffect(() => {
     let isMounted = true
 
     async function loadGames() {
@@ -268,9 +282,9 @@ function Profile() {
         email: updatedUser.email || '',
       })
       setIsEditing(false)
-      setProfileMessage('ready')
+      setProfileMessage('Profile updated')
     } catch (error) {
-      setProfileError(error.message || 'failed')
+      setProfileError(error.message || 'Profile update failed')
     } finally {
       setIsSavingProfile(false)
     }
@@ -302,8 +316,8 @@ function Profile() {
       {({ handleLogout, isLoggingOut, logoutError }) => (
         <>
           <div className="cm-profile-grid">
-            <Panel aria-labelledby="profile-title">
-        <PanelBody className="flex flex-col items-center gap-5 text-center">
+            <Panel aria-labelledby="profile-title" className="cm-profile-account-panel">
+              <PanelBody className="flex flex-col gap-4 text-center">
                 <input
                   accept={ALLOWED_AVATAR_TYPES.join(',')}
                   hidden
@@ -320,10 +334,6 @@ function Profile() {
                     className="avatar avatar-xl avatar-ring"
                   />
 
-                  {avatarPreview && (
-            <p className="cm-muted">New avatar selected</p>
-                  )}
-
                   <Button
                     className="profile-avatar-action"
                     disabled={isProfileBusy}
@@ -334,6 +344,8 @@ function Profile() {
                   >
                     {isAvatarUploading ? 'Uploading...' : 'Change avatar'}
                   </Button>
+
+                  <p className="stat-num text-primary truncate">{user.username}</p>
                 </div>
 
                 <hr

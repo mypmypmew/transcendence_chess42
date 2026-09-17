@@ -94,7 +94,7 @@ function LeaderboardModal({ onClose }) {
                     <td>{index + 1}</td>
                     <td>
                       <div className="flex items-center gap-3">
-                        <Avatar avatar={null} name={player.username} className="avatar avatar-md" />
+                        <Avatar avatar={player.avatar} name={player.username} className="avatar avatar-md" />
                         <span className="stat-num text-primary">
                           {player.username}
                         </span>
