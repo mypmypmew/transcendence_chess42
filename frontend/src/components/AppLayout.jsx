@@ -54,6 +54,7 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
           </div>
           <div className="cm-header-actions">
             {actions}
+            <span className="flex-1" aria-hidden="true" />
             <ThemeToggle />
           </div>
         </header>
