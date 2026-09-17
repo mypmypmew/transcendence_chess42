@@ -324,7 +324,7 @@ function Profile() {
       {({ handleLogout, isLoggingOut, logoutError }) => (
         <>
           <div className="cm-profile-grid">
-            <Panel aria-labelledby="profile-title" className="cm-profile-account-panel">
+            <Panel aria-labelledby="profile-title" className="cm-profile-account-panel cm-profile-panel">
               <PanelBody className="flex flex-col gap-4 text-center">
                 <input
                   accept={ALLOWED_AVATAR_TYPES.join(',')}
@@ -481,14 +481,14 @@ function Profile() {
             </Panel>
 
             <MatchHistory
-              className="cm-scroll-panel"
+              className="cm-profile-panel cm-scroll-panel"
               games={games}
               currentUserId={user.id}
               error={historyError}
               isLoading={isHistoryLoading}
             />
 
-            <Panel aria-labelledby="friends-title" className="cm-profile-friends-panel">
+            <Panel aria-labelledby="friends-title" className="cm-profile-friends-panel cm-profile-panel">
               <PanelHeader
                 action={<Badge>{friends.length}</Badge>}
                 eyebrow="Community"
