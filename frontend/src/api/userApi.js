@@ -19,8 +19,19 @@ function updateCurrentUser({ username, email }) {
   })
 }
 
+function uploadCurrentUserAvatar(file) {
+  const formData = new FormData()
+  formData.append('avatar', file)
+
+  return request('/api/users/me/avatar', {
+    method: 'POST',
+    body: formData,
+  })
+}
+
 export {
   searchUsers,
   getLeaderboard,
   updateCurrentUser,
+  uploadCurrentUserAvatar,
 }

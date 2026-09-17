@@ -20,12 +20,14 @@ import {
 } from '../components/ui.jsx'
 import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
-import { updateCurrentUser } from '../api/userApi.js'
+import { updateCurrentUser, uploadCurrentUserAvatar } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { toModalPlayer } from '../utils/userProfile.js'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024
+const ALLOWED_AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
 function getProfileErrors({ username, email }) {
   const errors = {}
@@ -41,6 +43,22 @@ function getProfileErrors({ username, email }) {
   return errors
 }
 
+function getAvatarValidationError(file) {
+  if (!file) {
+    return null
+  }
+
+  if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+    return 'Avatar must be a PNG, JPEG or WebP image'
+  }
+
+  if (file.size > MAX_AVATAR_BYTES) {
+    return 'Avatar must be 2 MB or smaller'
+  }
+
+  return null
+}
+
 function getUserFormValues(user) {
   return {
     username: user.username || '',
@@ -52,6 +70,7 @@ function Profile() {
   const { user, refreshUser, replaceUser } = useAuth()
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formValues, setFormValues] = useState({ username: '', email: '' })
   const [fieldErrors, setFieldErrors] = useState({})
@@ -66,11 +85,9 @@ function Profile() {
   const [friendsError, setFriendsError] = useState(null)
   const [selectedFriend, setSelectedFriend] = useState(null)
 
-  useEffect(() => {
-  return () => {
+  useEffect(() => () => {
     if (avatarPreview) {
       URL.revokeObjectURL(avatarPreview)
-    }
     }
   }, [avatarPreview])
 
@@ -137,22 +154,126 @@ function Profile() {
     }
   }, [])
 
+  function resetAvatarPreview() {
+    setAvatarPreview((currentPreview) => {
+      if (currentPreview) {
+        // Release the temporary object URL after upload, cancel, or validation failure.
+        URL.revokeObjectURL(currentPreview)
+      }
+
+      return null
+    })
+  }
+
   function openAvatarPicker() {
+    setProfileError(null)
+    setProfileMessage(null)
     avatarInputRef.current?.click()
   }
 
-  function handleAvatarChange(event) {
-  const file = event.target.files?.[0]
+  async function handleAvatarChange(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
 
-  if (!file || !file.type.startsWith('image/')) {
+    if (!file) {
       return
     }
 
-  if (avatarPreview) {
-    URL.revokeObjectURL(avatarPreview)
+    const avatarError = getAvatarValidationError(file)
+
+    if (avatarError) {
+      // Keep the saved backend avatar visible when the selected file is clearly invalid.
+      resetAvatarPreview()
+      setProfileError(avatarError)
+      setProfileMessage(null)
+      return
+    }
+
+    // Show a temporary local preview only while the backend upload is in progress.
+    resetAvatarPreview()
+    setAvatarPreview(URL.createObjectURL(file))
+    setIsAvatarUploading(true)
+    setProfileError(null)
+    setProfileMessage(null)
+
+    try {
+      const data = await uploadCurrentUserAvatar(file)
+      const updatedUser = data?.user || await refreshUser()
+
+      // Commit the avatar to shared auth state only after the backend accepts it.
+      replaceUser(updatedUser)
+      resetAvatarPreview()
+      setProfileMessage('Avatar updated')
+    } catch (error) {
+      resetAvatarPreview()
+      setProfileError(error.message || 'Avatar upload failed')
+    } finally {
+      setIsAvatarUploading(false)
+    }
   }
 
-  setAvatarPreview(URL.createObjectURL(file))
+  function handleEditProfile() {
+    setIsEditing(true)
+    setFieldErrors({})
+    setProfileError(null)
+    setProfileMessage(null)
+    setFormValues(getUserFormValues(user))
+  }
+
+  function handleCancelEdit() {
+    setIsEditing(false)
+    setFieldErrors({})
+    setProfileError(null)
+    setProfileMessage(null)
+    setFormValues(getUserFormValues(user))
+  }
+
+  function handleFieldChange(fieldName, value) {
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      [fieldName]: value,
+    }))
+    setFieldErrors((currentErrors) => ({
+      ...currentErrors,
+      [fieldName]: '',
+    }))
+    setProfileError(null)
+    setProfileMessage(null)
+  }
+
+  async function handleSaveProfile(event) {
+    event.preventDefault()
+
+    const nextErrors = getProfileErrors(formValues)
+    setFieldErrors(nextErrors)
+    setProfileError(null)
+    setProfileMessage(null)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
+    setIsSavingProfile(true)
+
+    try {
+      const data = await updateCurrentUser({
+        username: formValues.username.trim(),
+        email: formValues.email.trim(),
+      })
+      const updatedUser = data?.user || await refreshUser()
+
+      replaceUser(updatedUser)
+      setFormValues({
+        username: updatedUser.username || '',
+        email: updatedUser.email || '',
+      })
+      setIsEditing(false)
+      setProfileMessage('ready')
+    } catch (error) {
+      setProfileError(error.message || 'failed')
+    } finally {
+      setIsSavingProfile(false)
+    }
   }
 
   function handleOpenFriendProfile(friendship) {
@@ -171,6 +292,8 @@ function Profile() {
     return null
   }
 
+  const isProfileBusy = isSavingProfile || isAvatarUploading
+
   return (
     <AppLayout
       eyebrow="Personal account"
@@ -179,10 +302,10 @@ function Profile() {
       {({ handleLogout, isLoggingOut, logoutError }) => (
         <>
           <div className="cm-profile-grid">
-      <Panel aria-labelledby="profile-title">
+            <Panel aria-labelledby="profile-title">
         <PanelBody className="flex flex-col items-center gap-5 text-center">
                 <input
-          accept="image/*"
+                  accept={ALLOWED_AVATAR_TYPES.join(',')}
                   hidden
                   onChange={handleAvatarChange}
                   ref={avatarInputRef}
@@ -192,10 +315,9 @@ function Profile() {
 
                 <div className="flex flex-col items-center gap-2">
                   <Avatar
-            avatar={avatarPreview}
+                    avatar={avatarPreview || user.avatar}
                     name={user.username}
                     className="avatar avatar-xl avatar-ring"
-            aria-hidden="true"
                   />
 
                   {avatarPreview && (
@@ -204,12 +326,13 @@ function Profile() {
 
                   <Button
                     className="profile-avatar-action"
+                    disabled={isProfileBusy}
                     icon="camera"
                     onClick={openAvatarPicker}
                     type="button"
                     variant="link"
                   >
-            Change avatar
+                    {isAvatarUploading ? 'Uploading...' : 'Change avatar'}
                   </Button>
                 </div>
 
