@@ -455,7 +455,6 @@ function Profile() {
                       onClick={handleEditProfile}
                       size="sm"
                       type="button"
-                      variant="ghost"
                     >
                       Edit profile
                     </Button>
