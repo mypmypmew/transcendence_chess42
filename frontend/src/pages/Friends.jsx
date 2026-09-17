@@ -22,9 +22,12 @@ import {
   sendFriendRequest,
 } from '../api/friendshipApi.js'
 import { searchUsers } from '../api/userApi.js'
+import { useAuth } from '../context/AuthContext.jsx'
+import { getOpenConversationError, useOpenConversation } from '../hooks/useOpenConversation.js'
 import { toModalPlayer } from '../utils/userProfile.js'
 
 export default function Friends() {
+  const { user } = useAuth()
   const [friends, setFriends] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [pageError, setPageError] = useState(null)
@@ -39,6 +42,12 @@ export default function Friends() {
   const [sendingRequestIds, setSendingRequestIds] = useState([])
   const [processingRequestIds, setProcessingRequestIds] = useState([])
   const [removingFriendIds, setRemovingFriendIds] = useState([])
+  const {
+    clearOpenConversationError,
+    openConversationError,
+    openingRecipientId,
+    startConversation,
+  } = useOpenConversation()
 
   const friendUserIds = useMemo(
     () => friends.map((friendship) => friendship.user.id),
@@ -202,8 +211,22 @@ export default function Friends() {
       setRemovingFriendIds((current) => current.filter((id) => id !== friendUserId))
     }
   }
+
+  const handleOpenMessage = async (recipient) => {
+    setPageError(null)
+
+    try {
+      await startConversation(recipient, {
+        onSuccess: () => setSelectedFriend(null),
+      })
+    } catch {
+      // The hook stores a user-facing error; keep the current screen available for retry.
+    }
+  }
   
   const handleAddFriend = () => {
+    clearOpenConversationError()
+
     if (isSearchOpen) {
       setSearchTerm('')
       setSearchResults([])
@@ -291,15 +314,20 @@ export default function Friends() {
 
   return (
     <AppLayout 
-      eyebrow="Friends" 
+      eyebrow="Community" 
       title="Friends"
       showLegalFooter={false}
     >
-      <div className="cm-page-grid two">
+      <div className="cm-page-grid two cm-friends-grid">
         <div className="flex flex-col gap-5">
           {pageError && (
             <Alert>
               {pageError}
+            </Alert>
+          )}
+          {openConversationError && (
+            <Alert>
+              {openConversationError}
             </Alert>
           )}
 
@@ -469,6 +497,8 @@ export default function Friends() {
               <div className="cm-list">
                 {friends.map((friendship) => {
                   const isRemoving = removingFriendIds.includes(friendship.user.id)
+                  const messageError = getOpenConversationError(friendship.user, user)
+                  const isOpeningMessage = openingRecipientId === friendship.user.id
 
                   return (
                     <UserListRow
@@ -477,9 +507,11 @@ export default function Friends() {
                           <Button
                             size="sm"
                             type="button"
+                            disabled={Boolean(messageError) || openingRecipientId !== null}
                             variant="ghost"
+                            onClick={() => handleOpenMessage(friendship.user)}
                           >
-                            Message
+                            {isOpeningMessage ? 'Opening...' : 'Message'}
                           </Button>
                           <Button
                             size="sm"
@@ -514,6 +546,7 @@ export default function Friends() {
       <UserProfileModal
         player={selectedFriend}
         onAddFriend={(player) => handleSendFriendRequest(player, { throwOnError: true })}
+        onMessage={handleOpenMessage}
         onRemoveFriend={(player) => handleRemoveFriend(player.id)}
         onClose={() => setSelectedFriend(null)}
       />

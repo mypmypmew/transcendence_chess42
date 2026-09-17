@@ -22,6 +22,7 @@ import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
 import { updateCurrentUser, uploadCurrentUserAvatar } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useOpenConversation } from '../hooks/useOpenConversation.js'
 import { toModalPlayer } from '../utils/userProfile.js'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -68,6 +69,7 @@ function getUserFormValues(user) {
 
 function Profile() {
   const { user, refreshUser, replaceUser } = useAuth()
+  const { startConversation } = useOpenConversation()
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [isAvatarUploading, setIsAvatarUploading] = useState(false)
@@ -302,6 +304,12 @@ function Profile() {
     setSelectedFriend(null)
   }
 
+  async function handleOpenMessage(player) {
+    await startConversation(player, {
+      onSuccess: () => setSelectedFriend(null),
+    })
+  }
+
   if (!user) {
     return null
   }
@@ -520,6 +528,7 @@ function Profile() {
           {selectedFriend && (
             <UserProfileModal
               player={selectedFriend}
+              onMessage={handleOpenMessage}
               onRemoveFriend={handleRemoveFriend}
               onClose={() => setSelectedFriend(null)}
             />
