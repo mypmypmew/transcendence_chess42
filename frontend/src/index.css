@@ -74,14 +74,14 @@
   --font-mono:    ui-monospace, Consolas, monospace;
 
   /* Font sizes */
-  --text-xs:   11px;
-  --text-sm:   12px;
-  --text-base: 13px;
-  --text-md:   14px;
-  --text-lg:   16px;
-  --text-xl:   18px;
-  --text-2xl:  22px;
-  --text-3xl:  26px;
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 15px;
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  26px;
+  --text-3xl:  32px;
 
   /* Font weights */
   --weight-regular:  400;
