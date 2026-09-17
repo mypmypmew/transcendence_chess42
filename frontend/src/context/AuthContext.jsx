@@ -78,6 +78,18 @@ function AuthProvider({ children }) {
     setAuthError(null)
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    const data = await getCurrentUser()
+    setUser(data.user)
+    setAuthError(null)
+    return data.user
+  }, [])
+
+  const replaceUser = useCallback((nextUser) => {
+    setUser(nextUser)
+    setAuthError(null)
+  }, [])
+
   const value = useMemo(() => ({
     user,
     isAuthLoading,
@@ -86,7 +98,9 @@ function AuthProvider({ children }) {
     register,
     login,
     logout,
-  }), [user, isAuthLoading, authError, register, login, logout])
+    refreshUser,
+    replaceUser,
+  }), [user, isAuthLoading, authError, register, login, logout, refreshUser, replaceUser])
 
   return (
     <AuthContext.Provider value={value}>
