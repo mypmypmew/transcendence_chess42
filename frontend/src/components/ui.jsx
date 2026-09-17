@@ -3,9 +3,9 @@
 const designTokens = {
   colors: {
     dark: {
-      background: '#0f172a',
-      surface: '#142336',
-      elevated: '#0b1624',
+      background: '#07111d',
+      surface: '#0a1420',
+      elevated: '#050d17',
       accent: '#d4a037',
       accentHover: '#ffbd59',
       textPrimary: '#f7f9ff',

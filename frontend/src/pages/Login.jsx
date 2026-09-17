@@ -14,7 +14,6 @@ import {
 import { useAuth } from '../context/AuthContext.jsx'
 
 import './Auth.css'
-import './App.css'
 
 
 function Login() {

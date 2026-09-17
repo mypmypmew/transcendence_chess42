@@ -6,13 +6,12 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import GameLobby from './pages/GameLobby'
 import Game from './pages/Game'
-import Analysis from './pages/Analysis'
 import Profile from './pages/Profile'
 import Friends from './pages/Friends'
 import Chat from './pages/Chat'
-import Settings from './pages/Settings'
 import PrivacyPolicy from './pages/legal/PrivacyPolicy'
 import TermsOfService from './pages/legal/TermsOfService'
+import './pages/App.css'
 
 function AuthLoadingScreen() {
   return (
@@ -76,12 +75,9 @@ function App() {
         <Route path="/game" element={<ProtectedRoute><Navigate to="/game-lobby" replace /></ProtectedRoute>} />
         {/* Keep the server-generated game ID in the URL so reconnect can restore the correct game. */}
         <Route path="/game/:gameId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
-        <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
         <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
