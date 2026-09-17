@@ -3,7 +3,6 @@ const sessionService = require('../services/sessionService');
 const authService = require('../services/authService');
 
 const router = express.Router();
-const requireAuth = require('../middlewares/requireAuth');
 
 router.post('/register', async (req, res, next) => {
   try {
@@ -39,8 +38,16 @@ router.post('/logout', async (req, res, next) => {
   }
 });
 
-router.get('/me', requireAuth, (req, res) => {
-  res.status(200).json({ user: req.user });
+router.get('/me', async (req, res, next) => {
+  try {
+    const session = await sessionService.getSession(req);
+
+    res.status(200).json({
+      user: session?.user ?? null,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
