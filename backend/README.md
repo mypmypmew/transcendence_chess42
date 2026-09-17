@@ -195,7 +195,8 @@ short-lived script finishes or when the server shuts down.
 
 - `email` and `username` are unique.
 - `passwordHash` stores a password hash, never a plaintext password.
-- New users receive a default rating of `1200`.
+- New users start with `0` points.
+- A win awards `100` points; a draw awards `30` points to each player.
 - `createdAt` and `updatedAt` are maintained automatically.
 
 The repository does not hash passwords. Authentication code must hash and
