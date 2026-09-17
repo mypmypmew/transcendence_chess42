@@ -151,9 +151,6 @@ function UserProfileModal({
             <Button as={Link} to="/chat" onClick={onClose}>
               Message
             </Button>
-            <Button as={Link} to="/game-lobby" variant="ghost" onClick={onClose}>
-              Challenge
-            </Button>
             <Button
               type="button"
               disabled={isFriendActionDisabled}

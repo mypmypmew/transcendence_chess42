@@ -585,6 +585,27 @@ button.cm-list-row:hover,
 
 /* T: Keep the content-level friend action hidden on desktop. */
 @media (max-width: 1120px) {
+  .cm-header {
+    grid-template-areas:
+      "brand actions"
+      "copy copy";
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .cm-brand {
+    grid-area: brand;
+  }
+
+  .cm-header-copy {
+    grid-area: copy;
+  }
+
+  .cm-header-actions {
+    grid-area: actions;
+  }
+
   .cm-main-grid,
   .cm-page-grid.two,
   .cm-page-grid.three,
@@ -606,9 +627,6 @@ button.cm-list-row:hover,
     justify-content: center;
   }
 
-  .cm-nav-link span {
-    display: none;
-  }
 }
 
 @media (max-width: 700px) {
@@ -636,10 +654,6 @@ button.cm-list-row:hover,
 
   .cm-nav-link i {
     font-size: 18px;
-  }
-
-  .cm-header {
-    grid-template-columns: 1fr;
   }
 
   .cm-header-actions {

@@ -386,6 +386,45 @@ html[data-theme='light'] .surface {
 .btn-sm    { font-size: var(--text-sm); padding: 6px var(--space-3); }
 .btn-icon  { padding: 7px; width: 36px; height: 36px; }
 
+.theme-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 34px);
+  align-items: center;
+  padding: 3px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.theme-toggle-option {
+  width: 34px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.theme-toggle-option:hover,
+.theme-toggle-option:focus-visible {
+  color: var(--accent-hover);
+}
+
+.theme-toggle-option.active {
+  background: var(--accent-muted);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
 /* ----------------------------------------------------------------
    Inputs
    ---------------------------------------------------------------- */
