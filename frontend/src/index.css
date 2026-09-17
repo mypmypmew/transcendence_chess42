@@ -355,12 +355,12 @@ html[data-theme='light'] .surface {
   background: var(--accent-muted);
 }
 
-.btn-danger,
-.alert-error {
+.btn-danger {
   background: var(--color-danger-bg);
   color: var(--color-danger);
   border: 0.5px solid var(--color-danger-border);
 }
+
 .btn-danger:hover:not(:disabled),
 .btn-danger:focus-visible:not(:disabled) {
   background: rgba(255, 123, 123, 0.2);
@@ -533,7 +533,21 @@ html[data-theme='light'] .input.valid {
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
+
 .alert.visible { display: flex; }
+
+.alert-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 0.5px solid var(--color-danger-border);
+}
+
+.alert-success {
+  background: var(--color-win-bg);
+  color: var(--color-win);
+  border: 0.5px solid var(--color-win);
+}
+
 /* ----------------------------------------------------------------
    Password policy checklist
    ---------------------------------------------------------------- */

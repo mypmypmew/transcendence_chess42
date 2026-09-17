@@ -299,7 +299,7 @@ function Chat() {
   return (
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
       <div className="cm-page-grid chat">
-        <Panel aria-labelledby="chat-list-title">
+        <Panel aria-labelledby="chat-list-title" className="cm-scroll-panel">
           <PanelHeader title="Conversations" titleId="chat-list-title">
             <Input
               className="flex-1"
@@ -321,7 +321,7 @@ function Chat() {
                 {!isSearchLoading && !searchError && searchResults.map((result) => (
                   <UserListRow
                     key={result.id}
-                    avatar={null}
+                    avatar={result.avatar}
                     meta={`Rating ${result.rating}`}
                     name={result.username}
                     onClick={() => handleSelectUser(result)}
@@ -355,7 +355,7 @@ function Chat() {
                   <UserListRow
                     className={activeConversationId === conversation.id ? 'active' : ''}
                     key={conversation.id}
-                    avatar={null}
+                    avatar={conversation.user.avatar}
                     meta={`Rating ${conversation.user.rating}`}
                     name={conversation.user.username}
                     onClick={() => setActiveConversationId(conversation.id)}
@@ -381,7 +381,7 @@ function Chat() {
                 action={<IconButton aria-label="Close conversation" icon="x" onClick={handleCloseConversation} />}
               >
                 <div className="flex items-center gap-3">
-                  <Avatar avatar={null} name={activeConversation.user.username} className="avatar avatar-md" />
+                  <Avatar avatar={activeConversation.user.avatar} name={activeConversation.user.username} className="avatar avatar-md" />
                   <div>
                     <h2 className="cm-section-title" id="chat-active-title">{activeConversation.user.username}</h2>
                     <p className="cm-muted">Rating {activeConversation.user.rating}</p>
