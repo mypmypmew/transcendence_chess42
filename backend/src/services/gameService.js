@@ -157,10 +157,15 @@ class GameService {
       throw new TypeError('Invalid promotion piece');
     }
 
+    // Copy the full history so repetition detection remains available.
+    const chess = new Chess();
+    chess.loadPgn(game.chess.pgn());
+    const updatedGame = { ...game, chess };
+
     let move;
 
     try {
-      move = game.chess.move({
+      move = updatedGame.chess.move({
         from,
         to,
         promotion,
@@ -173,21 +178,33 @@ class GameService {
       throw new Error('Illegal move');
     }
 
-    this._updateGameResult(game);
+    this._updateGameResult(updatedGame);
 
     // Persist only when the accepted move completes the game.
     // Normal in-progress moves remain in memory and do not write to the database.
-    if (game.status === 'COMPLETED') {
-      await this.gameRepository.finishGame(game.gameId, {
-        result: game.result,
-        pgn: game.chess.pgn(),
-      });
+    if (updatedGame.status === 'COMPLETED') {
+      this.pendingCompletions.add(gameId);
+
+      try {
+        await this.gameRepository.finishGame(gameId, {
+          result: updatedGame.result,
+          pgn: updatedGame.chess.pgn(),
+        });
+
+        // Publish the final position only after persistence succeeds.
+        this.games.set(gameId, updatedGame);
+        return this.toSnapshot(updatedGame);
+      } finally {
+        this.pendingCompletions.delete(gameId);
+      }
     }
 
-    return this.toSnapshot(game);
+    // Ordinary moves remain in memory without a database write.
+    this.games.set(gameId, updatedGame);
+    return this.toSnapshot(updatedGame);
   }
 
-      _updateGameResult(game) {
+  _updateGameResult(game) {
     if (game.chess.isCheckmate()) {
       game.status = 'COMPLETED';
 
