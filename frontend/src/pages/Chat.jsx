@@ -311,17 +311,23 @@ function Chat() {
   return (
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
       <div className="cm-page-grid chat">
-        <Panel aria-labelledby="chat-list-title" className="cm-chat-list-panel cm-scroll-panel">
-          <PanelHeader title="Conversations" titleId="chat-list-title">
-            <Input
-              className="flex-1"
-              type="text"
-              value={searchTerm}
-              placeholder="Search users..."
-              aria-label="Search users to message"
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
-          </PanelHeader>
+        <Panel aria-labelledby="chat-list-title" className="cm-chat-search-panel">
+          <PanelHeader
+            title="Players"
+            titleId="chat-list-title"
+            action={(
+              <Input
+                className="flex-1 min-w-0"
+                type="text"
+                value={searchTerm}
+                placeholder="Search users..."
+                aria-label="Search users to message"
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            )}
+          />
+        </Panel>
+        <Panel className="cm-chat-list-panel cm-scroll-panel">
           <PanelBody>
             {isSearching && (
               <div className="cm-list">

@@ -224,6 +224,7 @@
 
 .cm-page-grid.chat {
   grid-template-columns: minmax(220px, 1fr) minmax(0, 4fr);
+  grid-template-rows: auto minmax(0, 1fr);
   height: min(620px, calc(100svh - 170px));
   overflow: hidden;
 }
@@ -611,6 +612,10 @@ button.cm-list-row:hover,
   min-height: 0;
 }
 
+.cm-chat-search-panel {
+  grid-column: 1 / -1;
+}
+
 .cm-chat-messages {
   overflow: auto;
 }
@@ -747,6 +752,7 @@ button.cm-list-row:hover,
 
   .cm-page-grid.chat {
     grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     height: calc(100svh - 132px);
     gap: var(--space-3);
     overflow: hidden;
@@ -758,8 +764,10 @@ button.cm-list-row:hover,
     min-height: 0;
   }
 
-  .cm-chat-list-panel .cm-panel-header {
-    display: none;
+  .cm-chat-search-panel .cm-panel-header {
+    min-height: 56px;
+    padding: var(--space-2);
+    gap: var(--space-2);
   }
 
   .cm-chat-list-panel .cm-panel-body {
