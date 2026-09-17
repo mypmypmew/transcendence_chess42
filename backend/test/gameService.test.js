@@ -786,3 +786,82 @@ for (const scenario of [
     assert.equal(service.getActiveGame(2), null);
   });
 }
+
+test('blocks actions while the final move is being saved', async () => {
+  let resolveCompletion;
+  let finishCalls = 0;
+
+  const service = new GameService({
+    gameRepository: {
+      async createGame() {
+        return { id: 42 };
+      },
+      async finishGame() {
+        finishCalls += 1;
+        return new Promise((resolve) => {
+          resolveCompletion = resolve;
+        });
+      },
+    },
+  });
+
+  const game = await service.createGame({ whiteId: 1, blackId: 2 });
+
+  for (const [playerId, from, to] of [
+    [1, 'f2', 'f3'],
+    [2, 'e7', 'e5'],
+    [1, 'g2', 'g4'],
+  ]) {
+    await service.makeMove({
+        gameId: game.gameId,
+        playerId,
+        from,
+        to,
+    });
+  }
+
+  const before = service.getGame(game.gameId);
+  const finalMove = {
+    gameId: game.gameId,
+    playerId: 2,
+    from: 'd8',
+    to: 'h4',
+  };
+  const pending = service.makeMove(finalMove);
+
+  try {
+    assert.deepEqual(service.getGame(game.gameId), before);
+
+    await assert.rejects(
+      () => service.makeMove(finalMove),
+      /Game completion is being saved/,
+    );
+
+    for (const playerId of [1, 2]) {
+      assert.deepEqual(service.getActiveGame(playerId), before);
+
+      await assert.rejects(
+        () => service.resignGame({ gameId: game.gameId, playerId }),
+        /Game completion is being saved/,
+      );
+
+      await assert.rejects(
+        () => service.createGame({ whiteId: playerId, blackId: 3 }),
+        /Player already has an active or pending game/,
+      );
+    }
+
+    assert.equal(finishCalls, 1);
+  } finally {
+    resolveCompletion();
+    await pending;
+  }
+
+  const finished = service.getGame(game.gameId);
+
+  assert.equal(finished.status, 'COMPLETED');
+  assert.equal(finished.result, 'BLACK_WIN');
+  assert.equal(finished.winnerId, 2);
+  assert.equal(service.isPlayerBusy(1), false);
+  assert.equal(service.isPlayerBusy(2), false);
+});
