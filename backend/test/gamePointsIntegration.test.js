@@ -130,4 +130,56 @@ test('persists game points once for wins and draws', async (t) => {
 
 		assert.deepEqual(await readPoints(), scenario.expectedPoints);
 	}
+
+	await t.test('rolls back completion and both ratings on update failure', async () => {
+		const game = await repository.createGame({
+			whiteId: 1,
+			blackId: 2,
+		});
+		const playersBefore = await prisma.user.findMany({
+			orderBy: { id: 'asc' },
+		});
+
+		// Inject a database failure only in this temporary test database.
+		await prisma.$executeRaw`
+			CREATE TRIGGER fail_black_points
+			BEFORE UPDATE OF rating ON "User"
+			WHEN OLD.id = 2
+			BEGIN
+				SELECT RAISE(ABORT, 'TEST_POINTS_UPDATE_FAILED');
+			END
+		`;
+
+		try {
+			await assert.rejects(
+				() => repository.finishGame(game.id, {
+					result: 'DRAW',
+					pgn: '1/2-1/2',
+				}),
+			);
+
+			assert.deepEqual(
+				await prisma.game.findUnique({ where: { id: game.id } }),
+				game,
+			);
+			assert.deepEqual(
+				await prisma.user.findMany({ orderBy: { id: 'asc' } }),
+				playersBefore,
+			);
+		} finally {
+			await prisma.$executeRaw`DROP TRIGGER fail_black_points`;
+		}
+
+		// Once the failure is removed, the same game can finish successfully.
+		const finished = await repository.finishGame(game.id, {
+			result: 'DRAW',
+			pgn: '1/2-1/2',
+		});
+
+		assert.equal(finished.status, 'COMPLETED');
+		assert.deepEqual(
+			await readPoints(),
+			playersBefore.map((player) => player.rating + 30),
+		);
+	});
 });
