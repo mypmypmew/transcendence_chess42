@@ -303,7 +303,7 @@ export default function Friends() {
             </Alert>
           )}
 
-          <Panel className="flex flex-col flex-1">
+          <Panel className="cm-scroll-panel flex flex-col flex-1">
             <PanelHeader
               action={
                 <Button type="button" onClick={handleAddFriend} aria-expanded={isSearchOpen}>
@@ -458,7 +458,7 @@ export default function Friends() {
           </Panel>
         </div>
 
-        <Panel className="flex flex-col">
+        <Panel className="cm-scroll-panel flex flex-col">
           <PanelHeader eyebrow="Friends List" title="Friends" />
           <PanelBody>
             {isLoading ? (

@@ -3,6 +3,7 @@
   --cm-chessboard-card-size: calc(var(--cm-chessboard-size) + (var(--space-4) * 2));
 }
 
+/* App shell and page frame */
 .cm-shell {
   height: 100svh;
   padding: var(--space-5);
@@ -38,6 +39,7 @@
   min-height: 0;
 }
 
+/* Header and navigation */
 .cm-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -162,6 +164,7 @@
   scrollbar-color: rgba(5, 13, 23, 0.95) rgba(5, 13, 23, 0.34);
 }
 
+/* Shared scrollbars */
 .cm-content::-webkit-scrollbar,
 .cm-sidebar::-webkit-scrollbar {
   width: 10px;
@@ -178,6 +181,7 @@
   border-color: rgba(5, 13, 23, 0.34);
 }
 
+/* Footer */
 .cm-footer {
   display: flex;
   flex-wrap: wrap;
@@ -199,6 +203,7 @@
   color: var(--accent-hover);
 }
 
+/* Page grids */
 .cm-page-grid {
   display: grid;
   gap: var(--space-5);
@@ -218,6 +223,7 @@
   height: 100%;
 }
 
+/* Shared panels */
 .cm-panel {
   background: var(--bg-elevated);
   overflow: hidden;
@@ -248,6 +254,7 @@
   color: var(--text-muted);
 }
 
+/* Dashboard */
 .cm-hero-card {
   min-height: 290px;
   display: flex;
@@ -297,6 +304,7 @@
   font-size: clamp(34px, 4vw, 54px);
 }
 
+/* Action cards */
 .cm-action-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -346,6 +354,7 @@ button.cm-action-card {
   color: var(--text-on-dark);
 }
 
+/* Lists and avatars */
 .cm-list {
   display: grid;
   gap: var(--space-3);
@@ -399,6 +408,7 @@ button.cm-list-row:hover,
   object-fit: cover;
 }
 
+/* Game board */
 .cm-board-layout {
   display: grid;
   grid-template-columns: minmax(180px, 220px) var(--cm-chessboard-card-size) minmax(240px, 1fr);
@@ -444,6 +454,7 @@ button.cm-list-row:hover,
   cursor: default !important;
 }
 
+/* Tables */
 .cm-table {
   width: 100%;
   border-collapse: collapse;
@@ -469,6 +480,7 @@ button.cm-list-row:hover,
   outline: 1px solid var(--accent-border);
 }
 
+/* Tabs */
 .cm-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -490,10 +502,13 @@ button.cm-list-row:hover,
   border-color: var(--accent-border);
 }
 
+/* Profile */
 .cm-profile-grid {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr);
   gap: var(--space-5);
+  align-items: start;
+  min-height: 0;
 }
 
 .cm-stat-grid {
@@ -547,10 +562,24 @@ button.cm-list-row:hover,
   border: 0;
 }
 
-.profile-email {
-  font-size: var(--text-xs);
+/* Scrollable panels */
+.cm-scroll-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: min(620px, calc(100svh - 170px));
 }
 
+.cm-scroll-panel .cm-panel-body {
+  overflow: auto;
+}
+
+@media (max-width: 700px) {
+  .cm-scroll-panel {
+    max-height: min(520px, 72svh);
+  }
+}
+
+/* Chat */
 .cm-chat-shell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -583,7 +612,7 @@ button.cm-list-row:hover,
   color: var(--text-on-dark);
 }
 
-/* T: Keep the content-level friend action hidden on desktop. */
+/* Tablet layout */
 @media (max-width: 1120px) {
   .cm-header {
     grid-template-areas:
@@ -629,6 +658,7 @@ button.cm-list-row:hover,
 
 }
 
+/* Mobile layout */
 @media (max-width: 700px) {
   :root {
     --cm-chessboard-size: calc(100vw - (var(--space-4) * 4));
@@ -675,6 +705,7 @@ button.cm-list-row:hover,
   }
 }
 
+/* Light theme overrides */
 html[data-theme='light'] .cm-panel,
 html[data-theme='light'] .cm-sidebar {
   background: rgba(255, 250, 240, 0.78);
