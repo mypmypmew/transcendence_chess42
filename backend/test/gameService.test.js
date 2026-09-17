@@ -587,3 +587,281 @@ test('releases both players when game creation fails', async () => {
   assert.equal(secondGame.blackId, 2);
   assert.equal(createCalls, 3);
 });
+
+test('keeps the game active after failed resignation and allows retry', async () => {
+  const databaseError = new Error('Completion failed');
+  let finishCalls = 0;
+
+  const service = new GameService({
+    gameRepository: {
+      async createGame() {
+        return { id: 42 };
+      },
+      async finishGame() {
+        finishCalls += 1;
+        if (finishCalls === 1) {
+          throw databaseError;
+        }
+      },
+    },
+  });
+
+  const game = await service.createGame({ whiteId: 1, blackId: 2 });
+
+  await service.makeMove({
+    gameId: game.gameId,
+    playerId: 1,
+    from: 'e2',
+    to: 'e4',
+  });
+
+  const before = service.getGame(game.gameId);
+
+  await assert.rejects(
+    () => service.resignGame({ gameId: game.gameId, playerId: 2 }),
+    (error) => error === databaseError,
+  );
+
+  assert.deepEqual(service.getGame(game.gameId), before);
+  assert.deepEqual(service.getActiveGame(1), before);
+  assert.deepEqual(service.getActiveGame(2), before);
+
+  const finished = await service.resignGame({
+    gameId: game.gameId,
+    playerId: 2,
+  });
+
+  assert.equal(finishCalls, 2);
+  assert.equal(finished.status, 'COMPLETED');
+  assert.equal(finished.result, 'WHITE_WIN');
+  assert.equal(finished.fen, before.fen);
+  assert.match(finished.pgn, /1\. e4/);
+  assert.equal(service.getActiveGame(1), null);
+  assert.equal(service.getActiveGame(2), null);
+});
+
+test('blocks moves and repeated resignation while completion is pending', async () => {
+  let resolveCompletion;
+  let finishCalls = 0;
+
+  const service = new GameService({
+    gameRepository: {
+      async createGame() {
+        return { id: 42 };
+      },
+      async finishGame() {
+        finishCalls += 1;
+        return new Promise((resolve) => {
+          resolveCompletion = resolve;
+        });
+      },
+    },
+  });
+
+  const game = await service.createGame({ whiteId: 1, blackId: 2 });
+  const pending = service.resignGame({
+    gameId: game.gameId,
+    playerId: 2,
+  });
+
+  try {
+    assert.deepEqual(service.getGame(game.gameId), game);
+    assert.equal(service.isPlayerBusy(1), true);
+    assert.equal(service.isPlayerBusy(2), true);
+
+    await assert.rejects(
+      () => service.makeMove({
+        gameId: game.gameId,
+        playerId: 1,
+        from: 'e2',
+        to: 'e4',
+      }),
+      /Game completion is being saved/,
+    );
+
+    for (const playerId of [1, 2]) {
+      await assert.rejects(
+        () => service.resignGame({ gameId: game.gameId, playerId }),
+        /Game completion is being saved/,
+      );
+    }
+
+    assert.equal(finishCalls, 1);
+    assert.deepEqual(service.getGame(game.gameId), game);
+  } finally {
+    resolveCompletion();
+    await pending;
+  }
+
+  assert.equal(service.getGame(game.gameId).status, 'COMPLETED');
+  assert.equal(service.isPlayerBusy(1), false);
+  assert.equal(service.isPlayerBusy(2), false);
+});
+
+for (const scenario of [
+  {
+    name: 'checkmate',
+    moves: [
+      [1, 'f2', 'f3'],
+      [2, 'e7', 'e5'],
+      [1, 'g2', 'g4'],
+    ],
+    finalMove: [2, 'd8', 'h4'],
+    result: 'BLACK_WIN',
+    winnerId: 2,
+  },
+  {
+    name: 'threefold repetition',
+    moves: [
+      [1, 'g1', 'f3'],
+      [2, 'g8', 'f6'],
+      [1, 'f3', 'g1'],
+      [2, 'f6', 'g8'],
+      [1, 'g1', 'f3'],
+      [2, 'g8', 'f6'],
+      [1, 'f3', 'g1'],
+    ],
+    finalMove: [2, 'f6', 'g8'],
+    result: 'DRAW',
+    winnerId: null,
+  },
+]) {
+  test(`preserves the position after failed ${scenario.name} persistence`, async () => {
+    const databaseError = new Error('Completion failed');
+    const completionCalls = [];
+
+    const service = new GameService({
+      gameRepository: {
+        async createGame() {
+          return { id: 42 };
+        },
+        async finishGame(gameId, completion) {
+          completionCalls.push({ gameId, ...completion });
+
+          if (completionCalls.length === 1) {
+            throw databaseError;
+          }
+        },
+      },
+    });
+
+    const game = await service.createGame({ whiteId: 1, blackId: 2 });
+
+    for (const [playerId, from, to] of scenario.moves) {
+      await service.makeMove({
+        gameId: game.gameId,
+        playerId,
+        from,
+        to,
+      });
+    }
+
+    assert.equal(completionCalls.length, 0);
+
+    const before = service.getGame(game.gameId);
+    const [playerId, from, to] = scenario.finalMove;
+    const finalMove = { gameId: game.gameId, playerId, from, to };
+
+    await assert.rejects(
+      () => service.makeMove(finalMove),
+      (error) => error === databaseError,
+    );
+
+    assert.deepEqual(service.getGame(game.gameId), before);
+    assert.deepEqual(service.getActiveGame(1), before);
+    assert.deepEqual(service.getActiveGame(2), before);
+    assert.equal(service.isPlayerBusy(1), true);
+    assert.equal(service.isPlayerBusy(2), true);
+
+    const finished = await service.makeMove(finalMove);
+
+    assert.equal(finished.status, 'COMPLETED');
+    assert.equal(finished.result, scenario.result);
+    assert.equal(finished.winnerId, scenario.winnerId);
+    assert.equal(completionCalls.length, 2);
+    assert.deepEqual(completionCalls[0], completionCalls[1]);
+    assert.equal(completionCalls[0].pgn, finished.pgn);
+    assert.deepEqual(service.getGame(game.gameId), finished);
+    assert.equal(service.getActiveGame(1), null);
+    assert.equal(service.getActiveGame(2), null);
+  });
+}
+
+test('blocks actions while the final move is being saved', async () => {
+  let resolveCompletion;
+  let finishCalls = 0;
+
+  const service = new GameService({
+    gameRepository: {
+      async createGame() {
+        return { id: 42 };
+      },
+      async finishGame() {
+        finishCalls += 1;
+        return new Promise((resolve) => {
+          resolveCompletion = resolve;
+        });
+      },
+    },
+  });
+
+  const game = await service.createGame({ whiteId: 1, blackId: 2 });
+
+  for (const [playerId, from, to] of [
+    [1, 'f2', 'f3'],
+    [2, 'e7', 'e5'],
+    [1, 'g2', 'g4'],
+  ]) {
+    await service.makeMove({
+        gameId: game.gameId,
+        playerId,
+        from,
+        to,
+    });
+  }
+
+  const before = service.getGame(game.gameId);
+  const finalMove = {
+    gameId: game.gameId,
+    playerId: 2,
+    from: 'd8',
+    to: 'h4',
+  };
+  const pending = service.makeMove(finalMove);
+
+  try {
+    assert.deepEqual(service.getGame(game.gameId), before);
+
+    await assert.rejects(
+      () => service.makeMove(finalMove),
+      /Game completion is being saved/,
+    );
+
+    for (const playerId of [1, 2]) {
+      assert.deepEqual(service.getActiveGame(playerId), before);
+
+      await assert.rejects(
+        () => service.resignGame({ gameId: game.gameId, playerId }),
+        /Game completion is being saved/,
+      );
+
+      await assert.rejects(
+        () => service.createGame({ whiteId: playerId, blackId: 3 }),
+        /Player already has an active or pending game/,
+      );
+    }
+
+    assert.equal(finishCalls, 1);
+  } finally {
+    resolveCompletion();
+    await pending;
+  }
+
+  const finished = service.getGame(game.gameId);
+
+  assert.equal(finished.status, 'COMPLETED');
+  assert.equal(finished.result, 'BLACK_WIN');
+  assert.equal(finished.winnerId, 2);
+  assert.equal(service.isPlayerBusy(1), false);
+  assert.equal(service.isPlayerBusy(2), false);
+});

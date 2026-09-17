@@ -4,6 +4,7 @@ const {
 } = require('@prisma/client');
 
 const prisma = require('../db/prisma');
+const { getGamePoints } = require('../services/gamePoints');
 
 function validatePositiveInteger(value, fieldName) {
   if (!Number.isInteger(value) || value <= 0) {
@@ -67,42 +68,72 @@ async function createGame({ whiteId, blackId }) {
 
 async function finishGame(gameId, { result, pgn = null }) {
   validatePositiveInteger(gameId, 'gameId');
+  const points = getGamePoints(result);
 
-  if (!Object.values(GameResult).includes(result)) {
-    throw new TypeError('Invalid game result');
-  }
+  return prisma.$transaction(async (tx) => {
+    const game = await tx.game.findUnique({
+      where: { id: gameId },
+    });
 
-  const game = await prisma.game.findUnique({
-    where: { id: gameId },
-  });
+    if (!game) {
+      throw new Error('Game not found');
+    }
 
-  if (!game) {
-    throw new Error('Game not found');
-  }
+    // A retry with the same result must not award points again.
+    if (game.status === GameStatus.COMPLETED) {
+      if (game.result !== result) {
+        throw new Error('Game already completed with a different result');
+      }
 
-  if (game.status !== GameStatus.IN_PROGRESS) {
-    throw new Error('Only an in-progress game can be finished');
-  }
+      return game;
+    }
 
-  let winnerId = null;
+    if (game.status !== GameStatus.IN_PROGRESS) {
+      throw new Error('Only an in-progress game can be finished');
+    }
 
-  if (result === GameResult.WHITE_WIN) {
-    winnerId = game.whiteId;
-  }
+    const winnerId = result === GameResult.WHITE_WIN
+      ? game.whiteId
+      : result === GameResult.BLACK_WIN
+        ? game.blackId
+        : null;
 
-  if (result === GameResult.BLACK_WIN) {
-    winnerId = game.blackId;
-  }
+    // Only the request that completes the game may award points.
+    const updated = await tx.game.updateMany({
+      where: {
+        id: gameId,
+        status: GameStatus.IN_PROGRESS,
+      },
+      data: {
+        status: GameStatus.COMPLETED,
+        result,
+        winnerId,
+        pgn,
+        endedAt: new Date(),
+      },
+    });
 
-  return prisma.game.update({
-    where: { id: gameId },
-    data: {
-      status: GameStatus.COMPLETED,
-      result,
-      winnerId,
-      pgn,
-      endedAt: new Date(),
-    },
+    if (updated.count !== 1) {
+      throw new Error('Game completion changed concurrently; retry');
+    }
+
+    if (points.white > 0) {
+      await tx.user.update({
+        where: { id: game.whiteId },
+        data: { rating: { increment: points.white }},
+      });
+    }
+
+    if (points.black > 0) {
+      await tx.user.update({
+        where: { id: game.blackId },
+        data: { rating: { increment: points.black }},
+      });
+    }
+
+    return tx.game.findUnique({
+      where: { id: gameId },
+    });
   });
 }
 

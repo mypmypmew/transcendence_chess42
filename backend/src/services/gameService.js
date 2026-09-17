@@ -9,6 +9,7 @@ class GameService {
     this.gameRepository = gameRepository;
     this.games = new Map();
     this.pendingPlayers = new Set();
+    this.pendingCompletions = new Set();
   }
 
   async createGame({ whiteId, blackId }) {
@@ -126,6 +127,10 @@ class GameService {
   async makeMove({ gameId, playerId, from, to, promotion = 'q' }) {
     const game = this._getGameOrThrow(gameId);
 
+    if (this.pendingCompletions.has(gameId)) {
+      throw new Error('Game completion is being saved; retry');
+    }
+
     if (game.status !== 'IN_PROGRESS') {
       throw new Error('Game is already completed');
     }
@@ -152,10 +157,15 @@ class GameService {
       throw new TypeError('Invalid promotion piece');
     }
 
+    // Copy the full history so repetition detection remains available.
+    const chess = new Chess();
+    chess.loadPgn(game.chess.pgn());
+    const updatedGame = { ...game, chess };
+
     let move;
 
     try {
-      move = game.chess.move({
+      move = updatedGame.chess.move({
         from,
         to,
         promotion,
@@ -168,21 +178,33 @@ class GameService {
       throw new Error('Illegal move');
     }
 
-    this._updateGameResult(game);
+    this._updateGameResult(updatedGame);
 
     // Persist only when the accepted move completes the game.
     // Normal in-progress moves remain in memory and do not write to the database.
-    if (game.status === 'COMPLETED') {
-      await this.gameRepository.finishGame(game.gameId, {
-        result: game.result,
-        pgn: game.chess.pgn(),
-      });
+    if (updatedGame.status === 'COMPLETED') {
+      this.pendingCompletions.add(gameId);
+
+      try {
+        await this.gameRepository.finishGame(gameId, {
+          result: updatedGame.result,
+          pgn: updatedGame.chess.pgn(),
+        });
+
+        // Publish the final position only after persistence succeeds.
+        this.games.set(gameId, updatedGame);
+        return this.toSnapshot(updatedGame);
+      } finally {
+        this.pendingCompletions.delete(gameId);
+      }
     }
 
-    return this.toSnapshot(game);
+    // Ordinary moves remain in memory without a database write.
+    this.games.set(gameId, updatedGame);
+    return this.toSnapshot(updatedGame);
   }
 
-      _updateGameResult(game) {
+  _updateGameResult(game) {
     if (game.chess.isCheckmate()) {
       game.status = 'COMPLETED';
 
@@ -207,8 +229,12 @@ class GameService {
     }
   }
 
-    async resignGame({ gameId, playerId }) {
+  async resignGame({ gameId, playerId }) {
     const game = this._getGameOrThrow(gameId);
+
+    if (this.pendingCompletions.has(gameId)) {
+      throw new Error('Game completion is being saved; retry');
+    }
 
     if (game.status !== 'IN_PROGRESS') {
       throw new Error('Game is already completed');
@@ -218,28 +244,38 @@ class GameService {
       throw new TypeError('playerId must be a positive integer');
     }
 
-    if (playerId === game.whiteId) {
-      game.status = 'COMPLETED';
-      game.result = 'BLACK_WIN';
-      game.winnerId = game.blackId;
-      game.chess.setHeader('Result', '0-1');
-    } else if (playerId === game.blackId) {
-      game.status = 'COMPLETED';
-      game.result = 'WHITE_WIN';
-      game.winnerId = game.whiteId;
-      game.chess.setHeader('Result', '1-0');
-    } else {
+    if (playerId !== game.whiteId && playerId !== game.blackId) {
       throw new Error('Player is not part of this game');
     }
 
-    // Persist the completed game so its result survives a backend restart.
-    // The repository derives winnerId from the result and stores the final PGN.
-    await this.gameRepository.finishGame(game.gameId, {
-      result: game.result,
-      pgn: game.chess.pgn(),
-    });
+    // Prepare completion without changing the publicly available state.
+    const chess = new Chess();
+    chess.loadPgn(game.chess.pgn());
 
-    return this.toSnapshot(game);
+    const whiteResigned = playerId === game.whiteId;
+    chess.setHeader('Result', whiteResigned ? '0-1' : '1-0');
+
+    const completed = {
+      ...game,
+      chess,
+      status: 'COMPLETED',
+      result: whiteResigned ? 'BLACK_WIN' : 'WHITE_WIN',
+      winnerId: whiteResigned ? game.blackId : game.whiteId,
+    };
+
+    this.pendingCompletions.add(gameId);
+
+    try {
+      await this.gameRepository.finishGame(gameId, {
+        result: completed.result,
+        pgn: completed.chess.pgn(),
+      });
+
+      this.games.set(gameId, completed);
+      return this.toSnapshot(completed);
+    } finally {
+      this.pendingCompletions.delete(gameId);
+    }
   }
 }
 
