@@ -17,8 +17,8 @@ function ChessGuideModal({ onClose }) {
       title="Chess guide"
     >
         <PanelBody className="flex flex-col gap-5">
-          {chessGuideSections.map((section, index) => (
-            <details key={section.id} className="cm-guide-section" open={index === 0}>
+          {chessGuideSections.map((section) => (
+            <details key={section.id} className="cm-guide-section">
               <summary className="cm-guide-summary flex items-center justify-between gap-3">
                 <h3 className="cm-section-title min-w-0">{section.title}</h3>
               </summary>
