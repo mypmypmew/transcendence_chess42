@@ -10,6 +10,7 @@ const registerPresenceHandlers = require('./src/sockets/presenceSocket');
 const { broadcastPresenceChange } = require('./src/sockets/presenceSocket');
 const { PresenceService } = require('./src/services/presenceService');
 const { GameService } = require('./src/services/gameService');
+const { GameDisconnectService } = require('./src/services/gameDisconnectService');
 const { cancelInterruptedGames } = require('./src/repositories/gameRepository');
 const { MatchmakingService } = require('./src/services/matchmakingService');
 const { registerMatchmakingHandlers } = require('./src/socket/matchmakingSocket');
@@ -44,7 +45,16 @@ const matchmakingService = new MatchmakingService({
 
 const presenceService = new PresenceService();
 
-presenceService.onChange((change) => broadcastPresenceChange(io, change));
+const gameDisconnectService = new GameDisconnectService({
+  io,
+  gameService,
+  presenceService,
+});
+
+presenceService.onChange((change) => {
+  broadcastPresenceChange(io, change);
+  gameDisconnectService.handlePresenceChange(change);
+});
 
 app.set('presenceService', presenceService);
 
