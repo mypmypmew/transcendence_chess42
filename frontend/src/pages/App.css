@@ -1,6 +1,6 @@
 :root {
   --cm-chessboard-size: clamp(420px, calc(100vh - 300px), 500px);
-  --cm-chessboard-card-size: calc(var(--cm-chessboard-size) + (var(--space-4) * 2));
+  --cm-chessboard-card-size: calc(var(--cm-chessboard-size) + (var(--space-4) * 2) + 2px);
 }
 
 /* App shell and page frame */
@@ -429,7 +429,7 @@ button.cm-list-row:hover,
 
 .cm-chessboard-wrapper {
   width: var(--cm-chessboard-size);
-  height: var(--cm-chessboard-size);
+  height: auto;
   max-width: 100%;
   aspect-ratio: 1;
   margin: 0 auto;
