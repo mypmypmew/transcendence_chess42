@@ -1,5 +1,7 @@
+import { useId } from 'react'
 import {
   Badge,
+  Button,
   EmptyState,
   Icon,
   ListRow,
@@ -12,7 +14,9 @@ const resultConfig = {
   win: { label: 'Win', variant: 'win' },
   loss: { label: 'Loss', variant: 'loss' },
   draw: { label: 'Draw', variant: 'draw' },
-  unknown: { label: 'Pending', variant: 'accent' },
+  pending: { label: 'Pending', variant: 'accent' },
+  cancelled: { label: 'Cancelled', variant: 'accent' },
+  unknown: { label: 'Unknown', variant: 'accent' },
 }
 
 function formatDate(isoDate) {
@@ -32,6 +36,18 @@ function getOpponent(game, currentUserId) {
 }
 
 function getGameResult(game, currentUserId) {
+  if (game.status === 'CANCELLED') {
+    return 'cancelled'
+  }
+
+  if (game.status === 'IN_PROGRESS') {
+    return 'pending'
+  }
+
+  if (game.status !== 'COMPLETED') {
+    return 'unknown'
+  }
+
   if (!game.result) {
     return 'unknown'
   }
@@ -54,6 +70,7 @@ function getGameResult(game, currentUserId) {
  *  - currentUserId: authenticated user id
  *  - error: request error message
  *  - isLoading: shows a loading placeholder instead of the list
+ *  - onRetry: optional callback to reload history after an error
  *  - title: panel heading; defaults to the existing Profile heading
  *
  * Rows are not clickable in this version (no game details view yet).
@@ -64,22 +81,32 @@ function MatchHistory({
   currentUserId,
   error = null,
   isLoading = false,
+  onRetry,
   title = 'Match history'
 }) {
+  const titleId = useId()
+
   return (
-    <Panel aria-labelledby="history-title" className={className}>
+    <Panel aria-labelledby={titleId} className={className}>
       <PanelHeader
         action={<Badge>{games.length}</Badge>}
         eyebrow="Games"
         title={title}
-        titleId="history-title"
+        titleId={titleId}
       />
 
       <PanelBody className="cm-list">
         {isLoading ? (
           <p className="cm-muted">Loading matches…</p>
         ) : error ? (
-          <p className="cm-muted">{error}</p>
+          <div className="flex flex-col gap-3" role="alert">
+            <p className="cm-muted">{error}</p>
+            {onRetry && (
+              <Button type="button" variant="ghost" onClick={onRetry}>
+                Try again
+              </Button>
+            )}
+          </div>
         ) : games.length === 0 ? (
           <EmptyState title="No matches yet" />
         ) : (

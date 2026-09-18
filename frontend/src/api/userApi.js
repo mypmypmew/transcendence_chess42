@@ -9,6 +9,10 @@ function getLeaderboard() {
   return request('/api/users/leaderboard')
 }
 
+function getPlayerGames(playerId, { signal } = {}) {
+  return request(`/api/users/${playerId}/games`, { signal })
+}
+
 function updateCurrentUser({ username, email }) {
   return request('/api/users/me', {
     method: 'PATCH',
@@ -32,6 +36,7 @@ function uploadCurrentUserAvatar(file) {
 export {
   searchUsers,
   getLeaderboard,
+  getPlayerGames,
   updateCurrentUser,
   uploadCurrentUserAvatar,
 }
