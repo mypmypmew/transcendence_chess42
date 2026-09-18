@@ -6,7 +6,7 @@ import {
 
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-  { to: '/game-lobby', label: 'Game', icon: 'chess-rook' },
+  { to: '/game', label: 'Game', icon: 'chess-rook' },
   { action: 'leaderboard', label: 'Leaderboard', icon: 'trophy' },
   { to: '/friends', label: 'Friends', icon: 'users' },
   { to: '/profile', label: 'Profile', icon: 'user-circle' },
