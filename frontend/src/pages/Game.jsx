@@ -11,6 +11,7 @@ import {
   Panel,
   PanelBody,
 } from '../components/ui.jsx'
+import useFriendshipAction from '../hooks/useFriendshipAction.js'
 import useMultiplayerGame from '../hooks/useMultiplayerGame.js'
 
 function Game() {
@@ -40,6 +41,8 @@ function Game() {
     makeMove,
     resignGame,
   } = useMultiplayerGame(gameId)
+  const opponentId = opponent?.id
+  const opponentFriendship = useFriendshipAction(opponentId)
 
   function returnToLobby() {
     // Starting another game requires a new server-created match.
@@ -49,6 +52,47 @@ function Game() {
   function returnToDashboard() {
     // Leave the finished game while keeping the normal authenticated navigation flow.
     navigate('/dashboard')
+  }
+
+  function getOpponentFriendshipAction() {
+    const isDisabled = (
+      opponentFriendship.isLoading ||
+      opponentFriendship.isSubmitting ||
+      opponentFriendship.status === 'friends' ||
+      opponentFriendship.status === 'outgoing'
+    )
+    const label = opponentFriendship.isLoading
+      ? 'Loading...'
+      : opponentFriendship.isSubmitting
+        ? 'Updating...'
+        : opponentFriendship.status === 'friends'
+          ? 'Friend'
+          : opponentFriendship.status === 'incoming'
+            ? 'Accept request'
+            : opponentFriendship.status === 'outgoing'
+              ? 'Request sent'
+              : 'Add friend'
+    const icon = opponentFriendship.status === 'friends' || opponentFriendship.status === 'incoming'
+      ? 'user-check'
+      : opponentFriendship.status === 'outgoing'
+        ? 'send'
+        : 'user-plus'
+
+    return (
+      <div className="flex flex-col gap-2">
+        <Button
+          icon={icon}
+          size="sm"
+          type="button"
+          variant={opponentFriendship.status === 'incoming' ? 'primary' : 'ghost'}
+          disabled={isDisabled}
+          onClick={opponentFriendship.submit}
+        >
+          {label}
+        </Button>
+        {opponentFriendship.error && <Alert>{opponentFriendship.error}</Alert>}
+      </div>
+    )
   }
 
   if (isLoading) {
@@ -98,6 +142,7 @@ function Game() {
         isGameOver={isGameOver}
         gameOverInfo={gameOverInfo}
         opponent={opponent}
+        opponentAction={opponent ? getOpponentFriendshipAction() : null}
         opponentError={gameDetailsError}
         playerColor={playerColor}
         isPlayerTurn={isPlayerTurn}
