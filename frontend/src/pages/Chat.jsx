@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getMessages, listConversations, openConversation } from '../api/chatApi.js'
 import { searchUsers } from '../api/userApi.js'
@@ -55,6 +55,16 @@ function Chat() {
   const [searchError, setSearchError] = useState(null)
   const [messagesErrorState, setMessagesErrorState] = useState({ conversationId: null, message: null })
   const [sendErrorState, setSendErrorState] = useState({ conversationId: null, message: null })
+  const messagesRef = useRef(null)
+  const scrollPositionRef = useRef({
+    conversationId: null,
+    isNearBottom: true,
+    lastMessageId: null,
+  })
+  const [scrollState, setScrollState] = useState({
+    conversationId: null,
+    isAway: false,
+  })
   const activeConversation = conversationList.find((conversation) => conversation.id === activeConversationId)
   const hasConversations = conversationList.length > 0
   const isSearching = searchTerm.trim().length >= 2
@@ -65,6 +75,99 @@ function Chat() {
   const isMessagesLoading = activeConversationId !== null
     && messageState.conversationId !== activeConversationId
     && messagesError === null
+
+  const showScrollButton = (
+    scrollState.conversationId === activeConversationId
+    && scrollState.isAway
+  )
+
+  function handleMessagesScroll() {
+    const container = messagesRef.current
+
+    if (!container) {
+      return
+    }
+
+    const distanceToBottom = (
+      container.scrollHeight
+      - container.scrollTop
+      - container.clientHeight
+    )
+    const isNearBottom = distanceToBottom <= 48
+
+    scrollPositionRef.current.isNearBottom = isNearBottom
+
+    setScrollState((current) => {
+      const isAway = !isNearBottom
+
+      if (
+        current.conversationId === activeConversationId
+        && current.isAway === isAway
+      ) {
+        return current
+      }
+
+      return { conversationId: activeConversationId, isAway }
+    })
+  }
+
+  function scrollToLatest() {
+    const container = messagesRef.current
+
+    if (!container) {
+      return
+    }
+
+    container.scrollTop = container.scrollHeight
+    scrollPositionRef.current.isNearBottom = true
+    setScrollState({
+      conversationId: activeConversationId,
+      isAway: false,
+    })
+  }
+
+  useLayoutEffect(() => {
+    const container = messagesRef.current
+
+    if (
+      !container
+      || !activeConversationId
+      || messageState.conversationId !== activeConversationId
+    ) {
+      return
+    }
+
+    const previous = scrollPositionRef.current
+    const lastMessage = messageState.items.at(-1)
+    const isNewConversation = (
+      previous.conversationId !== activeConversationId
+    )
+    const isNewOwnMessage = (
+      lastMessage
+      && lastMessage.id !== previous.lastMessageId
+      && lastMessage.senderId === user.id
+    )
+    const shouldScroll = (
+      isNewConversation
+      || previous.isNearBottom
+      || isNewOwnMessage
+    )
+
+    if (shouldScroll) {
+      container.scrollTop = container.scrollHeight
+    }
+
+    scrollPositionRef.current = {
+      conversationId: activeConversationId,
+      isNearBottom: shouldScroll,
+      lastMessageId: lastMessage?.id ?? null,
+    }
+  }, [
+    activeConversationId,
+    activeConversation,
+    messageState,
+    user.id,
+  ])
 
   useEffect(() => {
     let cancelled = false
@@ -311,64 +414,55 @@ function Chat() {
   return (
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
       <div className="cm-page-grid chat">
-        <Panel aria-labelledby="chat-list-title" className="cm-chat-search-panel">
-          <PanelHeader
-            title="Players"
-            titleId="chat-list-title"
-            action={(
+        <Panel className="cm-chat-search-panel cm-scroll-panel" aria-label="Player search">
+          <PanelBody className="flex-shrink-0">
               <Input
-                className="flex-1 min-w-0"
                 type="text"
                 value={searchTerm}
                 placeholder="Search users..."
                 aria-label="Search users to message"
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
-            )}
-          />
+
+              {isSearching && (
+                <PanelBody className="cm-list">
+                  {isSearchLoading && <p className="cm-muted">Searching...</p>}
+                  {!isSearchLoading && searchError && <p className="cm-muted">{searchError}</p>}
+                  {!isSearchLoading && !searchError && searchResults.length === 0 && (
+                    <p className="cm-muted">No users found</p>
+                  )}
+                  {!isSearchLoading && !searchError && searchResults.map((result) => (
+                    <UserListRow
+                      key={result.id}
+                      avatar={result.avatar}
+                      meta={`Rating ${result.rating}`}
+                      name={result.username}
+                      title={`${result.username} · Rating ${result.rating}`}
+                      onClick={() => handleSelectUser(result)}
+                    />
+                  ))}
+                </PanelBody>
+              )}
+          </PanelBody>
         </Panel>
         <Panel className="cm-chat-list-panel cm-scroll-panel">
           <PanelBody>
-            {isSearching && (
-              <div className="cm-list">
-                {isSearchLoading && <p className="cm-muted">Searching...</p>}
-                {!isSearchLoading && searchError && <p className="cm-muted">{searchError}</p>}
-                {!isSearchLoading && !searchError && searchResults.length === 0 && (
-                  <p className="cm-muted">No users found</p>
-                )}
-                {!isSearchLoading && !searchError && searchResults.map((result) => (
-                  <UserListRow
-                    key={result.id}
-                    avatar={result.avatar}
-                    meta={`Rating ${result.rating}`}
-                    name={result.username}
-                    title={`${result.username} · Rating ${result.rating}`}
-                    onClick={() => handleSelectUser(result)}
-                  />
-                ))}
-              </div>
+            {isLoading && (
+              <p className="cm-muted" role="status">
+                Loading...
+              </p>
             )}
-            {!isSearching && isLoading && (
-              <EmptyState
-                icon="message-circle"
-                title="Loading conversations..."
-              />
+            {!isLoading && loadError && (
+              <p className="cm-muted" role="alert">
+                Could not load conversations. {loadError}
+              </p>
             )}
-            {!isSearching && !isLoading && loadError && (
-              <EmptyState
-                icon="message-circle"
-                title="Could not load conversations"
-                subtitle={loadError}
-              />
+            {!isLoading && !loadError && !hasConversations && (
+              <p className="cm-muted">
+                No chats yet. Search above to start.
+              </p>
             )}
-            {!isSearching && !isLoading && !loadError && !hasConversations && (
-              <EmptyState
-                icon="message-circle"
-                title="No conversations yet"
-                subtitle="Search for a username above to start a conversation."
-              />
-            )}
-            {!isSearching && !isLoading && !loadError && hasConversations && (
+            {!isLoading && !loadError && hasConversations && (
               <div className="cm-list">
                 {conversationList.map((conversation) => (
                   <UserListRow
@@ -411,7 +505,7 @@ function Chat() {
                   </div>
                 </div>
               </PanelHeader>
-              <PanelBody className="cm-chat-messages">
+              <PanelBody className="cm-chat-messages" ref={messagesRef} onScroll={handleMessagesScroll}>
                 {isMessagesLoading && messages.length === 0 && (
                   <EmptyState icon="message" title="Loading messages..." />
                 )}
@@ -439,19 +533,33 @@ function Chat() {
                   </div>
                 )}
               </PanelBody>
-              <PanelBody as="form" className="flex gap-3" onSubmit={handleSendMessage}>
-                <Input
-                  className="flex-1 min-w-0"
-                  type="text"
-                  value={messageText}
-                  placeholder="Write a message..."
-                  aria-label="Message text"
-                  onChange={(event) => setMessageText(event.target.value)}
-                />
-                <Button type="submit" disabled={!messageText.trim()}>
-                  Send
-                </Button>
-                 {sendError && <p className="cm-muted">{sendError}</p>}
+              <PanelBody as="form" className="flex flex-col gap-2" onSubmit={handleSendMessage}>
+                {showScrollButton && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={scrollToLatest}
+                  >
+                    Latest messages ↓
+                  </Button>
+                )}
+
+                <div className="flex gap-3">
+                  <Input
+                    className="flex-1 min-w-0"
+                    type="text"
+                    value={messageText}
+                    placeholder="Write a message..."
+                    aria-label="Message text"
+                    onChange={(event) => setMessageText(event.target.value)}
+                  />
+                  <Button type="submit" disabled={!messageText.trim()}>
+                    Send
+                  </Button>
+                </div>
+
+                {sendError && <p className="cm-muted">{sendError}</p>}
               </PanelBody>
             </>
           )}
