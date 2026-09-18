@@ -216,6 +216,7 @@
 
 .cm-page-grid.cm-friends-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: min(520px, 72svh);
 }
 
 .cm-page-grid.three {
