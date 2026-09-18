@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import {
   Badge,
   Button,
@@ -71,6 +71,7 @@ function getGameResult(game, currentUserId) {
  *  - error: request error message
  *  - isLoading: shows a loading placeholder instead of the list
  *  - onRetry: optional callback to reload history after an error
+ *  - pageSize: optional number of matches per page; null shows all supplied matches
  *  - title: panel heading; defaults to the existing Profile heading
  *
  * Rows are not clickable in this version (no game details view yet).
@@ -82,9 +83,25 @@ function MatchHistory({
   error = null,
   isLoading = false,
   onRetry,
+  pageSize = null,
   title = 'Match history'
 }) {
   const titleId = useId()
+  const [page, setPage] = useState(1)
+  const isPaginated = Number.isInteger(pageSize) && pageSize > 0
+  const pageCount = isPaginated
+    ? Math.max(1, Math.ceil(games.length / pageSize))
+    : 1
+  const currentPage = Math.min(page, pageCount)
+
+  const displayedGames = isPaginated
+    ? [...games]
+      .sort((a, b) => (
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        || b.id - a.id
+      ))
+      .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : games
 
   return (
     <Panel aria-labelledby={titleId} className={className}>
@@ -110,7 +127,7 @@ function MatchHistory({
         ) : games.length === 0 ? (
           <EmptyState title="No matches yet" />
         ) : (
-          games.map((game) => {
+          displayedGames.map((game) => {
             const opponent = getOpponent(game, currentUserId)
             const result = getGameResult(game, currentUserId)
             const config = resultConfig[result]
@@ -138,6 +155,37 @@ function MatchHistory({
           })
         )}
       </PanelBody>
+
+      {isPaginated && pageCount > 1 && !isLoading && !error && (
+        <PanelBody>
+          <nav
+            className="flex items-center justify-between gap-2"
+            aria-label="Match history pages"
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <span className="cm-muted" aria-live="polite">
+              {currentPage} / {pageCount}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={currentPage === pageCount}
+              onClick={() => setPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </nav>
+        </PanelBody>
+      )}
     </Panel>
   )
 }

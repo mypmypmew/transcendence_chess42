@@ -519,9 +519,7 @@ button.cm-list-row:hover,
   grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr) minmax(220px, 1fr);
   gap: var(--space-5);
   align-items: stretch;
-  height: min(620px, calc(100svh - 170px));
   min-height: 0;
-  overflow: hidden;
 }
 
 .cm-profile-panel {
@@ -687,7 +685,7 @@ button.cm-list-row:hover,
 
   .cm-profile-panel {
     height: auto;
-    max-height: min(520px, 72svh);
+    max-height: none;
   }
 
   .cm-sidebar {
