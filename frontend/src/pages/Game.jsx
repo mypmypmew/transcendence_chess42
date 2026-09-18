@@ -38,6 +38,7 @@ function Game() {
     isGameOver,
     gameOverInfo,
     displayStatus,
+    opponentConnectionMessage,
     makeMove,
     resignGame,
   } = useMultiplayerGame(gameId)
@@ -136,6 +137,14 @@ function Game() {
         <Panel>
           <PanelBody>
             <Alert>{gameError}</Alert>
+          </PanelBody>
+        </Panel>
+      )}
+
+      {opponentConnectionMessage && (
+        <Panel>
+          <PanelBody>
+            <Alert>{opponentConnectionMessage}</Alert>
           </PanelBody>
         </Panel>
       )}
