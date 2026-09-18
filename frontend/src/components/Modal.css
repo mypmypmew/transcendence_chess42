@@ -26,14 +26,14 @@ dialog.cm-modal {
   backdrop-filter: blur(10px);
   cursor: pointer;
 }
-.cm-modal__content {
+.cm-modal .cm-modal__content {
   position: relative;
   z-index: 1;
   width: min(980px, 100%);
   max-height: min(760px, 90svh);
   overflow: auto;
 }
-.cm-modal__content--sm {
+.cm-modal .cm-modal__content--sm {
   width: min(520px, 100%);
 }
 .cm-modal__header-actions {
@@ -53,7 +53,7 @@ dialog.cm-modal {
   .cm-modal {
     padding: var(--space-3);
   }
-  .cm-modal__content {
+  .cm-modal .cm-modal__content {
     max-height: 92svh;
   }
   .cm-modal__header-actions {
