@@ -141,12 +141,8 @@ function MatchHistory({
                     <small>vs </small>
                     <span>{opponent.username}</span>
                   </p>
-                  {/* Keep opponent rating separate from the game status and date. */}
                   <p className="cm-muted">
-                    Rating {opponent.rating}
-                  </p>
-                  <p className="cm-muted">
-                    {game.status} · {formatDate(game.endedAt ?? game.createdAt)}
+                    Rating {opponent.rating} · {formatDate(game.endedAt ?? game.createdAt)}
                   </p>
                 </div>
                 <Badge variant={config.variant}>{config.label}</Badge>
