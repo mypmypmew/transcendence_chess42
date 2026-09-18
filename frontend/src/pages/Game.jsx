@@ -55,9 +55,13 @@ function Game() {
   }
 
   function getOpponentFriendshipAction() {
+    if (opponentFriendship.status === 'friends') {
+      return null
+    }
     const isDisabled = (
       opponentFriendship.isLoading ||
       opponentFriendship.isSubmitting ||
+      opponentFriendship.status === null ||
       opponentFriendship.status === 'friends' ||
       opponentFriendship.status === 'outgoing'
     )

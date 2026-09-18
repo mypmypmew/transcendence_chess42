@@ -65,9 +65,7 @@ function useFriendshipAction(targetUserId) {
     requestRef.current = requestId
 
     setState((current) => ({
-      ...current,
-      targetUserId,
-      isLoading: true,
+      ...createState(targetUserId),
       error: clearError ? null : current.error,
     }))
 
