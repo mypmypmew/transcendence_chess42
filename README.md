@@ -128,6 +128,12 @@ flowchart LR
     Domain --> Uploads
 ```
 
+### Additional Diagrams
+
+- [Business process flow](docs/ChessMate_Business_Process.png)
+- [High-level system architecture](docs/ChessMate_HighLevel_System_Architecture.png)
+- [Friends and chat sequence diagrams](docs/sequence-diagram.md)
+
 The server owns the matchmaking queue and active chess state. Clients submit actions, while `chess.js` on the backend validates moves and produces the state broadcast to both players. Completed games, PGN, points, users, friendships, sessions, conversations, and messages are persisted through Prisma.
 
 ## Technical Stack
