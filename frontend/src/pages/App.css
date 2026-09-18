@@ -537,6 +537,7 @@ button.cm-list-row:hover,
   flex: 1;
   min-width: 0;
   text-align: center;
+  font-size: var(--text-sm);
 }
 
 .weekly-activity__track {
