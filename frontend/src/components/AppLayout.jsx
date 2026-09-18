@@ -66,9 +66,9 @@ function AppLayout({ eyebrow, title, actions, children, showLegalFooter = true }
             {typeof children === 'function'
               ? children({ openLeaderboard, handleLogout, isLoggingOut, logoutError })
               : children}
+            {showLegalFooter && <LegalFooter />}
           </main>
         </div>
-        {showLegalFooter && <LegalFooter />}
       </div>
       {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
     </div>
