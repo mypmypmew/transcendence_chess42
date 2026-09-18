@@ -140,11 +140,9 @@ function Register() {
           </header>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            <div className="auth-error-slot" aria-live="polite">
-              {serverError && (
-                <Alert>{serverError}</Alert>
-              )}
-            </div>
+            {serverError && (
+              <Alert role="alert">{serverError}</Alert>
+            )}
 
             <FormField
               error={usernameError}
