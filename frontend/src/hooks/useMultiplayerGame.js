@@ -4,6 +4,8 @@ import { useSocket } from '../context/SocketContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getGame as getGameDetails } from '../api/gameApi.js'
 
+const GAME_JOIN_TIMEOUT_MS = 10_000
+
 function getPlayerColor(game, userId) {
   // Match the authenticated user with the color assigned by the backend.
   if (game?.whiteId === userId) {
@@ -124,7 +126,7 @@ function getDisplayStatus(game, playerColor, socketStatus) {
 
 function useMultiplayerGame(gameId) {
   const { user } = useAuth()
-  const { socket, status: socketStatus } = useSocket()
+  const { socket, status: socketStatus, error: socketError } = useSocket()
   const [game, setGame] = useState(null)
   const [gameError, setGameError] = useState(null)
   // Keep participant details separate from the frequently updated Socket.IO snapshot.
@@ -144,6 +146,8 @@ function useMultiplayerGame(gameId) {
   const isGameOver = game?.status === 'COMPLETED'
   const gameOverInfo = getGameOverInfo(game)
   const displayStatus = getDisplayStatus(game, playerColor, socketStatus)
+  const connectionError = socketStatus === 'error' ? socketError || 'Unable to connect to the game server' : null
+  const displayedGameError = gameError || connectionError
 
   useEffect(() => {
     if (!isValidGameId) {
@@ -184,11 +188,22 @@ function useMultiplayerGame(gameId) {
       return undefined
     }
 
+    let joinTimeoutId = null
+
+    function clearJoinTimeout() {
+      if (joinTimeoutId !== null) {
+        window.clearTimeout(joinTimeoutId)
+        joinTimeoutId = null
+      }
+    }
+
     // Accept only snapshots that belong to the game opened in the current route.
     function handleGameState(serverGame) {
       if (serverGame?.gameId !== gameId) {
         return
       }
+
+      clearJoinTimeout()
       
       setGame(serverGame)
       setGameError(null)
@@ -196,8 +211,15 @@ function useMultiplayerGame(gameId) {
       setIsWaitingForServer(false)
     }
 
+    function handleDisconnect() {
+      clearJoinTimeout()
+      setGameError('Connection lost. Waiting to reconnect...')
+      setIsWaitingForServer(false)
+    }
+
     // Show game-specific backend errors withput disconnecting the shared socket.
     function handleGameError(payload) {
+      clearJoinTimeout()
       setGameError(payload?.message || 'Unable to load the game')
 
       // An error is also a completed server response, so controls may become available again.
@@ -206,14 +228,24 @@ function useMultiplayerGame(gameId) {
 
     // Join again after every connection so a refreshed or reconnected client receives the latest server state.
     function joinGame() {
+      clearJoinTimeout()
+      setGameError(null)
+
       socket.emit('game:join', {
         gameId,
       })
+
+      joinTimeoutId = window.setTimeout(() => {
+        setGameError('The game server did not respond. Please try again.')
+        setIsWaitingForServer(false)
+        joinTimeoutId = null
+      }, GAME_JOIN_TIMEOUT_MS)
     }
 
     socket.on('game:state', handleGameState)
     socket.on('game:error', handleGameError)
     socket.on('connect', joinGame)
+    socket.on('disconnect', handleDisconnect)
 
     // The socket may already be connected before the game page is mounted.
     if (socket.connected) {
@@ -222,9 +254,11 @@ function useMultiplayerGame(gameId) {
 
     // Prevent duplicate handlers when the route changes or the component unmounts.
     return () => {
+      clearJoinTimeout()
       socket.off('game:state', handleGameState)
       socket.off('game:error', handleGameError)
       socket.off('connect', joinGame)
+      socket.off('disconnect', handleDisconnect)
     }
   }, [gameId, isValidGameId, socket])
 
@@ -275,8 +309,8 @@ function useMultiplayerGame(gameId) {
     gameDetails,
     opponent,
     gameDetailsError,
-    gameError: isValidGameId ? gameError : 'Invalid game ID',
-    isLoading: isValidGameId && game === null && gameError === null,
+    gameError: isValidGameId ? displayedGameError : 'Invalid game ID',
+    isLoading: isValidGameId && game === null && displayedGameError === null,
     isWaitingForServer,
     socketStatus,
     playerColor,

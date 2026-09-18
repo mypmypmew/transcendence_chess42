@@ -4,7 +4,7 @@ import { useAuth } from './context/AuthContext.jsx'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import GameLobby from './pages/GameLobby'
+import GameEntry from './pages/GameEntry'
 import Game from './pages/Game'
 import Profile from './pages/Profile'
 import Friends from './pages/Friends'
@@ -70,9 +70,9 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/game-lobby" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
-        {/* Redirect old game links to matchmaking instead of starting a local game. */}
-        <Route path="/game" element={<ProtectedRoute><Navigate to="/game-lobby" replace /></ProtectedRoute>} />
+        <Route path="/game-lobby" element={<ProtectedRoute><GameEntry /></ProtectedRoute>} />
+        {/* Resolve an active game before opening matchmaking. */}
+        <Route path="/game" element={<ProtectedRoute><GameEntry /></ProtectedRoute>} />
         {/* Keep the server-generated game ID in the URL so reconnect can restore the correct game. */}
         <Route path="/game/:gameId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

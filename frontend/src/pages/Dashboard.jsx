@@ -105,7 +105,7 @@ function Dashboard() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button as={Link} to="/game-lobby">Play now</Button>
+                <Button as={Link} to="/game">Play now</Button>
                 <Button type="button" variant="ghost" aria-haspopup="dialog" onClick={openLeaderboard}>View rankings</Button>
               </div>
             </section>
@@ -148,7 +148,7 @@ function Dashboard() {
             <Panel className="cm-dashboard-training">
               <PanelHeader title="Training" />
               <PanelBody className="cm-action-grid">
-                <ActionCard as={Link} to="/game-lobby">
+                <ActionCard as={Link} to="/game">
                   <Icon name="chess-rook" />
                   <h3>Quick Play</h3>
                   <p className="cm-muted">Instant match with default settings</p>
