@@ -1,69 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import Avatar from './Avatar.jsx'
 import Modal from './Modal.jsx'
+import MatchHistory from './MatchHistory.jsx'
+import { getPlayerGames } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   Alert,
-  Badge,
   Button,
-  Icon,
   IconButton,
-  ListRow,
   PanelBody,
 } from './ui.jsx'
-
-function getMockMatchHistory(profileOwner) {
-  // TODO: Replace the mock with backend match history.
-  // This keeps modal mock data aligned with Profile.jsx, but from the selected player's perspective.
-  const profilePageMatches = {
-    Serhii: [
-      { id: 1, white: 'DemoPlayer', black: profileOwner, winner: 'DemoPlayer', moves: 42 },
-    ],
-    Taulant: [
-      { id: 1, white: 'DemoPlayer', black: profileOwner, winner: profileOwner, moves: 35 },
-    ],
-    Tatiana: [
-      { id: 1, white: 'DemoPlayer', black: profileOwner, winner: null, moves: 58 },
-    ],
-  }
-
-  const profileMatches = profilePageMatches[profileOwner] || []
-  const fallbackMatches = profileMatches.length > 0
-    ? []
-    : [{ id: 1, white: profileOwner, black: 'Serhii', winner: 'Serhii', moves: 28 }]
-
-  return [
-    ...profileMatches,
-    ...fallbackMatches,
-    { id: 2, white: profileOwner, black: 'Lina', winner: profileOwner, moves: 41 },
-    { id: 3, white: profileOwner, black: 'Mira', winner: null, moves: 36 },
-  ]
-}
-
-function getMatchResult(match, profileOwner) {
-  if (!match.winner) {
-    return 'Draw'
-  }
-
-  return match.winner === profileOwner ? 'Win' : 'Loss'
-}
-
-function getResultBadgeClass(result) {
-  if (result === 'Win') {
-    return 'win'
-  }
-
-  if (result === 'Loss') {
-    return 'loss'
-  }
-
-  return 'draw'
-}
-
-function getOpponent(match, profileOwner) {
-  return match.white === profileOwner ? match.black : match.white
-}
 
 function UserProfileModal({
   player,
@@ -73,7 +20,6 @@ function UserProfileModal({
   onRemoveFriend,
 }) {
   const { user } = useAuth()
-  const matchHistory = getMockMatchHistory(player.nickname)
   const [pendingAction, setPendingAction] = useState(null)
   const [actionError, setActionError] = useState(null)
   const hasBackendUserId = Number.isInteger(player.id) && player.id > 0
@@ -97,6 +43,57 @@ function UserProfileModal({
     || !friendAction
     || pendingAction !== null
   )
+  const [historyState, setHistoryState] = useState(null)
+  const [historyAttempt, setHistoryAttempt] = useState(0)
+  const playerId = player.id
+
+  // Display only the response belonging to this player and request attempt.
+  const currentHistory = (
+    historyState?.playerId === playerId
+    && historyState?.attempt === historyAttempt
+  ) ? historyState : null
+
+  useEffect(() => {
+    if (!hasBackendUserId) {
+      return undefined
+    }
+
+    const controller = new AbortController()
+
+    async function loadHistory() {
+      try {
+        const data = await getPlayerGames(playerId, {
+          signal: controller.signal,
+        })
+
+        if (!Array.isArray(data?.games)) {
+          throw new Error('Invalid match history response')
+        }
+
+        if (!controller.signal.aborted) {
+          setHistoryState({
+            playerId,
+            attempt: historyAttempt,
+            games: data.games,
+            error: null,
+          })
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setHistoryState({
+            playerId,
+            attempt: historyAttempt,
+            games: [],
+            error: error.message || 'Could not load match history',
+          })
+        }
+      }
+    }
+
+    loadHistory()
+
+    return () => controller.abort()
+  }, [playerId, hasBackendUserId, historyAttempt])
 
   async function runAction(actionName, action) {
     if (!action || !hasBackendUserId) {
@@ -114,6 +111,13 @@ function UserProfileModal({
       setPendingAction(null)
     }
   }
+
+  const recentGames = [...(currentHistory?.games ?? [])]
+    .sort((a, b) => (
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      || b.id - a.id
+    ))
+    .slice(0, 3)
 
   return (
     <Modal
@@ -139,23 +143,22 @@ function UserProfileModal({
             <Alert>{actionError}</Alert>
           )}
 
-          <div className="cm-list" aria-label={`${player.nickname} match history`}>
-            {matchHistory.map((match) => {
-              const result = getMatchResult(match, player.nickname)
-              const opponent = getOpponent(match, player.nickname)
-
-              return (
-                <ListRow as="article" key={match.id}>
-                  <Icon className="text-accent" name="chess-rook" />
-                  <div className="min-w-0">
-                    <p className="text-primary truncate">vs {opponent}</p>
-                    <p className="cm-muted">{match.moves} moves</p>
-                  </div>
-                  <Badge variant={getResultBadgeClass(result)}>{result}</Badge>
-                </ListRow>
-              )
-            })}
-          </div>
+          <MatchHistory
+            games={recentGames}
+            title="Last 3 matches"
+            currentUserId={playerId}
+            isLoading={hasBackendUserId && currentHistory === null}
+            error={
+              hasBackendUserId
+                ? currentHistory?.error
+                : 'Match history is unavailable: invalid player ID.'
+            }
+            onRetry={
+              hasBackendUserId
+                ? () => setHistoryAttempt((attempt) => attempt + 1)
+                : undefined
+            }
+          />
       
       <div className="cm-modal__actions">
             <Button
