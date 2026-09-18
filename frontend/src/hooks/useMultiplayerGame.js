@@ -128,6 +128,7 @@ function useMultiplayerGame(gameId) {
   const { user } = useAuth()
   const { socket, status: socketStatus, error: socketError } = useSocket()
   const [game, setGame] = useState(null)
+  const [opponentConnectionMessage, setOpponentConnectionMessage] = useState(null)
   const [gameError, setGameError] = useState(null)
   // Keep participant details separate from the frequently updated Socket.IO snapshot.
   const [gameDetails, setGameDetails] = useState(null)
@@ -207,6 +208,10 @@ function useMultiplayerGame(gameId) {
       
       setGame(serverGame)
       setGameError(null)
+
+      if (serverGame.status !== 'IN_PROGRESS') {
+        setOpponentConnectionMessage(null)
+      }
       // The authoritative response completes any pending move or resignation request.
       setIsWaitingForServer(false)
     }
@@ -215,6 +220,28 @@ function useMultiplayerGame(gameId) {
       clearJoinTimeout()
       setGameError('Connection lost. Waiting to reconnect...')
       setIsWaitingForServer(false)
+    }
+
+    function handleOpponentDisconnected(payload) {
+      if (payload?.gameId !== gameId) {
+        return
+      }
+
+      const timeoutSeconds = Math.ceil(payload.timeoutMs / 1000)
+
+      setOpponentConnectionMessage(
+        Number.isFinite(timeoutSeconds) && timeoutSeconds > 0
+          ? `Opponent disconnected. Waiting up to ${timeoutSeconds} seconds for reconnection.`
+          : 'Opponent disconnected. Waiting for reconnection.',
+      )
+    }
+
+    function handleOpponentReconnected(payload) {
+      if (payload?.gameId !== gameId) {
+        return
+      }
+
+      setOpponentConnectionMessage(null)
     }
 
     // Show game-specific backend errors withput disconnecting the shared socket.
@@ -242,6 +269,8 @@ function useMultiplayerGame(gameId) {
       }, GAME_JOIN_TIMEOUT_MS)
     }
 
+    socket.on('game:opponent-disconnected', handleOpponentDisconnected)
+    socket.on('game:opponent-reconnected', handleOpponentReconnected)
     socket.on('game:state', handleGameState)
     socket.on('game:error', handleGameError)
     socket.on('connect', joinGame)
@@ -255,6 +284,8 @@ function useMultiplayerGame(gameId) {
     // Prevent duplicate handlers when the route changes or the component unmounts.
     return () => {
       clearJoinTimeout()
+      socket.off('game:opponent-disconnected', handleOpponentDisconnected)
+      socket.off('game:opponent-reconnected', handleOpponentReconnected)
       socket.off('game:state', handleGameState)
       socket.off('game:error', handleGameError)
       socket.off('connect', joinGame)
@@ -319,6 +350,7 @@ function useMultiplayerGame(gameId) {
     isGameOver,
     gameOverInfo,
     displayStatus,
+    opponentConnectionMessage,
     makeMove,
     resignGame,
   }
