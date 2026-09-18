@@ -732,10 +732,6 @@ button.cm-list-row:hover,
     font-size: 18px;
   }
 
-  .cm-header-actions {
-    overflow-x: auto;
-  }
-
   .cm-action-grid,
   .cm-stat-grid {
     grid-template-columns: 1fr;
