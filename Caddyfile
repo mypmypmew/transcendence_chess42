@@ -1,4 +1,15 @@
+{
+    auto_https disable_redirects
+    default_sni {$DEFAULT_SNI:localhost}
+}
+
+http:// {
+    redir https://{host}:8443{uri} 308
+}
+
 {$APP_DOMAIN:localhost} {
+    tls internal
+
     handle /api/* {
         reverse_proxy backend:3000
     }
