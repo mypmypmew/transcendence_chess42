@@ -343,6 +343,7 @@ The role labels below formalize the responsibilities that each member took on du
 - [Prisma documentation](https://www.prisma.io/docs)
 - [SQLite documentation](https://www.sqlite.org/docs.html)
 - [`chess.js` documentation](https://jhlywa.github.io/chess.js/)
+- [Chess Guide documentation](https://handbook.fide.com/chapter/e012023)
 - [Docker Compose documentation](https://docs.docker.com/compose/)
 - [Caddy documentation](https://caddyserver.com/docs/)
 - [MDN Web Docs](https://developer.mozilla.org/)
