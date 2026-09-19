@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { getLeaderboard } from '../api/userApi'
 import { toModalPlayer } from '../utils/userProfile.js'
@@ -6,6 +6,7 @@ import { useOpenConversation } from '../hooks/useOpenConversation.js'
 import Avatar from './Avatar.jsx'
 import Modal from './Modal.jsx'
 import UserProfileModal from './UserProfileModal.jsx'
+import useFreshRatingData from '../hooks/useFreshRatingData.js'
 import {
   Button,
   EmptyState,
@@ -17,9 +18,10 @@ import {
 } from './ui.jsx'
 
 function LeaderboardModal({ onClose }) {
-  const [players, setPlayers] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const leaderboard = useFreshRatingData(getLeaderboard)
+  const players = leaderboard.data?.players ?? []
+  const isLoading = leaderboard.isLoading
+  const error = leaderboard.error
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const { startConversation } = useOpenConversation()
 
@@ -31,39 +33,6 @@ function LeaderboardModal({ onClose }) {
       },
     })
   }
-
-  // Load current rankings and ignore responses after the modal closes.
-  useEffect(() => {
-    let cancelled = false
-    async function loadLeaderboard() {
-      try {
-        const data = await getLeaderboard()
-
-        if (!Array.isArray(data?.players)) {
-          throw new Error('Invalid leaderboard response')
-        }
-
-        if (!cancelled) {
-          setPlayers(data.players)
-          setError(null)
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setError(error.message)
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    loadLeaderboard()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   return (
     <>
@@ -87,7 +56,20 @@ function LeaderboardModal({ onClose }) {
             )}
 
             {!isLoading && error && (
-              <EmptyState icon="trophy" title="Could not load leaderboard." subtitle="Please close the leaderboard and open it again to retry." />
+              <div className="flex flex-col gap-3">
+                <EmptyState
+                  icon="trophy"
+                  title="Could not load leaderboard."
+                  subtitle={error}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={leaderboard.retry}
+                >
+                  Try again
+                </Button>
+              </div>
             )}
 
             {!isLoading && !error && players.length === 0 && (

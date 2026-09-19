@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import Avatar from './Avatar.jsx'
 import Modal from './Modal.jsx'
 import MatchHistory from './MatchHistory.jsx'
-import { getPlayerGames } from '../api/userApi.js'
+import { getPlayerGames, getPublicProfile } from '../api/userApi.js'
+import useFreshRatingData from '../hooks/useFreshRatingData.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   Alert,
@@ -43,57 +44,27 @@ function UserProfileModal({
     || !friendAction
     || pendingAction !== null
   )
-  const [historyState, setHistoryState] = useState(null)
-  const [historyAttempt, setHistoryAttempt] = useState(0)
+
   const playerId = player.id
 
-  // Display only the response belonging to this player and request attempt.
-  const currentHistory = (
-    historyState?.playerId === playerId
-    && historyState?.attempt === historyAttempt
-  ) ? historyState : null
+  const loadProfile = useCallback(async ({ signal }) => {
+    const [freshPlayer, history] = await Promise.all([
+      getPublicProfile(playerId, { signal }),
+      getPlayerGames(playerId, { signal }),
+    ])
 
-  useEffect(() => {
-    if (!hasBackendUserId) {
-      return undefined
+    if (!Array.isArray(history?.games)) {
+      throw new Error('Invalid match history response')
     }
 
-    const controller = new AbortController()
-
-    async function loadHistory() {
-      try {
-        const data = await getPlayerGames(playerId, {
-          signal: controller.signal,
-        })
-
-        if (!Array.isArray(data?.games)) {
-          throw new Error('Invalid match history response')
-        }
-
-        if (!controller.signal.aborted) {
-          setHistoryState({
-            playerId,
-            attempt: historyAttempt,
-            games: data.games,
-            error: null,
-          })
-        }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setHistoryState({
-            playerId,
-            attempt: historyAttempt,
-            games: [],
-            error: error.message || 'Could not load match history',
-          })
-        }
-      }
+    return {
+      player: freshPlayer,
+      games: history.games,
     }
+  }, [playerId])
 
-    loadHistory()
-
-    return () => controller.abort()
-  }, [playerId, hasBackendUserId, historyAttempt])
+  const profileState = useFreshRatingData(loadProfile, playerId)
+  const currentHistory = profileState.data
 
   async function runAction(actionName, action) {
     if (!action || !hasBackendUserId) {
@@ -125,10 +96,21 @@ function UserProfileModal({
       header={(
         <div className="cm-panel-header">
           <div className="flex items-center gap-3">
-            <Avatar avatar={player.avatar} name={player.nickname} className="avatar avatar-md" aria-hidden="true" />
+            <Avatar
+              avatar={currentHistory ? currentHistory.player.avatar : player.avatar}
+              name={currentHistory?.player.username ?? player.nickname}
+              className="avatar avatar-md"
+              aria-hidden="true"
+            />
             <div>
-              <h2 className="cm-section-title" id="profile-modal-title">{player.nickname}</h2>
-              <p className="cm-muted">Rating {player.rating}</p>
+              <h2 className="cm-section-title" id="profile-modal-title">
+                {currentHistory?.player.username ?? player.nickname}
+              </h2>
+              <p className="cm-muted" aria-live="polite">
+                Rating {profileState.isLoading
+                  ? 'Updating...'
+                  : currentHistory?.player.rating ?? '-'}
+              </p>
             </div>
           </div>
           <IconButton aria-label="Close profile modal" icon="x" onClick={onClose} />
@@ -147,17 +129,9 @@ function UserProfileModal({
             games={recentGames}
             title="Last 3 matches"
             currentUserId={playerId}
-            isLoading={hasBackendUserId && currentHistory === null}
-            error={
-              hasBackendUserId
-                ? currentHistory?.error
-                : 'Match history is unavailable: invalid player ID.'
-            }
-            onRetry={
-              hasBackendUserId
-                ? () => setHistoryAttempt((attempt) => attempt + 1)
-                : undefined
-            }
+            isLoading={profileState.isLoading}
+            error={profileState.error}
+            onRetry={profileState.retry}
           />
       
       <div className="cm-modal__actions">

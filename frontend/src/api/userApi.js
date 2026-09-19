@@ -5,12 +5,42 @@ function searchUsers(search) {
 }
 
 // Load the global leaderboard through the shared HTTP client.
-function getLeaderboard() {
-  return request('/api/users/leaderboard')
+async function getLeaderboard({ signal } = {}) {
+  const data = await request('/api/users/leaderboard', { signal })
+
+  if (
+    !Array.isArray(data?.players)
+    || data.players.some((player) => (
+      !Number.isInteger(player?.rating)
+      || player.rating < 0
+    ))
+  ) {
+    throw new Error('Invalid leaderboard response')
+  }
+
+  return data
 }
 
 function getPlayerGames(playerId, { signal } = {}) {
   return request(`/api/users/${playerId}/games`, { signal })
+}
+
+async function getPublicProfile(playerId, { signal } = {}) {
+  if (!Number.isSafeInteger(playerId) || playerId <= 0) {
+    throw new Error('Invalid player ID')
+  }
+
+  const data = await request(`/api/users/${playerId}`, { signal })
+
+  if (
+    data?.user?.id !== playerId
+    || !Number.isInteger(data.user.rating)
+    || data.user.rating < 0
+  ) {
+    throw new Error('Invalid player profile response')
+  }
+
+  return data.user
 }
 
 function updateCurrentUser({ username, email }) {
@@ -37,6 +67,7 @@ export {
   searchUsers,
   getLeaderboard,
   getPlayerGames,
+  getPublicProfile,
   updateCurrentUser,
   uploadCurrentUserAvatar,
 }

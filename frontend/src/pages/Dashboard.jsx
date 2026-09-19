@@ -5,6 +5,7 @@ import MatchHistory from '../components/MatchHistory.jsx'
 import ChessGuideModal from '../components/ChessGuideModal.jsx'
 import AppLayout from '../components/AppLayout'
 import WeeklyActivityChart from '../components/WeeklyActivityChart.jsx'
+import useFreshRatingData from '../hooks/useFreshRatingData.js'
 import {
   ActionCard,
   Alert,
@@ -17,12 +18,17 @@ import {
 } from '../components/ui.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getGames } from '../api/gameApi.js'
+import { getCurrentRating } from '../api/authApi.js'
 import { getGameStatistics, getWeeklyActivity } from '../utils/gameStatistics.js'
 
 function Dashboard() {
   // Use the signed-in account as the source of the displayed rating.
   const { user } = useAuth()
   const userId = user?.id
+  const ratingState = useFreshRatingData(getCurrentRating)
+  const currentRating = ratingState.data?.userId === userId
+    ? ratingState.data.rating
+    : null
   const [history, setHistory] = useState(null)
 
   // Open the shared rules reference without leaving the dashboard.
@@ -118,7 +124,7 @@ function Dashboard() {
               <PanelBody>
                 {/* Keep unavailable statistics distinct from a successfully loaded empty history. */}
                 <div className="cm-stat-grid">
-                  <StatCell label="Rating" value={user?.rating ?? '-'} />
+                  <StatCell label="Rating" value={currentRating ?? '-'} />
                   <StatCell label="Games" value={statistics?.totalGames ?? '-'} />
                   <StatCell
                     label="Win rate"
@@ -127,6 +133,25 @@ function Dashboard() {
                       : '-'}
                   />
                 </div>
+
+                {ratingState.isLoading && (
+                  <p className="cm-muted" role="status">
+                    Updating rating...
+                  </p>
+                )}
+
+                {ratingState.error && (
+                  <div className="flex flex-col gap-2">
+                    <Alert>{ratingState.error}</Alert>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={ratingState.retry}
+                    >
+                      Retry rating
+                    </Button>
+                  </div>
+                )}
 
                 {isHistoryLoading && (
                   <p className="cm-muted" role="status">

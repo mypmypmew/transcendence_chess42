@@ -17,6 +17,20 @@ function toPublicUser(user) {
   };
 }
 
+async function getPublicProfile(userId) {
+  if (!Number.isSafeInteger(userId) || userId <= 0) {
+    throw httpError(400, 'Invalid user ID');
+  }
+
+  const user = await userRepository.findPublicUserById(userId);
+
+  if (!user) {
+    throw httpError(404, 'Player not found');
+  }
+
+  return toPublicUser(user);
+}
+
 async function searchUsers(currentUserId, search) {
   if (typeof search !== 'string') {
     throw httpError(400, 'search must be a string with at least 2 characters');
@@ -86,5 +100,6 @@ async function updateProfile(userId, { username, email } = {}) {
 module.exports = {
   searchUsers,
   getLeaderboard,
+  getPublicProfile,
   updateProfile,
 };

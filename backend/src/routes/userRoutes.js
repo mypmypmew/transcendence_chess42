@@ -95,4 +95,24 @@ router.get('/:userId/games', requireAuth, async (req, res, next) => {
     }
 });
 
+router.get('/:userId', requireAuth, async (req, res, next) => {
+    try {
+        const rawId = req.params.userId;
+
+        if (!/^[1-9]\d*$/.test(rawId)) {
+            return res.status(400).json({ error: 'Invalid user ID' });
+        }
+
+        const user = await userService.getPublicProfile(Number(rawId));
+
+        res.status(200).json({ user });
+    } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ error: err.message });
+        }
+
+        next(err);
+    }
+});
+
 module.exports = router;
