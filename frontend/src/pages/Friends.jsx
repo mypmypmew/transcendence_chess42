@@ -59,6 +59,11 @@ export default function Friends() {
     [outgoingRequests],
   )
 
+  const incomingRequesterIds = useMemo(
+    () => incomingRequests.map((request) => request.requester.id),
+    [incomingRequests],
+  )
+
   useEffect(() => {
     let isCancelled = false
 
@@ -173,9 +178,17 @@ export default function Friends() {
   }
 
   const handleOpenSearchProfile = (user) => {
+    const hasIncomingRequest = incomingRequesterIds.includes(user.id)
+    const hasOutgoingRequest = outgoingRecipientIds.includes(user.id)
+
     setSelectedFriend(toModalPlayer(user, {
       isFriend: friendUserIds.includes(user.id),
-      hasPendingFriendRequest: outgoingRecipientIds.includes(user.id),
+      hasPendingFriendRequest: hasIncomingRequest || hasOutgoingRequest,
+      friendActionLabel: hasIncomingRequest
+        ? 'Request received'
+        : hasOutgoingRequest
+          ? 'Request sent'
+          : undefined,
     }))
   }
 
@@ -369,6 +382,7 @@ export default function Friends() {
                         {searchResults.map((user) => {
                           const isFriend = friendUserIds.includes(user.id)
                           const isSent = outgoingRecipientIds.includes(user.id)
+                          const isReceived = incomingRequesterIds.includes(user.id)
                           const isSending = sendingRequestIds.includes(user.id)
 
                           return (
@@ -377,13 +391,19 @@ export default function Friends() {
                                 <Button
                                   size="sm"
                                   type="button"
-                                  disabled={isFriend || isSent || isSending}
+                                  disabled={isFriend || isSent || isReceived || isSending}
                                   onClick={(event) => {
                                     event.stopPropagation()
                                     handleSendFriendRequest(user)
                                   }}
                                 >
-                                  {isFriend ? 'Friend' : isSent ? 'Request Sent' : 'Add'}
+                                  {isFriend
+                                    ? 'Friend'
+                                    : isSent
+                                      ? 'Request Sent'
+                                      : isReceived
+                                        ? 'Request Received'
+                                        : 'Add'}
                                 </Button>
                               )}
                               avatar={user.avatar}
