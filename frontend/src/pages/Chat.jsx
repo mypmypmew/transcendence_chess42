@@ -415,7 +415,7 @@ function Chat() {
     <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
       <div className="cm-page-grid chat">
         <Panel className="cm-chat-search-panel cm-scroll-panel" aria-label="Player search">
-          <PanelBody className="flex-shrink-0">
+          <PanelBody>
               <Input
                 type="text"
                 value={searchTerm}
