@@ -25,6 +25,24 @@ function getPlayerGames(playerId, { signal } = {}) {
   return request(`/api/users/${playerId}/games`, { signal })
 }
 
+async function getPublicProfile(playerId, { signal } = {}) {
+  if (!Number.isSafeInteger(playerId) || playerId <= 0) {
+    throw new Error('Invalid player ID')
+  }
+
+  const data = await request(`/api/users/${playerId}`, { signal })
+
+  if (
+    data?.user?.id !== playerId
+    || !Number.isInteger(data.user.rating)
+    || data.user.rating < 0
+  ) {
+    throw new Error('Invalid player profile response')
+  }
+
+  return data.user
+}
+
 function updateCurrentUser({ username, email }) {
   return request('/api/users/me', {
     method: 'PATCH',
@@ -49,6 +67,7 @@ export {
   searchUsers,
   getLeaderboard,
   getPlayerGames,
+  getPublicProfile,
   updateCurrentUser,
   uploadCurrentUserAvatar,
 }
