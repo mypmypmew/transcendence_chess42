@@ -2,8 +2,6 @@ services:
   backend:
     build: ./backend
     command: npm start
-    env_file:
-      - ./backend/.env
     environment:
       NODE_ENV: production
       DATABASE_URL: file:/data/app.db

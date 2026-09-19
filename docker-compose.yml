@@ -3,8 +3,8 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
-    env_file:
-      - ./backend/.env
+    environment:
+      DATABASE_URL: file:./dev.db
     volumes:
       - ./backend/index.js:/app/index.js
       - ./backend/src:/app/src
