@@ -164,7 +164,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--space-6);
-  margin-top: var(--space-5);
+  margin: var(--space-5) 0 var(--space-3);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: var(--text-base);

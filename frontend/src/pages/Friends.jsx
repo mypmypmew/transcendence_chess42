@@ -316,7 +316,6 @@ export default function Friends() {
     <AppLayout 
       eyebrow="Community" 
       title="Friends"
-      showLegalFooter={false}
     >
       <div className="cm-page-grid two cm-friends-grid">
         <div className="flex flex-col gap-5">

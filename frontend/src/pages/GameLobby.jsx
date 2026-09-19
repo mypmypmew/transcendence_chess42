@@ -40,7 +40,7 @@ function GameLobby() {
   const connectionStatus = isConnected ? 'online' : 'offline'
 
   return (
-    <AppLayout eyebrow="Game Lobby" title="Play Chess" showLegalFooter={false}>
+    <AppLayout eyebrow="Game Lobby" title="Play Chess">
       <Panel aria-labelledby="matchmaking-title">
         <PanelHeader
           eyebrow="Online multiplayer"
