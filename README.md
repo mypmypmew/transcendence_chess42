@@ -44,7 +44,7 @@ The development database defaults to `backend/prisma/dev.db`. Environment files 
 Start the application in the background:
 
 ```bash
-./start.sh -d
+./start.sh
 ```
 
 Open <https://localhost:8443> in Google Chrome. The health endpoint is available at <https://localhost:8443/api/health>.
