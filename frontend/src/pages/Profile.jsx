@@ -5,6 +5,7 @@ import AppLayout from '../components/AppLayout'
 import MatchHistory from '../components/MatchHistory'
 import UserProfileModal from '../components/UserProfileModal'
 import UserListRow from '../components/UserListRow.jsx'
+import useFreshRatingData from '../hooks/useFreshRatingData.js'
 import {
   Alert,
   Badge,
@@ -20,6 +21,7 @@ import {
 } from '../components/ui.jsx'
 import { getFriends, removeFriend } from '../api/friendshipApi'
 import { getGames } from '../api/gameApi'
+import { getCurrentRating } from '../api/authApi.js'
 import { updateCurrentUser, uploadCurrentUserAvatar } from '../api/userApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useOpenConversation } from '../hooks/useOpenConversation.js'
@@ -69,6 +71,10 @@ function getUserFormValues(user) {
 
 function Profile() {
   const { user, refreshUser, replaceUser } = useAuth()
+  const ratingState = useFreshRatingData(getCurrentRating)
+  const currentRating = ratingState.data?.userId === user?.id
+    ? ratingState.data.rating
+    : null
   const { startConversation } = useOpenConversation()
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
@@ -371,7 +377,22 @@ function Profile() {
                       <Icon className="text-accent" name="chart-line" />
                       <span>Rating</span>
                     </p>
-                    <p className="text-primary">{user.rating}</p>
+                    <p className="text-primary" aria-live="polite">
+                      {ratingState.isLoading ? 'Updating...' : currentRating ?? '-'}
+                    </p>
+
+                    {ratingState.error && (
+                      <div className="flex flex-col gap-2">
+                        <Alert>{ratingState.error}</Alert>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={ratingState.retry}
+                        >
+                          Retry rating
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-1">
