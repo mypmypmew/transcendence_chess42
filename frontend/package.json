@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@tabler/icons-webfont": "^2.44.0",
     "chess.js": "^1.4.0",
     "react": "^19.2.6",
     "react-chessboard": "^5.10.0",
