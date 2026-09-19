@@ -55,7 +55,7 @@ function PrivacyPolicy() {
             <h2>Files and services</h2>
             <p className="text-secondary">
               Avatar files are stored locally or in the configured Docker volume. Socket connections are
-              served by the project backend. The frontend imports Google Fonts for page typography.
+              served by the project backend. The frontend bundles its fonts and icon assets with the application and does not fetch them from third-party CDNs at runtime.
             </p>
 
             <h2>Logs and operations</h2>

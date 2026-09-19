@@ -31,7 +31,7 @@ const designTokens = {
   },
   typography: {
     ui: "'Inter', system-ui, sans-serif",
-    display: "'Cormorant Garant', Georgia, serif",
+    display: "'Cormorant Garamond', Georgia, serif",
     mono: 'ui-monospace, Consolas, monospace',
     scale: {
       xs: '11px',

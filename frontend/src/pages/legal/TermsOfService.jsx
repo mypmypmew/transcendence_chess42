@@ -67,8 +67,7 @@ function TermsOfService() {
 
             <h2>Project services</h2>
             <p className="text-secondary">
-              The app uses backend APIs, Socket.IO connections, local avatar upload storage, and Google Fonts
-              as part of the project experience.
+              The frontend bundles its fonts and icon assets with the application and does not fetch them from third-party CDNs at runtime.  
             </p>
           </PanelBody>
         </Panel>
