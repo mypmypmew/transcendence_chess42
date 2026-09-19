@@ -1,9 +1,6 @@
 # Backend
 
-Express backend for the chess application. The current implementation provides
-the health-check endpoint, the Prisma/SQLite persistence layer, database
-migrations, and repository functions. Authentication and feature routes are not
-implemented yet.
+Express 5 and Socket.IO backend for ChessMate. It provides session-based authentication, user profiles and avatars, friendships and online presence, persistent one-to-one chat, matchmaking, authoritative multiplayer chess, game history, points, and a leaderboard. Application data is persisted through Prisma and SQLite, while active games, matchmaking, presence, and disconnect timers are managed in memory.
 
 ## Quick start
 
@@ -120,24 +117,54 @@ files. The local database is created at `backend/prisma/dev.db`.
 
 ```text
 backend/
-├── index.js                         Express entry point
+├── index.js                 Express, HTTP, and Socket.IO entry point
 ├── prisma/
-│   ├── schema.prisma                Database schema
-│   └── migrations/                  Committed SQL migration history
+│   ├── schema.prisma        Database schema
+│   └── migrations/          Committed SQL migration history
 ├── scripts/
-│   └── socketSmokeClient.js   
-└── src/
-    ├── db/
-    │   └── prisma.js                Shared PrismaClient instance
-    └── repositories/
-        ├── userRepository.js        User persistence operations
-        ├── friendshipRepository.js  Friendship persistence operations
-        └── gameRepository.js        Game persistence operations
+│   ├── chatSmokeClient.js
+│   ├── recalculatePoints.js
+│   └── socketSmokeClient.js
+├── src/
+│   ├── db/                  Shared Prisma Client
+│   ├── middlewares/         HTTP and Socket.IO authentication
+│   ├── repositories/        Prisma database operations
+│   ├── routes/              Express REST endpoints
+│   ├── services/            Business and application logic
+│   ├── socket/              Game and matchmaking handlers
+│   ├── sockets/             Chat and presence handlers
+│   └── validators/          Input validation
+├── test/                    Unit and integration tests
+└── uploads/avatars/         Development avatar storage
 ```
 
 ## Socket.IO
 
-The current implementation also provides an initial Socket.IO connection with connection lifecycle logging and a ping/pong smoke check.
+Socket.IO shares the backend's Node.js HTTP server and requires a valid database-backed session during the connection handshake. The authenticated user is stored in `socket.data`, so realtime handlers never trust a client-provided user ID.
+
+The realtime layer provides:
+
+- personal `user:<id>` rooms for matchmaking, presence, chat notifications, and game connection status;
+- `conversation:<id>` rooms for persistent one-to-one chat;
+- `game:<id>` rooms for authoritative chess-state broadcasts;
+- matchmaking, reconnect handling, presence tracking with a 5-second offline grace period, and automatic forfeiture after a further 30-second game disconnect timeout.
+
+The ping/pong smoke client can be used to verify authenticated Socket.IO connectivity.
+
+## REST API
+
+User, friendship, conversation, and game endpoints require a valid `sid` session cookie. Authentication endpoints and the health check do not pass through `requireAuth`; `GET /api/auth/me` returns `null` when no valid session exists.
+
+| Area | Endpoints |
+| --- | --- |
+| Health | `GET /api/health` |
+| Authentication | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
+| Users | `GET /api/users`, `PATCH /api/users/me`, `POST /api/users/me/avatar` |
+| Leaderboard and history | `GET /api/users/leaderboard`, `GET /api/users/:userId/games` |
+| Friend requests | `GET/POST /api/friend-requests`, `POST /api/friend-requests/:requestId/accept`, `DELETE /api/friend-requests/:requestId` |
+| Friends | `GET /api/friends`, `DELETE /api/friends/:friendUserId` |
+| Conversations | `GET/POST /api/conversations`, `GET /api/conversations/:conversationId/messages` |
+| Games | `GET /api/games`, `GET /api/games/active`, `GET /api/games/:gameId` |
 
 ## NPM scripts
 
@@ -148,14 +175,42 @@ compatible local Node.js environment.
 | --- | --- |
 | `npm run dev` | Apply committed migrations and start the server with Nodemon |
 | `npm start` | Apply committed migrations and start the server with Node.js |
+| `npm test` | Run the backend unit and integration test suite |
 | `npm run db:deploy` | Apply pending committed migrations |
 | `npm run postinstall` | Generate Prisma Client; npm runs this automatically after install |
 | `npm run socket:check` | Connect to Socket.IO, verify ping/pong, and disconnect |
 
-The Docker image uses Node.js 20 and `npm ci`, so dependency versions come from
+The Docker image uses Node.js 22 and `npm ci`, so dependency versions come from
 `package-lock.json`.
 
-### Adding a dependency
+## Tests
+
+Run the complete backend test suite from the repository root:
+
+```bash
+docker compose run --rm backend npm test
+```
+
+The suite covers authentication, sessions, repositories, services, REST routes, Socket.IO handlers, presence, matchmaking, multiplayer game flows, points transactions, migrations, and integration scenarios.
+
+## Points recalculation
+
+Preview points calculated from completed game history without changing the database:
+
+```bash
+docker compose run --rm backend node scripts/recalculatePoints.js
+```
+
+To apply the recalculated totals, stop the backend first and run:
+
+```bash
+docker compose stop backend
+docker compose run --rm backend node scripts/recalculatePoints.js --apply
+```
+
+Apply mode is rejected while the database contains an `IN_PROGRESS` game.
+
+## Adding a dependency
 
 The Compose development service intentionally does not mount the whole backend
 directory or `node_modules`. To update the host `package.json` and
@@ -205,17 +260,31 @@ validate passwords before calling `createUser`. API responses must never expose
 
 ### Friendship
 
-A friendship links two users through `userAId` and `userBId`.
+A friendship record represents both a pending friend request and an accepted friendship.
 
-- Both IDs must be positive integers belonging to existing users.
-- A user cannot be friends with themselves.
-- The repository stores the smaller ID as `userAId` and the larger ID as
-  `userBId`.
-- The composite unique constraint prevents duplicate canonical pairs.
-- Deleting a user deletes their friendship records.
+- `userAId` and `userBId` store the canonical pair with the smaller ID first.
+- `requestedById` identifies the user who sent the request.
+- `status` is either `PENDING` or `ACCEPTED`.
+- A user cannot create a friendship with themselves.
+- The composite unique constraint on `(userAId, userBId)` prevents duplicate or reversed pairs.
+- Deleting either user cascades to the friendship record.
 
-Always create or find friendships through `friendshipRepository`; bypassing its
-normalization could produce reversed duplicate pairs.
+Always create or find friendships through `friendshipRepository`; bypassing its normalization could produce reversed duplicate pairs.
+
+### Session
+
+Sessions are stored in the database and linked to one user.
+
+- The random session ID is stored in the `sid` HTTP-only cookie.
+- Sessions expire after seven days.
+- Expired sessions are rejected and removed when accessed.
+- Deleting a user cascades to their sessions.
+
+### Conversation and Message
+
+A conversation stores a canonical pair of participants and is unique on `(userAId, userBId)`.
+
+Messages belong to a conversation and a sender. Chat history is persisted in SQLite, while Socket.IO delivers newly created messages to connected participants in real time. Deleting a conversation cascades to its messages.
 
 ### Game
 
@@ -233,47 +302,34 @@ Results:
 - `BLACK_WIN`
 - `DRAW`
 
-New games start as `IN_PROGRESS`. White and black must be different users.
-`finishGame` derives `winnerId` from the result instead of accepting an
-arbitrary winner. A draw has `winnerId = null`. The optional `pgn` field stores
-the move history in Portable Game Notation.
+Matchmaking creates the database record before the active game is placed in memory. The current position and ordinary moves remain in backend memory and are validated with `chess.js`.
 
-## Repository API
+When a game finishes, `gameRepository.finishGame` transactionally stores the result and PGN and awards points exactly once. A win awards `100` points to the winner, while a draw awards `30` points to each player.
 
-Repositories contain database access only. HTTP parsing, authorization,
-business workflows, and mapping Prisma errors to HTTP responses belong in
-future service/middleware/route layers.
+If a player remains disconnected beyond the reconnect timeout, the game is completed as a resignation. If the backend restarts and loses its in-memory game state, remaining `IN_PROGRESS` records are marked as `CANCELLED`.
 
-### User repository
+## Application layers
 
-```js
-findUserByEmail(email)
-createUser({ email, username, passwordHash })
-```
+The backend follows a route-service-repository structure:
 
-`findUserByEmail` returns a user or `null`. `createUser` leaves the initial
-rating to the database default.
+- `middlewares/` authenticates HTTP and Socket.IO requests;
+- `routes/` reads HTTP input and builds HTTP responses;
+- `validators/` validates and normalizes input values;
+- `services/` implements business rules and coordinates workflows;
+- `repositories/` performs Prisma database operations;
+- `db/prisma.js` exports the shared Prisma Client instance.
 
-### Friendship repository
+Repositories contain database access only. HTTP parsing, authorization decisions, response formatting, and business workflows belong to the route, middleware, and service layers.
 
-```js
-findFriendship(firstUserId, secondUserId)
-createFriendship(firstUserId, secondUserId)
-```
+### Repository responsibilities
 
-Both functions accept IDs in either order and normalize the pair internally.
-
-### Game repository
-
-```js
-findGameById(gameId)
-createGame({ whiteId, blackId })
-finishGame(gameId, { result, pgn })
-```
-
-`finishGame` accepts `GameResult.WHITE_WIN`, `GameResult.BLACK_WIN`, or
-`GameResult.DRAW` from `@prisma/client`. Only an in-progress game can be
-finished.
+| Repository | Responsibility |
+| --- | --- |
+| `userRepository` | Users, public user search, profile updates, and leaderboard queries |
+| `sessionRepository` | Persistent login sessions |
+| `friendshipRepository` | Canonical user pairs, friend requests, and accepted friendships |
+| `chatRepository` | Conversations and persisted messages |
+| `gameRepository` | Game records, history, transactional completion, points, and restart cancellation |
 
 ## Migration workflow
 
@@ -330,17 +386,3 @@ docker compose up -d --build --force-recreate backend
 Do not add an anonymous `/app/node_modules` mount to the backend service. A
 persisted old dependency volume can hide the dependencies generated in a newer
 image.
-
-## Current boundaries and follow-up work
-
-The following are deliberately outside the current persistence task:
-
-- registration and login routes;
-- bcrypt password hashing and comparison;
-- server-side sessions and protected-route middleware;
-- friends, profile, leaderboard, and game HTTP APIs;
-- frontend API integration;
-- automated repository and API tests.
-
-Track these as separate issues and document request/response contracts in each
-issue before frontend and backend implementation diverge.
