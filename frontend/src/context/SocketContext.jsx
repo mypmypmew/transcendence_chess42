@@ -13,11 +13,57 @@ import { useAuth } from './AuthContext.jsx'
 const SocketContext = createContext(null)
 
 function SocketProvider({ children }) {
-  const { isAuthenticated, isAuthLoading } = useAuth()
+  const { user, isAuthenticated, isAuthLoading } = useAuth()
+  const userId = user?.id
+  const [ratingsVersion, setRatingsVersion] = useState(0)
   const [status, setStatus] = useState(
     socket.connected ? 'connected' : 'disconnected',
   )
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!userId) {
+      return undefined
+    }
+
+    const completedGames = new Set()
+
+    function invalidateRatings() {
+      setRatingsVersion((version) => version + 1)
+    }
+
+    function handleGameState(game) {
+      if (
+        game?.status !== 'COMPLETED'
+        || !Number.isInteger(game.gameId)
+        || (game.whiteId !== userId && game.blackId !== userId)
+        || completedGames.has(game.gameId)
+      ) {
+        return
+      }
+
+      completedGames.add(game.gameId)
+      invalidateRatings()
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        invalidateRatings()
+      }
+    }
+
+    socket.on('game:state', handleGameState)
+    socket.on('connect', invalidateRatings)
+    window.addEventListener('focus', invalidateRatings)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      socket.off('game:state', handleGameState)
+      socket.off('connect', invalidateRatings)
+      window.removeEventListener('focus', invalidateRatings)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [userId])
 
   useEffect(() => {
     function handleConnect() {
@@ -87,7 +133,8 @@ function SocketProvider({ children }) {
         error,
         connect,
         disconnect,
-    }), [status, error, connect, disconnect])
+        ratingsVersion,
+    }), [status, error, connect, disconnect, ratingsVersion])
 
   return (
     <SocketContext.Provider value={value}>
