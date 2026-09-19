@@ -102,11 +102,9 @@ function Login() {
           </header>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            <div className="auth-error-slot" aria-live="polite">
-              {loginError && (
-                <Alert>{loginError}</Alert>
-              )}
-            </div>
+            {loginError && (
+              <Alert role="alert">{loginError}</Alert>
+            )}
 
             <FormField
               error={shouldShowEmailError ? 'Email is required' : ''}

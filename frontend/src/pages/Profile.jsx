@@ -480,11 +480,12 @@ function Profile() {
             </Panel>
 
             <MatchHistory
-              className="cm-profile-panel cm-scroll-panel"
+              className="cm-profile-history"
               games={games}
               currentUserId={user.id}
               error={historyError}
               isLoading={isHistoryLoading}
+              pageSize={4}
             />
 
             <Panel aria-labelledby="friends-title" className="cm-profile-friends-panel cm-profile-panel">

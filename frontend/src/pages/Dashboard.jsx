@@ -163,7 +163,7 @@ function Dashboard() {
 
             {/* Reuse the existing history panel for the five latest completed games. */}
             <MatchHistory
-              className="cm-dashboard-history cm-scroll-panel"
+              className="cm-dashboard-history"
               title="Recent games"
               games={statistics?.recentGames ?? []}
               currentUserId={userId}
