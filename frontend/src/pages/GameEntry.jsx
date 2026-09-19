@@ -63,7 +63,7 @@ function GameEntry() {
 
     if (lookup.status === 'loading') {
         return (
-        <AppLayout eyebrow="Game" title="Checking active game" showLegalFooter={false}>
+        <AppLayout eyebrow="Game" title="Checking active game">
             <Panel aria-live="polite">
                 <PanelBody>
                     <EmptyState
@@ -78,7 +78,7 @@ function GameEntry() {
 
     if (lookup.status === 'error') {
         return (
-        <AppLayout eyebrow="Game" title="Game unavailable" showLegalFooter={false}>
+        <AppLayout eyebrow="Game" title="Game unavailable">
             <Panel>
                 <PanelBody className="flex flex-col gap-4">
                     <Alert>{lookup.error}</Alert>

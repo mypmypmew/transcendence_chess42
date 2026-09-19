@@ -412,7 +412,7 @@ function Chat() {
   }
 
   return (
-    <AppLayout eyebrow="Messages" title="Chat" showLegalFooter={false}>
+    <AppLayout eyebrow="Messages" title="Chat">
       <div className="cm-page-grid chat">
         <Panel className="cm-chat-search-panel cm-scroll-panel" aria-label="Player search">
           <PanelBody>

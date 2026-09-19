@@ -102,7 +102,7 @@ function Game() {
 
   if (isLoading) {
     return (
-      <AppLayout eyebrow="Game Screen" title="Multiplayer Chess" showLegalFooter={false}>
+      <AppLayout eyebrow="Game Screen" title="Multiplayer Chess">
         <Panel aria-live="polite">
           <PanelBody>
             <EmptyState
@@ -118,7 +118,7 @@ function Game() {
 
   if (!game) {
     return (
-      <AppLayout eyebrow="Game Screen" title="Game Unavailable" showLegalFooter={false}>
+      <AppLayout eyebrow="Game Screen" title="Game Unavailable">
         <Panel>
           <PanelBody className="flex flex-col gap-4">
             <Alert>{gameError || 'Unable to load the game'}</Alert>
@@ -132,7 +132,7 @@ function Game() {
   }
 
   return (
-    <AppLayout eyebrow="Game Screen" title="Multiplayer Chess" showLegalFooter={false}>
+    <AppLayout eyebrow="Game Screen" title="Multiplayer Chess">
       {gameError && (
         <Panel>
           <PanelBody>
