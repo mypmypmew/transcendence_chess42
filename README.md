@@ -10,7 +10,7 @@ Key features include:
 
 - secure email/password registration and session-based login;
 - live two-player chess with server-side rule validation;
-- matchmaking, reconnection, resignation, checkmate, and draw handling;
+- matchmaking, reconnection, disconnect timeout and automatic forfeiture, resignation, checkmate, and draw handling;
 - profiles, avatar uploads, user search, friend requests, and online presence;
 - persistent one-to-one chat;
 - match history, player statistics, points, and a leaderboard;
@@ -41,13 +41,15 @@ The development database defaults to `backend/prisma/dev.db`. Environment files 
 
 ### HTTPS deployment (recommended for evaluation)
 
-Build and start the application with one command:
+Start the application in the background:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+./start.sh -d
 ```
 
-Open <https://localhost> in Google Chrome. The health endpoint is available at <https://localhost/api/health>.
+Open <https://localhost:8443> in Google Chrome. The health endpoint is available at <https://localhost:8443/api/health>.
+
+The startup script also prints a LAN URL that can be used from another computer.
 
 Caddy terminates HTTPS and reverse-proxies API, upload, and Socket.IO traffic to the backend. On a local machine, Caddy uses its local certificate authority, so the generated root certificate may need to be trusted by the operating system or browser before Chrome accepts it without a certificate warning.
 
@@ -61,7 +63,7 @@ docker compose -f docker-compose.prod.yml logs -f
 Stop the deployment without deleting persistent data:
 
 ```bash
-docker compose -f docker-compose.prod.yml down
+./start.sh down
 ```
 
 ### Development environment
@@ -98,7 +100,7 @@ The backend applies committed Prisma migrations automatically when it starts.
 1. Register two accounts in separate browser profiles or on separate computers.
 2. Open **Play** with both accounts and join the matchmaking queue.
 3. After a match is created, make moves from each player's board. The server validates moves and broadcasts the authoritative position.
-4. Refresh or briefly disconnect a player to demonstrate restoration of the active game.
+4. Refresh or briefly disconnect a player to demonstrate restoration of the active game; keep the player disconnected to demonstrate the opponent warning and automatic forfeiture after the timeout.
 5. Finish by checkmate, draw, or resignation and verify the result in history and the leaderboard.
 6. Use **Friends** to search for the other account and accept a friend request.
 7. Check live presence and exchange messages in **Chat**.
@@ -134,14 +136,14 @@ flowchart LR
 - [High-level system architecture](docs/ChessMate_HighLevel_System_Architecture.png)
 - [Friends and chat sequence diagrams](docs/sequence-diagram.md)
 
-The server owns the matchmaking queue and active chess state. Clients submit actions, while `chess.js` on the backend validates moves and produces the state broadcast to both players. Completed games, PGN, points, users, friendships, sessions, conversations, and messages are persisted through Prisma.
+The server owns the in-memory matchmaking queue, active chess state, online presence connections, and disconnect timers. Clients submit actions, while `chess.js` on the backend validates moves and produces the state broadcast to both players. Completed games, PGN, points, users, friendships, sessions, conversations, and messages are persisted through Prisma.
 
 ## Technical Stack
 
 | Layer | Technologies | Why this choice was made |
 | --- | --- | --- |
 | Frontend | React 19, React Router 7, Vite 8 | React provides reusable stateful components, React Router handles protected client routes, and Vite gives a small and fast development/build setup. |
-| UI and chessboard | Custom CSS design tokens and React components, Tabler icons, `react-chessboard` | The custom system keeps both themes and all screens visually consistent while a dedicated board component avoids reimplementing board rendering. |
+| UI and chessboard | Custom CSS design tokens and React components, locally bundled Inter and Cormorant Garamond fonts, Tabler icons, `react-chessboard` | The custom system keeps both themes and all screens visually consistent, local assets avoid runtime CDN dependencies, and a dedicated board component avoids reimplementing board rendering. |
 | Backend | Node.js, Express 5 | Express supplies a clear route/middleware structure while remaining lightweight enough for the project's services and repositories. |
 | Real time | Socket.IO 4 | Socket rooms, acknowledgements, reconnect events, and connection lifecycle handling fit live games, chat, matchmaking, and presence. |
 | Chess rules | `chess.js` | A tested chess rules engine provides legal move, checkmate, draw, FEN, and PGN handling; the backend remains authoritative. |
@@ -246,7 +248,7 @@ The source of truth is [`backend/prisma/schema.prisma`](backend/prisma/schema.pr
 | Chat | Opens one-to-one conversations, persists message history, and delivers new messages in real time. | tndreka (full-stack implementation), aokhapki (initial UI and shared components) |
 | Matchmaking | Maintains a live queue, pairs two available users, and prevents duplicate/overlapping games. | tbolsako |
 | Multiplayer chess | Validates moves on the server, synchronizes both boards, and handles checkmate, draws, and resignation. | tbolsako (primary implementation), aokhapki (board UI), snazarov (early game-service foundation) |
-| Game recovery | Restores an active game after route changes or reconnects and safely cancels orphaned in-progress games after a server restart. | tbolsako (backend and tests), snazarov (frontend recovery fixes) |
+| Game recovery | Restores an active game after route changes or reconnects, warns the opponent about disconnects, applies an automatic forfeit after the reconnect timeout, and safely cancels orphaned in-progress games after a server restart. | tbolsako (backend and tests), snazarov (frontend recovery fixes) |
 | History and statistics | Stores PGN/results and displays recent games, totals, win rate, weekly activity, and public player history. | tbolsako (primary implementation), tndreka (initial history endpoints), aokhapki (frontend presentation) |
 | Points and leaderboard | Atomically awards points once per completed game and ranks users from persisted results. | tbolsako |
 | Custom interface system | Supplies shared controls, panels, tables, messages, typography, icons, color tokens, and light/dark themes. | aokhapki |
@@ -327,7 +329,7 @@ The role labels below formalize the responsibilities that each member took on du
 
 ## Known Limitations
 
-- Active chess state and the matchmaking queue are held in backend memory. After a backend restart, unfinished games are marked as cancelled; completed history, ratings, accounts, chat, and friendships remain persistent.
+- Active chess state, the matchmaking queue, presence connections, and disconnect timers are held in one backend process, so the current deployment is designed for a single backend instance. After a backend restart, unfinished games are marked as cancelled; completed history, ratings, accounts, chat, and friendships remain persistent.
 - The HTTPS deployment uses Caddy's local certificate authority by default. A public deployment should configure a real domain and publicly trusted certificate.
 - Google Chrome is the tested and guaranteed browser; no additional-browser module is claimed.
 
